@@ -10,7 +10,7 @@ public class Event : Entity
     public EventCategory Category { get; private set; }
     public DateTimeOffset StartsAt { get; private set; }
     public DateTimeOffset EndsAt { get; private set; }
-    public Guid VenueId { get; private set; }
+    public Guid LocationId { get; private set; }
     public EventStatus Status { get; private set; }
 
     private Event()
@@ -25,7 +25,7 @@ public class Event : Entity
         EventCategory category,
         DateTimeOffset startsAt,
         DateTimeOffset endsAt,
-        Guid venueId)
+        Guid locationId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title is required.", nameof(title));
@@ -33,15 +33,15 @@ public class Event : Entity
         if (endsAt <= startsAt)
             throw new ArgumentException("EndsAt must be after StartsAt.", nameof(endsAt));
 
-        if (venueId == Guid.Empty)
-            throw new ArgumentException("VenueId is required.", nameof(venueId));
+        if (locationId == Guid.Empty)
+            throw new ArgumentException("LocationId is required.", nameof(locationId));
 
         Title = title;
         Description = description ?? string.Empty;
         Category = category;
         StartsAt = startsAt;
         EndsAt = endsAt;
-        VenueId = venueId;
+        LocationId = locationId;
         Status = EventStatus.Draft;
     }
 

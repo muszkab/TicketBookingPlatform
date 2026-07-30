@@ -12,6 +12,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<TicketCategory> TicketCategories => Set<TicketCategory>();
     public DbSet<Location> Locations => Set<Location>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

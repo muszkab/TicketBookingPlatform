@@ -1,5 +1,8 @@
 using Domain.Common;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Domain.Events;
 
@@ -12,6 +15,9 @@ public class Event : Entity
     public DateTimeOffset EndsAt { get; private set; }
     public Guid LocationId { get; private set; }
     public EventStatus Status { get; private set; }
+    public IReadOnlyCollection<TicketCategory> TicketCategories => new ReadOnlyCollection<TicketCategory>(_ticketCategories);
+
+    private readonly List<TicketCategory> _ticketCategories = new();
 
     private Event()
     {
@@ -75,5 +81,18 @@ public class Event : Entity
             throw new InvalidOperationException("Cancelled events cannot be completed.");
 
         Status = EventStatus.Completed;
+    }
+
+    public TicketCategory AddTicketCategory(string name, Money price, int totalQuantity)
+    {
+        if (Status != EventStatus.Draft)
+            throw new InvalidOperationException("Ticket categories can only be added while the event is in Draft status.");
+
+        if (_ticketCategories.Any(tc => string.Equals(tc.Name, name, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"A ticket category with name '{name}' already exists for this event.");
+
+        var category = new TicketCategory(Id, name, price, totalQuantity);
+        _ticketCategories.Add(category);
+        return category;
     }
 }

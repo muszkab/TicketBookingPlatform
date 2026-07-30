@@ -32,5 +32,14 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.HasIndex(e => e.LocationId);
         builder.HasIndex(e => e.StartsAt);
+
+        builder.HasMany(e => e.TicketCategories)
+            .WithOne()
+            .HasForeignKey(tc => tc.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Metadata
+            .FindNavigation(nameof(Event.TicketCategories))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
     }
 }

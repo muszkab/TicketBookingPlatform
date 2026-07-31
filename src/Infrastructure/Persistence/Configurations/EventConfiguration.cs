@@ -33,6 +33,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.HasIndex(e => e.LocationId);
         builder.HasIndex(e => e.StartsAt);
 
+        builder.HasOne(e => e.Location)
+            .WithMany()
+            .HasForeignKey(e => e.LocationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(e => e.TicketCategories)
             .WithOne()
             .HasForeignKey(tc => tc.EventId)

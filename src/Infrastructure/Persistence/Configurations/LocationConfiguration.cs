@@ -1,6 +1,6 @@
+using Domain.Locations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Domain.Locations;
 
 namespace Infrastructure.Persistence.Configurations;
 

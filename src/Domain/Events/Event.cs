@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Locations;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,10 +15,11 @@ public class Event : Entity
     public DateTimeOffset StartsAt { get; private set; }
     public DateTimeOffset EndsAt { get; private set; }
     public Guid LocationId { get; private set; }
+    public Location? Location { get; private set; }
     public EventStatus Status { get; private set; }
-    public IReadOnlyCollection<TicketCategory> TicketCategories => new ReadOnlyCollection<TicketCategory>(_ticketCategories);
 
     private readonly List<TicketCategory> _ticketCategories = new();
+    public IReadOnlyCollection<TicketCategory> TicketCategories => new ReadOnlyCollection<TicketCategory>(_ticketCategories);
 
     private Event()
     {

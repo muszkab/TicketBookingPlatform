@@ -27,6 +27,7 @@ using (IServiceScope scope = app.Services.CreateScope())
     {
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
         await dbContext.Database.MigrateAsync();
+        await DbInitializer.SeedDataAsync(dbContext);
     }
     catch (Exception ex)
     {

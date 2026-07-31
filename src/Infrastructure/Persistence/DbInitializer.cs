@@ -39,11 +39,11 @@ public static class DbInitializer
                 capacity: 6500),
             new Location(
                 name: "Pick Aréna",
-                street: "Temesvári körút 33",
+                street: "Felső Tisza-part 4",
                 city: "Szeged",
                 postalCode: "6726",
                 country: "Hungary",
-                capacity: 8143),
+                capacity: 10000),
         };
 
         await context.Locations.AddRangeAsync(locations, cancellationToken);

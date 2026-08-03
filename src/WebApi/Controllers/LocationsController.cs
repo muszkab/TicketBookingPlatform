@@ -1,5 +1,6 @@
 using Application.Common.Models;
 using Application.Locations;
+using Application.Locations.Commands.CreateLocation;
 using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
@@ -21,17 +22,20 @@ public class LocationsController : ControllerBase
     private readonly GetLocationsQueryHandler _getLocationsQueryHandler;
     private readonly GetLocationByIdQueryHandler _getLocationByIdQueryHandler;
     private readonly GetEventsByLocationQueryHandler _getEventsByLocationQueryHandler;
+    private readonly CreateLocationCommandHandler _createLocationCommandHandler;
     private readonly UpdateLocationCommandHandler _updateLocationCommandHandler;
 
     public LocationsController(
         GetLocationsQueryHandler getLocationsQueryHandler,
         GetLocationByIdQueryHandler getLocationByIdQueryHandler,
         GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
+        CreateLocationCommandHandler createLocationCommandHandler,
         UpdateLocationCommandHandler updateLocationCommandHandler)
     {
         _getLocationsQueryHandler = getLocationsQueryHandler;
         _getLocationByIdQueryHandler = getLocationByIdQueryHandler;
         _getEventsByLocationQueryHandler = getEventsByLocationQueryHandler;
+        _createLocationCommandHandler = createLocationCommandHandler;
         _updateLocationCommandHandler = updateLocationCommandHandler;
     }
 
@@ -68,10 +72,30 @@ public class LocationsController : ControllerBase
         return events is null ? NotFound() : Ok(events);
     }
 
+    [HttpPost]
+    [ProducesResponseType(typeof(LocationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<LocationDto>> Create([FromBody] CreateLocationRequest request, CancellationToken cancellationToken)
+    {
+        var command = new CreateLocationCommand(
+            request.Name,
+            request.Street,
+            request.City,
+            request.PostalCode,
+            request.Country,
+            request.Capacity);
+
+        LocationDto created = await _createLocationCommandHandler.HandleAsync(command, cancellationToken);
+
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateLocationCommand(

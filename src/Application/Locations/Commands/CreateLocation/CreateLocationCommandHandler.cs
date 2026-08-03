@@ -5,30 +5,25 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Locations.Commands.UpdateLocation;
+namespace Application.Locations.Commands.CreateLocation;
 
-public sealed class UpdateLocationCommandHandler
+public sealed class CreateLocationCommandHandler
 {
     private readonly IApplicationDbContext _context;
 
-    public UpdateLocationCommandHandler(IApplicationDbContext context)
+    public CreateLocationCommandHandler(IApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task HandleAsync(
-        UpdateLocationCommand command,
+    public async Task<LocationDto> HandleAsync(
+        CreateLocationCommand command,
         CancellationToken cancellationToken = default)
     {
-        Location? location = await _context.Locations
-            .FirstOrDefaultAsync(l => l.Id == command.Id, cancellationToken)
-            ?? throw new NotFoundException(nameof(Location), command.Id);
-
         bool duplicateExists = await _context.Locations
             .AsNoTracking()
             .AnyAsync(
-                l => l.Id != command.Id
-                     && l.Name.ToLower() == command.Name.ToLower()
+                l => l.Name.ToLower() == command.Name.ToLower()
                      && l.City.ToLower() == command.City.ToLower()
                      && l.Country.ToLower() == command.Country.ToLower(),
                 cancellationToken);
@@ -39,7 +34,7 @@ public sealed class UpdateLocationCommandHandler
                 $"A location with name '{command.Name}' already exists in {command.City}, {command.Country}.");
         }
 
-        location.UpdateDetails(
+        var location = new Location(
             command.Name,
             command.Street,
             command.City,
@@ -47,6 +42,16 @@ public sealed class UpdateLocationCommandHandler
             command.Country,
             command.Capacity);
 
+        _context.Locations.Add(location);
         await _context.SaveChangesAsync(cancellationToken);
+
+        return new LocationDto(
+            location.Id,
+            location.Name,
+            location.Street,
+            location.City,
+            location.PostalCode,
+            location.Country,
+            location.Capacity);
     }
 }

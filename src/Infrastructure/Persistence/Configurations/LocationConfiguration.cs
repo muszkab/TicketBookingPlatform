@@ -28,5 +28,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.PostalCode).HasMaxLength(20);
 
         builder.Property(l => l.Capacity).IsRequired();
+
+        builder.HasIndex(l => new { l.Name, l.City, l.Country }).IsUnique();
     }
 }

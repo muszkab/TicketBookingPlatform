@@ -1,5 +1,6 @@
 using Application.Common.Models;
 using Application.Locations;
+using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
 using Application.Locations.Queries.GetLocations;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WebApi.Contracts.Locations;
 
 namespace WebApi.Controllers;
 
@@ -19,15 +21,18 @@ public class LocationsController : ControllerBase
     private readonly GetLocationsQueryHandler _getLocationsQueryHandler;
     private readonly GetLocationByIdQueryHandler _getLocationByIdQueryHandler;
     private readonly GetEventsByLocationQueryHandler _getEventsByLocationQueryHandler;
+    private readonly UpdateLocationCommandHandler _updateLocationCommandHandler;
 
     public LocationsController(
         GetLocationsQueryHandler getLocationsQueryHandler,
         GetLocationByIdQueryHandler getLocationByIdQueryHandler,
-        GetEventsByLocationQueryHandler getEventsByLocationQueryHandler)
+        GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
+        UpdateLocationCommandHandler updateLocationCommandHandler)
     {
         _getLocationsQueryHandler = getLocationsQueryHandler;
         _getLocationByIdQueryHandler = getLocationByIdQueryHandler;
         _getEventsByLocationQueryHandler = getEventsByLocationQueryHandler;
+        _updateLocationCommandHandler = updateLocationCommandHandler;
     }
 
     [HttpGet]
@@ -61,5 +66,25 @@ public class LocationsController : ControllerBase
     {
         var events = await _getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
         return events is null ? NotFound() : Ok(events);
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateLocationCommand(
+            id,
+            request.Name,
+            request.Street,
+            request.City,
+            request.PostalCode,
+            request.Country,
+            request.Capacity);
+
+        await _updateLocationCommandHandler.HandleAsync(command, cancellationToken);
+
+        return NoContent();
     }
 }

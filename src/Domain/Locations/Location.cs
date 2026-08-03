@@ -29,6 +29,36 @@ public class Location : Entity
         string country,
         int capacity)
     {
+        Validate(name, city, country, capacity);
+
+        Name = name;
+        Street = street ?? string.Empty;
+        City = city;
+        PostalCode = postalCode ?? string.Empty;
+        Country = country;
+        Capacity = capacity;
+    }
+
+    public void UpdateDetails(
+        string name,
+        string street,
+        string city,
+        string postalCode,
+        string country,
+        int capacity)
+    {
+        Validate(name, city, country, capacity);
+
+        Name = name;
+        City = city;
+        Country = country;
+        Street = street ?? string.Empty;
+        PostalCode = postalCode ?? string.Empty;
+        Capacity = capacity;
+    }
+
+    private static void Validate(string name, string city, string country, int capacity)
+    {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name is required.", nameof(name));
 
@@ -40,12 +70,5 @@ public class Location : Entity
 
         if (capacity <= 0)
             throw new ArgumentException("Capacity must be greater than zero.", nameof(capacity));
-
-        Name = name;
-        Street = street ?? string.Empty;
-        City = city;
-        PostalCode = postalCode ?? string.Empty;
-        Country = country;
-        Capacity = capacity;
     }
 }

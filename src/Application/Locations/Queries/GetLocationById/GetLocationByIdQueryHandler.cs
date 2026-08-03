@@ -1,5 +1,4 @@
 using Application.Common.Interfaces;
-using Application.Locations.Queries.GetLocations;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading;

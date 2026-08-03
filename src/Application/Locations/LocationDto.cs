@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.Locations.Queries.GetLocations;
+namespace Application.Locations;
 
 public sealed record LocationDto(
     Guid Id,

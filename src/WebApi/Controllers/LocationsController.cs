@@ -1,8 +1,8 @@
 using Application.Common.Models;
+using Application.Locations;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
 using Application.Locations.Queries.GetLocations;
-using Application.Locations.Queries.SearchLocations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,26 +19,30 @@ public class LocationsController : ControllerBase
     private readonly GetLocationsQueryHandler _getLocationsQueryHandler;
     private readonly GetLocationByIdQueryHandler _getLocationByIdQueryHandler;
     private readonly GetEventsByLocationQueryHandler _getEventsByLocationQueryHandler;
-    private readonly SearchLocationsQueryHandler _searchLocationsQueryHandler;
 
     public LocationsController(
         GetLocationsQueryHandler getLocationsQueryHandler,
         GetLocationByIdQueryHandler getLocationByIdQueryHandler,
-        GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
-        SearchLocationsQueryHandler searchLocationsQueryHandler)
+        GetEventsByLocationQueryHandler getEventsByLocationQueryHandler)
     {
         _getLocationsQueryHandler = getLocationsQueryHandler;
         _getLocationByIdQueryHandler = getLocationByIdQueryHandler;
         _getEventsByLocationQueryHandler = getEventsByLocationQueryHandler;
-        _searchLocationsQueryHandler = searchLocationsQueryHandler;
     }
 
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<LocationDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<LocationDto>>> GetAll(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<LocationDto>>> GetAll(
+        [FromQuery] string? name,
+        [FromQuery] string? city,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = GetLocationsQuery.DefaultPageSize,
+        CancellationToken cancellationToken = default)
     {
-        var locations = await _getLocationsQueryHandler.HandleAsync(new GetLocationsQuery(), cancellationToken);
-        return Ok(locations);
+        var result = await _getLocationsQueryHandler.HandleAsync(
+            new GetLocationsQuery(name, city, page, pageSize),
+            cancellationToken);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
@@ -57,18 +61,5 @@ public class LocationsController : ControllerBase
     {
         var events = await _getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
         return events is null ? NotFound() : Ok(events);
-    }
-
-    [HttpGet("search")]
-    [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<LocationDto>>> Search(
-        [FromQuery] string? name,
-        [FromQuery] string? city,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
-        CancellationToken cancellationToken = default)
-    {
-        var result = await _searchLocationsQueryHandler.HandleAsync(new SearchLocationsQuery(name, city, page, pageSize), cancellationToken);
-        return Ok(result);
     }
 }

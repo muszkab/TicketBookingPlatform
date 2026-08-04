@@ -85,7 +85,7 @@ public class Event : Entity
         Status = EventStatus.Completed;
     }
 
-    public TicketCategory AddTicketCategory(string name, Money price, int totalQuantity)
+    public TicketCategory AddTicketCategory(string name, Money price, int categoryQuantity, int locationCapacity)
     {
         if (Status != EventStatus.Draft)
             throw new InvalidOperationException("Ticket categories can only be added while the event is in Draft status.");
@@ -93,7 +93,17 @@ public class Event : Entity
         if (_ticketCategories.Any(tc => string.Equals(tc.Name, name, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException($"A ticket category with name '{name}' already exists for this event.");
 
-        var category = new TicketCategory(Id, name, price, totalQuantity);
+        if (locationCapacity <= 0)
+            throw new ArgumentException("Location capacity must be greater than zero.", nameof(locationCapacity));
+
+        int currentAllocated = _ticketCategories.Sum(tc => tc.TotalQuantity);
+        if (currentAllocated + categoryQuantity > locationCapacity)
+        {
+            throw new InvalidOperationException(
+                $"Adding {categoryQuantity} tickets in category '{name}' would exceed the location capacity ({locationCapacity}). Currently allocated: {currentAllocated}.");
+        }
+
+        var category = new TicketCategory(Id, name, price, categoryQuantity);
         _ticketCategories.Add(category);
         return category;
     }

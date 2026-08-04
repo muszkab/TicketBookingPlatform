@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Domain.Locations;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,6 +38,22 @@ public sealed class UpdateLocationCommandHandler
         {
             throw new ConflictException(
                 $"A location with name '{command.Name}' already exists in {command.City}, {command.Country}.");
+        }
+
+        if (command.Capacity < location.Capacity)
+        {
+            int maxAllocatedForAnyEvent = await _context.Events
+                .AsNoTracking()
+                .Where(e => e.LocationId == command.Id)
+                .Select(e => e.TicketCategories.Sum(tc => tc.TotalQuantity))
+                .DefaultIfEmpty(0)
+                .MaxAsync(cancellationToken);
+
+            if (command.Capacity < maxAllocatedForAnyEvent)
+            {
+                throw new ConflictException(
+                    $"Cannot reduce capacity to {command.Capacity}: an existing event has {maxAllocatedForAnyEvent} tickets allocated at this location.");
+            }
         }
 
         location.UpdateDetails(

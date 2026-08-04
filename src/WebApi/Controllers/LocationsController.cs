@@ -1,6 +1,7 @@
 using Application.Common.Models;
 using Application.Locations;
 using Application.Locations.Commands.CreateLocation;
+using Application.Locations.Commands.DeleteLocation;
 using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
@@ -24,19 +25,22 @@ public class LocationsController : ControllerBase
     private readonly GetEventsByLocationQueryHandler _getEventsByLocationQueryHandler;
     private readonly CreateLocationCommandHandler _createLocationCommandHandler;
     private readonly UpdateLocationCommandHandler _updateLocationCommandHandler;
+    private readonly DeleteLocationCommandHandler _deleteLocationCommandHandler;
 
     public LocationsController(
         GetLocationsQueryHandler getLocationsQueryHandler,
         GetLocationByIdQueryHandler getLocationByIdQueryHandler,
         GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
         CreateLocationCommandHandler createLocationCommandHandler,
-        UpdateLocationCommandHandler updateLocationCommandHandler)
+        UpdateLocationCommandHandler updateLocationCommandHandler,
+        DeleteLocationCommandHandler deleteLocationCommandHandler)
     {
         _getLocationsQueryHandler = getLocationsQueryHandler;
         _getLocationByIdQueryHandler = getLocationByIdQueryHandler;
         _getEventsByLocationQueryHandler = getEventsByLocationQueryHandler;
         _createLocationCommandHandler = createLocationCommandHandler;
         _updateLocationCommandHandler = updateLocationCommandHandler;
+        _deleteLocationCommandHandler = deleteLocationCommandHandler;
     }
 
     [HttpGet]
@@ -108,6 +112,17 @@ public class LocationsController : ControllerBase
             request.Capacity);
 
         await _updateLocationCommandHandler.HandleAsync(command, cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        await _deleteLocationCommandHandler.HandleAsync(new DeleteLocationCommand(id), cancellationToken);
 
         return NoContent();
     }

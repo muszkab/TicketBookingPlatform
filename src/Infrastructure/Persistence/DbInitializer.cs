@@ -1,7 +1,10 @@
 ﻿using Domain.Common;
 using Domain.Events;
 using Domain.Locations;
+using Domain.Users;
+using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +15,14 @@ namespace Infrastructure.Persistence;
 
 public static class DbInitializer
 {
-    public static async Task SeedDataAsync(ApplicationDbContext context, CancellationToken cancellationToken = default)
+    public static async Task SeedDataAsync(
+        ApplicationDbContext context,
+        IConfiguration? configuration = null,
+        CancellationToken cancellationToken = default)
     {
         await SeedLocationsAsync(context, cancellationToken);
         await SeedEventsAsync(context, cancellationToken);
+        await SeedAdminUserAsync(context, configuration, cancellationToken);
     }
 
     private static async Task SeedLocationsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
@@ -122,9 +129,7 @@ public static class DbInitializer
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static void AddTicketCategories(
-        List<Event> events,
-        Dictionary<string, (Guid Id, int Capacity)> locationsByName)
+    private static void AddTicketCategories(List<Event> events, Dictionary<string, (Guid Id, int Capacity)> locationsByName)
     {
         const string huf = "HUF";
         int capacity = 0;
@@ -154,5 +159,32 @@ public static class DbInitializer
         capacity = locationsByName.Values.First(v => v.Id == kupaDonto.LocationId).Capacity;
         kupaDonto.AddTicketCategory("B kategória", new Money(3_500m, huf), 4_000, capacity);
         kupaDonto.AddTicketCategory("A kategória", new Money(6_900m, huf), 2_500, capacity);
+    }
+
+    private static async Task SeedAdminUserAsync(ApplicationDbContext context, IConfiguration? configuration, CancellationToken cancellationToken)
+    {
+        string email = configuration?["Seed:Admin:Email"]
+            ?? throw new InvalidOperationException(
+                "Seed:Admin:Email is not configured. Set it via user secrets or environment variables.");
+        string password = configuration?["Seed:Admin:Password"]
+            ?? throw new InvalidOperationException(
+                "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");
+        string fullName = "System Administrator";
+
+        string normalizedEmail = email.Trim().ToLowerInvariant();
+
+        if (await context.Users.AnyAsync(u => u.Email == normalizedEmail, cancellationToken))
+        {
+            return;
+        }
+
+        var admin = new User(
+            email: email,
+            passwordHash: PasswordHasher.Hash(password),
+            fullName: fullName,
+            role: UserRole.Admin);
+
+        await context.Users.AddAsync(admin, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

@@ -34,7 +34,7 @@ using (IServiceScope scope = app.Services.CreateScope())
     {
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
         await dbContext.Database.MigrateAsync();
-        await DbInitializer.SeedDataAsync(dbContext);
+        await DbInitializer.SeedDataAsync(dbContext, builder.Configuration);
     }
     catch (Exception ex)
     {

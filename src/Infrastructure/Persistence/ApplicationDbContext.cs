@@ -1,6 +1,8 @@
 using Application.Common.Interfaces;
 using Domain.Events;
 using Domain.Locations;
+using Domain.Orders;
+using Domain.Tickets;
 using Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +19,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<TicketCategory> TicketCategories => Set<TicketCategory>();
     public DbSet<Location> Locations => Set<Location>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<Ticket> Tickets => Set<Ticket>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

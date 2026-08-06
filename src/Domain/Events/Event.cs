@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Common.Exceptions;
 using Domain.Locations;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ public class Event : Entity
     public void PutOnSale()
     {
         if (Status != EventStatus.Draft)
-            throw new InvalidOperationException("Only draft events can be put on sale.");
+            throw new BusinessRuleException("Only draft events can be put on sale.");
 
         Status = EventStatus.OnSale;
     }
@@ -64,7 +65,7 @@ public class Event : Entity
     public void MarkAsSoldOut()
     {
         if (Status != EventStatus.OnSale)
-            throw new InvalidOperationException("Only on-sale events can be marked as sold out.");
+            throw new BusinessRuleException("Only on-sale events can be marked as sold out.");
 
         Status = EventStatus.SoldOut;
     }
@@ -72,7 +73,7 @@ public class Event : Entity
     public void Cancel()
     {
         if (Status is EventStatus.Completed or EventStatus.Cancelled)
-            throw new InvalidOperationException("Event cannot be cancelled in its current state.");
+            throw new BusinessRuleException("Event cannot be cancelled in its current state.");
 
         Status = EventStatus.Cancelled;
     }
@@ -80,7 +81,7 @@ public class Event : Entity
     public void Complete()
     {
         if (Status == EventStatus.Cancelled)
-            throw new InvalidOperationException("Cancelled events cannot be completed.");
+            throw new BusinessRuleException("Cancelled events cannot be completed.");
 
         Status = EventStatus.Completed;
     }
@@ -88,10 +89,10 @@ public class Event : Entity
     public TicketCategory AddTicketCategory(string name, Money price, int categoryQuantity, int locationCapacity)
     {
         if (Status != EventStatus.Draft)
-            throw new InvalidOperationException("Ticket categories can only be added while the event is in Draft status.");
+            throw new BusinessRuleException("Ticket categories can only be added while the event is in Draft status.");
 
         if (_ticketCategories.Any(tc => string.Equals(tc.Name, name, StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException($"A ticket category with name '{name}' already exists for this event.");
+            throw new BusinessRuleException($"A ticket category with name '{name}' already exists for this event.");
 
         if (locationCapacity <= 0)
             throw new ArgumentException("Location capacity must be greater than zero.", nameof(locationCapacity));
@@ -99,7 +100,7 @@ public class Event : Entity
         int currentAllocated = _ticketCategories.Sum(tc => tc.TotalQuantity);
         if (currentAllocated + categoryQuantity > locationCapacity)
         {
-            throw new InvalidOperationException(
+            throw new BusinessRuleException(
                 $"Adding {categoryQuantity} tickets in category '{name}' would exceed the location capacity ({locationCapacity}). Currently allocated: {currentAllocated}.");
         }
 

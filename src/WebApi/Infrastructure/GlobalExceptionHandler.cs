@@ -1,4 +1,5 @@
 using Application.Common.Exceptions;
+using Domain.Common.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -83,6 +84,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         {
             Status = StatusCodes.Status409Conflict,
             Title = "Conflict",
+            Detail = exception.Message
+        },
+        BusinessRuleException => new ProblemDetails
+        {
+            Status = StatusCodes.Status409Conflict,
+            Title = "Business rule violation",
             Detail = exception.Message
         },
         _ => new ProblemDetails

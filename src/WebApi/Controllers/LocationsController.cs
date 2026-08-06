@@ -50,9 +50,7 @@ public class LocationsController : ApiControllerBase
         [FromQuery] int pageSize = GetLocationsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        var result = await _getLocationsQueryHandler.HandleAsync(
-            new GetLocationsQuery(name, city, page, pageSize),
-            cancellationToken);
+        PagedResult<LocationDto> result = await _getLocationsQueryHandler.HandleAsync(new GetLocationsQuery(name, city, page, pageSize), cancellationToken);
         return Ok(result);
     }
 
@@ -61,7 +59,7 @@ public class LocationsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LocationDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var location = await _getLocationByIdQueryHandler.HandleAsync(new GetLocationByIdQuery(id), cancellationToken);
+        LocationDto? location = await _getLocationByIdQueryHandler.HandleAsync(new GetLocationByIdQuery(id), cancellationToken);
         return location is null ? NotFound() : Ok(location);
     }
 
@@ -70,7 +68,7 @@ public class LocationsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<LocationEventDto>>> GetEvents(Guid id, CancellationToken cancellationToken)
     {
-        var events = await _getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
+        IReadOnlyList<LocationEventDto>? events = await _getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
         return events is null ? NotFound() : Ok(events);
     }
 

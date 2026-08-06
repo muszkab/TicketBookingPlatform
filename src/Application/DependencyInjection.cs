@@ -1,4 +1,5 @@
 using Application.Events.Queries.GetEventById;
+using Application.Events.Queries.GetEvents;
 using Application.Locations.Commands.CreateLocation;
 using Application.Locations.Commands.DeleteLocation;
 using Application.Locations.Commands.UpdateLocation;
@@ -21,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<DeleteLocationCommandHandler>();
 
         services.AddScoped<GetEventByIdQueryHandler>();
+        services.AddScoped<GetEventsQueryHandler>();
 
         return services;
     }

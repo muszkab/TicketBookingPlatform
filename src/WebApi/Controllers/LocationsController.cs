@@ -16,9 +16,7 @@ using WebApi.Contracts.Locations;
 
 namespace WebApi.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-public class LocationsController : ControllerBase
+public class LocationsController : ApiControllerBase
 {
     private readonly GetLocationsQueryHandler _getLocationsQueryHandler;
     private readonly GetLocationByIdQueryHandler _getLocationByIdQueryHandler;

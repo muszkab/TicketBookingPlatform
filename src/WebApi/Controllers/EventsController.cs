@@ -4,6 +4,7 @@ using Application.Events.Commands.AddTicketCategory;
 using Application.Events.Commands.CancelEvent;
 using Application.Events.Commands.CreateEvent;
 using Application.Events.Commands.PublishEvent;
+using Application.Events.Commands.RemoveTicketCategory;
 using Application.Events.Commands.UpdateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
@@ -19,30 +20,33 @@ namespace WebApi.Controllers;
 
 public class EventsController : ApiControllerBase
 {
-    private readonly GetEventByIdQueryHandler _getEventByIdQueryHandler;
     private readonly GetEventsQueryHandler _getEventsQueryHandler;
+    private readonly GetEventByIdQueryHandler _getEventByIdQueryHandler;
     private readonly CreateEventCommandHandler _createEventCommandHandler;
+    private readonly UpdateEventCommandHandler _updateEventCommandHandler;
     private readonly AddTicketCategoryCommandHandler _addTicketCategoryCommandHandler;
+    private readonly RemoveTicketCategoryCommandHandler _removeTicketCategoryCommandHandler;
     private readonly PublishEventCommandHandler _publishEventCommandHandler;
     private readonly CancelEventCommandHandler _cancelEventCommandHandler;
-    private readonly UpdateEventCommandHandler _updateEventCommandHandler;
 
     public EventsController(
-        GetEventByIdQueryHandler getEventByIdQueryHandler,
         GetEventsQueryHandler getEventsQueryHandler,
+        GetEventByIdQueryHandler getEventByIdQueryHandler,
         CreateEventCommandHandler createEventCommandHandler,
+        UpdateEventCommandHandler updateEventCommandHandler,
         AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
+        RemoveTicketCategoryCommandHandler removeTicketCategoryCommandHandler,
         PublishEventCommandHandler publishEventCommandHandler,
-        CancelEventCommandHandler cancelEventCommandHandler,
-        UpdateEventCommandHandler updateEventCommandHandler)
+        CancelEventCommandHandler cancelEventCommandHandler)
     {
-        _getEventByIdQueryHandler = getEventByIdQueryHandler;
         _getEventsQueryHandler = getEventsQueryHandler;
+        _getEventByIdQueryHandler = getEventByIdQueryHandler;
         _createEventCommandHandler = createEventCommandHandler;
+        _updateEventCommandHandler = updateEventCommandHandler;
         _addTicketCategoryCommandHandler = addTicketCategoryCommandHandler;
+        _removeTicketCategoryCommandHandler = removeTicketCategoryCommandHandler;
         _publishEventCommandHandler = publishEventCommandHandler;
         _cancelEventCommandHandler = cancelEventCommandHandler;
-        _updateEventCommandHandler = updateEventCommandHandler;
     }
 
     [HttpGet]
@@ -121,6 +125,16 @@ public class EventsController : ApiControllerBase
         TicketCategoryDto created = await _addTicketCategoryCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id }, created);
+    }
+
+    [HttpDelete("{id:guid}/ticket-categories/{ticketCategoryId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> RemoveTicketCategory(Guid id, Guid ticketCategoryId, CancellationToken cancellationToken)
+    {
+        await _removeTicketCategoryCommandHandler.HandleAsync(new RemoveTicketCategoryCommand(id, ticketCategoryId), cancellationToken);
+        return NoContent();
     }
 
     [HttpPost("{id:guid}/publish")]

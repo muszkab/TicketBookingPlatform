@@ -1,4 +1,6 @@
 using Application.Events.Commands.AddTicketCategory;
+using Application.Events.Commands.PublishEvent;
+using Application.Events.Commands.CancelEvent;
 using Application.Events.Commands.CreateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
@@ -27,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<GetEventsQueryHandler>();
         services.AddScoped<CreateEventCommandHandler>();
         services.AddScoped<AddTicketCategoryCommandHandler>();
+        services.AddScoped<PublishEventCommandHandler>();
+        services.AddScoped<CancelEventCommandHandler>();
 
         return services;
     }

@@ -1,7 +1,9 @@
 using Application.Common.Paging;
 using Application.Events;
 using Application.Events.Commands.AddTicketCategory;
+using Application.Events.Commands.CancelEvent;
 using Application.Events.Commands.CreateEvent;
+using Application.Events.Commands.PublishEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
 using Domain.Events;
@@ -20,17 +22,23 @@ public class EventsController : ApiControllerBase
     private readonly GetEventsQueryHandler _getEventsQueryHandler;
     private readonly CreateEventCommandHandler _createEventCommandHandler;
     private readonly AddTicketCategoryCommandHandler _addTicketCategoryCommandHandler;
+    private readonly PublishEventCommandHandler _publishEventCommandHandler;
+    private readonly CancelEventCommandHandler _cancelEventCommandHandler;
 
     public EventsController(
         GetEventByIdQueryHandler getEventByIdQueryHandler,
         GetEventsQueryHandler getEventsQueryHandler,
         CreateEventCommandHandler createEventCommandHandler,
-        AddTicketCategoryCommandHandler addTicketCategoryCommandHandler)
+        AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
+        PublishEventCommandHandler publishEventCommandHandler,
+        CancelEventCommandHandler cancelEventCommandHandler)
     {
         _getEventByIdQueryHandler = getEventByIdQueryHandler;
         _getEventsQueryHandler = getEventsQueryHandler;
         _createEventCommandHandler = createEventCommandHandler;
         _addTicketCategoryCommandHandler = addTicketCategoryCommandHandler;
+        _publishEventCommandHandler = publishEventCommandHandler;
+        _cancelEventCommandHandler = cancelEventCommandHandler;
     }
 
     [HttpGet]
@@ -90,5 +98,25 @@ public class EventsController : ApiControllerBase
         TicketCategoryDto created = await _addTicketCategoryCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id }, created);
+    }
+
+    [HttpPost("{id:guid}/publish")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
+    {
+        await _publishEventCommandHandler.HandleAsync(new PublishEventCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
+    {
+        await _cancelEventCommandHandler.HandleAsync(new CancelEventCommand(id), cancellationToken);
+        return NoContent();
     }
 }

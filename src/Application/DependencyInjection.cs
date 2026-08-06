@@ -1,3 +1,5 @@
+using Application.Events.Commands.AddTicketCategory;
+using Application.Events.Commands.CreateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
 using Application.Locations.Commands.CreateLocation;
@@ -23,6 +25,8 @@ public static class DependencyInjection
 
         services.AddScoped<GetEventByIdQueryHandler>();
         services.AddScoped<GetEventsQueryHandler>();
+        services.AddScoped<CreateEventCommandHandler>();
+        services.AddScoped<AddTicketCategoryCommandHandler>();
 
         return services;
     }

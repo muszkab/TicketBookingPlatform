@@ -4,6 +4,7 @@ using Application.Events.Commands.AddTicketCategory;
 using Application.Events.Commands.CancelEvent;
 using Application.Events.Commands.CreateEvent;
 using Application.Events.Commands.PublishEvent;
+using Application.Events.Commands.UpdateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
 using Domain.Events;
@@ -24,6 +25,7 @@ public class EventsController : ApiControllerBase
     private readonly AddTicketCategoryCommandHandler _addTicketCategoryCommandHandler;
     private readonly PublishEventCommandHandler _publishEventCommandHandler;
     private readonly CancelEventCommandHandler _cancelEventCommandHandler;
+    private readonly UpdateEventCommandHandler _updateEventCommandHandler;
 
     public EventsController(
         GetEventByIdQueryHandler getEventByIdQueryHandler,
@@ -31,7 +33,8 @@ public class EventsController : ApiControllerBase
         CreateEventCommandHandler createEventCommandHandler,
         AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
         PublishEventCommandHandler publishEventCommandHandler,
-        CancelEventCommandHandler cancelEventCommandHandler)
+        CancelEventCommandHandler cancelEventCommandHandler,
+        UpdateEventCommandHandler updateEventCommandHandler)
     {
         _getEventByIdQueryHandler = getEventByIdQueryHandler;
         _getEventsQueryHandler = getEventsQueryHandler;
@@ -39,6 +42,7 @@ public class EventsController : ApiControllerBase
         _addTicketCategoryCommandHandler = addTicketCategoryCommandHandler;
         _publishEventCommandHandler = publishEventCommandHandler;
         _cancelEventCommandHandler = cancelEventCommandHandler;
+        _updateEventCommandHandler = updateEventCommandHandler;
     }
 
     [HttpGet]
@@ -80,6 +84,25 @@ public class EventsController : ApiControllerBase
         EventDto created = await _createEventCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEventRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateEventCommand(
+            id,
+            request.Title,
+            request.Description,
+            request.Category,
+            request.StartsAt,
+            request.EndsAt);
+
+        await _updateEventCommandHandler.HandleAsync(command, cancellationToken);
+        return NoContent();
     }
 
     [HttpPost("{id:guid}/ticket-categories")]

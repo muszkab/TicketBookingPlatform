@@ -1,7 +1,6 @@
 using Application.Common.Interfaces;
-using Application.Common.Models;
+using Application.Common.Paging;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,8 +9,6 @@ namespace Application.Events.Queries.GetEvents;
 
 public sealed class GetEventsQueryHandler
 {
-    private const int MaxPageSize = 100;
-
     private readonly IApplicationDbContext _context;
 
     public GetEventsQueryHandler(IApplicationDbContext context)
@@ -23,14 +20,7 @@ public sealed class GetEventsQueryHandler
         GetEventsQuery query,
         CancellationToken cancellationToken = default)
     {
-        int page = Math.Max(query.Page, 1);
-
-        int pageSize = query.PageSize switch
-        {
-            < 1 => GetEventsQuery.DefaultPageSize,
-            > MaxPageSize => MaxPageSize,
-            _ => query.PageSize
-        };
+        var (page, pageSize) = PagingHelpers.Normalize(query.Page, query.PageSize, GetEventsQuery.DefaultPageSize);
 
         var source = _context.Events.AsNoTracking();
 
@@ -40,12 +30,8 @@ public sealed class GetEventsQueryHandler
         if (query.Status.HasValue)
             source = source.Where(e => e.Status == query.Status.Value);
 
-        var totalCount = await source.CountAsync(cancellationToken);
-
-        var items = await source
+        return await source
             .OrderBy(e => e.StartsAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
             .Select(e => new EventDto(
                 e.Id,
                 e.Title,
@@ -64,8 +50,6 @@ public sealed class GetEventsQueryHandler
                         tc.TotalQuantity,
                         tc.AvailableQuantity))
                     .ToList()))
-            .ToListAsync(cancellationToken);
-
-        return new PagedResult<EventDto>(items, page, pageSize, totalCount);
+            .ToPagedResultAsync(page, pageSize, cancellationToken);
     }
 }

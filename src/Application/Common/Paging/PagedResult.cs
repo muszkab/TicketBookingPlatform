@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Application.Common.Models;
+namespace Application.Common.Paging;
 
 public sealed record PagedResult<T>(
     IReadOnlyList<T> Items,

@@ -1,4 +1,4 @@
-using Application.Common.Models;
+using Application.Common.Paging;
 using Application.Events;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;

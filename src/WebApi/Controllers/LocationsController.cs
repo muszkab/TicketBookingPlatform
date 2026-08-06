@@ -1,4 +1,4 @@
-using Application.Common.Models;
+using Application.Common.Paging;
 using Application.Locations;
 using Application.Locations.Commands.CreateLocation;
 using Application.Locations.Commands.DeleteLocation;

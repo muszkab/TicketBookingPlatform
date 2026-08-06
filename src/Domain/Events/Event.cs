@@ -54,6 +54,29 @@ public class Event : Entity
         Status = EventStatus.Draft;
     }
 
+    public void UpdateDetails(
+        string title,
+        string description,
+        EventCategory category,
+        DateTimeOffset startsAt,
+        DateTimeOffset endsAt)
+    {
+        if (Status != EventStatus.Draft)
+            throw new BusinessRuleException("Event details can only be updated while the event is in Draft status.");
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title is required.", nameof(title));
+
+        if (endsAt <= startsAt)
+            throw new ArgumentException("EndsAt must be after StartsAt.", nameof(endsAt));
+
+        Title = title;
+        Description = description ?? string.Empty;
+        Category = category;
+        StartsAt = startsAt;
+        EndsAt = endsAt;
+    }
+
     public void PutOnSale()
     {
         if (Status != EventStatus.Draft)
@@ -107,5 +130,16 @@ public class Event : Entity
         var category = new TicketCategory(Id, name, price, categoryQuantity);
         _ticketCategories.Add(category);
         return category;
+    }
+
+    public void RemoveTicketCategory(Guid ticketCategoryId)
+    {
+        if (Status != EventStatus.Draft)
+            throw new BusinessRuleException("Ticket categories can only be removed while the event is in Draft status.");
+
+        var category = _ticketCategories.FirstOrDefault(tc => tc.Id == ticketCategoryId)
+            ?? throw new BusinessRuleException($"Ticket category '{ticketCategoryId}' does not belong to this event.");
+
+        _ticketCategories.Remove(category);
     }
 }

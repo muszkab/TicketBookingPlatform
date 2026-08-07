@@ -1,8 +1,8 @@
-﻿using Domain.Common;
+﻿using Application.Common.Interfaces;
+using Domain.Common;
 using Domain.Events;
 using Domain.Locations;
 using Domain.Users;
-using Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -17,12 +17,13 @@ public static class DbInitializer
 {
     public static async Task SeedDataAsync(
         ApplicationDbContext context,
+        IPasswordHasher passwordHasher,
         IConfiguration? configuration = null,
         CancellationToken cancellationToken = default)
     {
         await SeedLocationsAsync(context, cancellationToken);
         await SeedEventsAsync(context, cancellationToken);
-        await SeedAdminUserAsync(context, configuration, cancellationToken);
+        await SeedAdminUserAsync(context, passwordHasher, configuration, cancellationToken);
     }
 
     private static async Task SeedLocationsAsync(ApplicationDbContext context, CancellationToken cancellationToken)
@@ -161,7 +162,7 @@ public static class DbInitializer
         kupaDonto.AddTicketCategory("A kategória", new Money(6_900m, huf), 2_500, capacity);
     }
 
-    private static async Task SeedAdminUserAsync(ApplicationDbContext context, IConfiguration? configuration, CancellationToken cancellationToken)
+    private static async Task SeedAdminUserAsync(ApplicationDbContext context, IPasswordHasher passwordHasher, IConfiguration? configuration, CancellationToken cancellationToken)
     {
         string email = configuration?["Seed:Admin:Email"]
             ?? throw new InvalidOperationException(
@@ -180,7 +181,7 @@ public static class DbInitializer
 
         var admin = new User(
             email: email,
-            passwordHash: PasswordHasher.Hash(password),
+            passwordHash: passwordHasher.Hash(password),
             fullName: fullName,
             role: UserRole.Admin);
 

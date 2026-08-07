@@ -1,4 +1,5 @@
 using Application;
+using Application.Common.Interfaces;
 using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
@@ -33,8 +34,9 @@ using (IServiceScope scope = app.Services.CreateScope())
     try
     {
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
         await dbContext.Database.MigrateAsync();
-        await DbInitializer.SeedDataAsync(dbContext, builder.Configuration);
+        await DbInitializer.SeedDataAsync(dbContext, passwordHasher, builder.Configuration);
     }
     catch (Exception ex)
     {

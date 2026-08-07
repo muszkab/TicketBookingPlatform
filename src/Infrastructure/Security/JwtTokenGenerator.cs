@@ -21,7 +21,7 @@ public sealed class JwtTokenGenerator : IJwtTokenGenerator
 
     public (string AccessToken, DateTimeOffset ExpiresAt) GenerateToken(User user)
     {
-        DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddMinutes(_settings.AccessTokenMinutes);
+        DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddMinutes(_settings.AccessTokenExpirationMinutes);
 
         var claims = new List<Claim>
         {

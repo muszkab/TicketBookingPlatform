@@ -16,31 +16,14 @@ using WebApi.Contracts.Locations;
 
 namespace WebApi.Controllers;
 
-public class LocationsController : ApiControllerBase
+public class LocationsController(
+    GetLocationsQueryHandler getLocationsQueryHandler,
+    GetLocationByIdQueryHandler getLocationByIdQueryHandler,
+    GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
+    CreateLocationCommandHandler createLocationCommandHandler,
+    UpdateLocationCommandHandler updateLocationCommandHandler,
+    DeleteLocationCommandHandler deleteLocationCommandHandler) : ApiControllerBase
 {
-    private readonly GetLocationsQueryHandler _getLocationsQueryHandler;
-    private readonly GetLocationByIdQueryHandler _getLocationByIdQueryHandler;
-    private readonly GetEventsByLocationQueryHandler _getEventsByLocationQueryHandler;
-    private readonly CreateLocationCommandHandler _createLocationCommandHandler;
-    private readonly UpdateLocationCommandHandler _updateLocationCommandHandler;
-    private readonly DeleteLocationCommandHandler _deleteLocationCommandHandler;
-
-    public LocationsController(
-        GetLocationsQueryHandler getLocationsQueryHandler,
-        GetLocationByIdQueryHandler getLocationByIdQueryHandler,
-        GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
-        CreateLocationCommandHandler createLocationCommandHandler,
-        UpdateLocationCommandHandler updateLocationCommandHandler,
-        DeleteLocationCommandHandler deleteLocationCommandHandler)
-    {
-        _getLocationsQueryHandler = getLocationsQueryHandler;
-        _getLocationByIdQueryHandler = getLocationByIdQueryHandler;
-        _getEventsByLocationQueryHandler = getEventsByLocationQueryHandler;
-        _createLocationCommandHandler = createLocationCommandHandler;
-        _updateLocationCommandHandler = updateLocationCommandHandler;
-        _deleteLocationCommandHandler = deleteLocationCommandHandler;
-    }
-
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<LocationDto>>> GetAll(
@@ -50,7 +33,7 @@ public class LocationsController : ApiControllerBase
         [FromQuery] int pageSize = GetLocationsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        PagedResult<LocationDto> result = await _getLocationsQueryHandler.HandleAsync(new GetLocationsQuery(name, city, page, pageSize), cancellationToken);
+        PagedResult<LocationDto> result = await getLocationsQueryHandler.HandleAsync(new GetLocationsQuery(name, city, page, pageSize), cancellationToken);
         return Ok(result);
     }
 
@@ -59,7 +42,7 @@ public class LocationsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LocationDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        LocationDto? location = await _getLocationByIdQueryHandler.HandleAsync(new GetLocationByIdQuery(id), cancellationToken);
+        LocationDto? location = await getLocationByIdQueryHandler.HandleAsync(new GetLocationByIdQuery(id), cancellationToken);
         return location is null ? NotFound() : Ok(location);
     }
 
@@ -68,7 +51,7 @@ public class LocationsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<LocationEventDto>>> GetEvents(Guid id, CancellationToken cancellationToken)
     {
-        IReadOnlyList<LocationEventDto>? events = await _getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
+        IReadOnlyList<LocationEventDto>? events = await getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
         return events is null ? NotFound() : Ok(events);
     }
 
@@ -86,7 +69,7 @@ public class LocationsController : ApiControllerBase
             request.Country,
             request.Capacity);
 
-        LocationDto created = await _createLocationCommandHandler.HandleAsync(command, cancellationToken);
+        LocationDto created = await createLocationCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -107,7 +90,7 @@ public class LocationsController : ApiControllerBase
             request.Country,
             request.Capacity);
 
-        await _updateLocationCommandHandler.HandleAsync(command, cancellationToken);
+        await updateLocationCommandHandler.HandleAsync(command, cancellationToken);
 
         return NoContent();
     }
@@ -118,7 +101,7 @@ public class LocationsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        await _deleteLocationCommandHandler.HandleAsync(new DeleteLocationCommand(id), cancellationToken);
+        await deleteLocationCommandHandler.HandleAsync(new DeleteLocationCommand(id), cancellationToken);
 
         return NoContent();
     }

@@ -18,37 +18,16 @@ using WebApi.Contracts.Events;
 
 namespace WebApi.Controllers;
 
-public class EventsController : ApiControllerBase
+public class EventsController(
+    GetEventsQueryHandler getEventsQueryHandler,
+    GetEventByIdQueryHandler getEventByIdQueryHandler,
+    CreateEventCommandHandler createEventCommandHandler,
+    UpdateEventCommandHandler updateEventCommandHandler,
+    AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
+    RemoveTicketCategoryCommandHandler removeTicketCategoryCommandHandler,
+    PublishEventCommandHandler publishEventCommandHandler,
+    CancelEventCommandHandler cancelEventCommandHandler) : ApiControllerBase
 {
-    private readonly GetEventsQueryHandler _getEventsQueryHandler;
-    private readonly GetEventByIdQueryHandler _getEventByIdQueryHandler;
-    private readonly CreateEventCommandHandler _createEventCommandHandler;
-    private readonly UpdateEventCommandHandler _updateEventCommandHandler;
-    private readonly AddTicketCategoryCommandHandler _addTicketCategoryCommandHandler;
-    private readonly RemoveTicketCategoryCommandHandler _removeTicketCategoryCommandHandler;
-    private readonly PublishEventCommandHandler _publishEventCommandHandler;
-    private readonly CancelEventCommandHandler _cancelEventCommandHandler;
-
-    public EventsController(
-        GetEventsQueryHandler getEventsQueryHandler,
-        GetEventByIdQueryHandler getEventByIdQueryHandler,
-        CreateEventCommandHandler createEventCommandHandler,
-        UpdateEventCommandHandler updateEventCommandHandler,
-        AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
-        RemoveTicketCategoryCommandHandler removeTicketCategoryCommandHandler,
-        PublishEventCommandHandler publishEventCommandHandler,
-        CancelEventCommandHandler cancelEventCommandHandler)
-    {
-        _getEventsQueryHandler = getEventsQueryHandler;
-        _getEventByIdQueryHandler = getEventByIdQueryHandler;
-        _createEventCommandHandler = createEventCommandHandler;
-        _updateEventCommandHandler = updateEventCommandHandler;
-        _addTicketCategoryCommandHandler = addTicketCategoryCommandHandler;
-        _removeTicketCategoryCommandHandler = removeTicketCategoryCommandHandler;
-        _publishEventCommandHandler = publishEventCommandHandler;
-        _cancelEventCommandHandler = cancelEventCommandHandler;
-    }
-
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<EventDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<EventDto>>> GetAll(
@@ -58,7 +37,7 @@ public class EventsController : ApiControllerBase
         [FromQuery] int pageSize = GetEventsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        PagedResult<EventDto> result = await _getEventsQueryHandler.HandleAsync(new GetEventsQuery(category, status, page, pageSize), cancellationToken);
+        PagedResult<EventDto> result = await getEventsQueryHandler.HandleAsync(new GetEventsQuery(category, status, page, pageSize), cancellationToken);
         return Ok(result);
     }
 
@@ -67,7 +46,7 @@ public class EventsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<EventDto>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        EventDto? eventData = await _getEventByIdQueryHandler.HandleAsync(new GetEventByIdQuery(id), cancellationToken);
+        EventDto? eventData = await getEventByIdQueryHandler.HandleAsync(new GetEventByIdQuery(id), cancellationToken);
         return eventData is null ? NotFound() : Ok(eventData);
     }
 
@@ -85,7 +64,7 @@ public class EventsController : ApiControllerBase
             request.EndsAt,
             request.LocationId);
 
-        EventDto created = await _createEventCommandHandler.HandleAsync(command, cancellationToken);
+        EventDto created = await createEventCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -105,7 +84,7 @@ public class EventsController : ApiControllerBase
             request.StartsAt,
             request.EndsAt);
 
-        await _updateEventCommandHandler.HandleAsync(command, cancellationToken);
+        await updateEventCommandHandler.HandleAsync(command, cancellationToken);
         return NoContent();
     }
 
@@ -122,7 +101,7 @@ public class EventsController : ApiControllerBase
             request.Currency,
             request.Quantity);
 
-        TicketCategoryDto created = await _addTicketCategoryCommandHandler.HandleAsync(command, cancellationToken);
+        TicketCategoryDto created = await addTicketCategoryCommandHandler.HandleAsync(command, cancellationToken);
 
         return CreatedAtAction(nameof(GetById), new { id }, created);
     }
@@ -133,7 +112,7 @@ public class EventsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> RemoveTicketCategory(Guid id, Guid ticketCategoryId, CancellationToken cancellationToken)
     {
-        await _removeTicketCategoryCommandHandler.HandleAsync(new RemoveTicketCategoryCommand(id, ticketCategoryId), cancellationToken);
+        await removeTicketCategoryCommandHandler.HandleAsync(new RemoveTicketCategoryCommand(id, ticketCategoryId), cancellationToken);
         return NoContent();
     }
 
@@ -143,7 +122,7 @@ public class EventsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
     {
-        await _publishEventCommandHandler.HandleAsync(new PublishEventCommand(id), cancellationToken);
+        await publishEventCommandHandler.HandleAsync(new PublishEventCommand(id), cancellationToken);
         return NoContent();
     }
 
@@ -153,7 +132,7 @@ public class EventsController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
-        await _cancelEventCommandHandler.HandleAsync(new CancelEventCommand(id), cancellationToken);
+        await cancelEventCommandHandler.HandleAsync(new CancelEventCommand(id), cancellationToken);
         return NoContent();
     }
 }

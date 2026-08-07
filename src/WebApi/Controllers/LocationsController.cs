@@ -22,7 +22,8 @@ public class LocationsController(
     GetEventsByLocationQueryHandler getEventsByLocationQueryHandler,
     CreateLocationCommandHandler createLocationCommandHandler,
     UpdateLocationCommandHandler updateLocationCommandHandler,
-    DeleteLocationCommandHandler deleteLocationCommandHandler) : ApiControllerBase
+    DeleteLocationCommandHandler deleteLocationCommandHandler)
+    : ApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]

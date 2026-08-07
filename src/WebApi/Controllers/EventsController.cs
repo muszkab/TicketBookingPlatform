@@ -26,7 +26,8 @@ public class EventsController(
     AddTicketCategoryCommandHandler addTicketCategoryCommandHandler,
     RemoveTicketCategoryCommandHandler removeTicketCategoryCommandHandler,
     PublishEventCommandHandler publishEventCommandHandler,
-    CancelEventCommandHandler cancelEventCommandHandler) : ApiControllerBase
+    CancelEventCommandHandler cancelEventCommandHandler)
+    : ApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<EventDto>), StatusCodes.Status200OK)]

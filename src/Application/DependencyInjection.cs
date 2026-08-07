@@ -1,3 +1,5 @@
+using Application.Auth.Commands.Login;
+using Application.Auth.Commands.RegisterUser;
 using Application.Events.Commands.AddTicketCategory;
 using Application.Events.Commands.CancelEvent;
 using Application.Events.Commands.CreateEvent;
@@ -35,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<RemoveTicketCategoryCommandHandler>();
         services.AddScoped<PublishEventCommandHandler>();
         services.AddScoped<CancelEventCommandHandler>();
+
+        services.AddScoped<RegisterUserCommandHandler>();
+        services.AddScoped<LoginCommandHandler>();
 
         return services;
     }

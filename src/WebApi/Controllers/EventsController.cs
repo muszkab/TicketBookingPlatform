@@ -9,6 +9,8 @@ using Application.Events.Commands.UpdateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
 using Domain.Events;
+using Domain.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -18,6 +20,7 @@ using WebApi.Contracts.Events;
 
 namespace WebApi.Controllers;
 
+[Authorize(Roles = $"{nameof(UserRole.Organizer)},{nameof(UserRole.Admin)}")]
 public class EventsController(
     GetEventsQueryHandler getEventsQueryHandler,
     GetEventByIdQueryHandler getEventByIdQueryHandler,
@@ -30,6 +33,7 @@ public class EventsController(
     : ApiControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<EventDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<EventDto>>> GetAll(
         [FromQuery] EventCategory? category,
@@ -43,6 +47,7 @@ public class EventsController(
     }
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<EventDto>> GetById(Guid id, CancellationToken cancellationToken)

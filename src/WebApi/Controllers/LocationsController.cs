@@ -6,6 +6,8 @@ using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
 using Application.Locations.Queries.GetLocations;
+using Domain.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -16,6 +18,7 @@ using WebApi.Contracts.Locations;
 
 namespace WebApi.Controllers;
 
+[Authorize(Roles = nameof(UserRole.Admin))]
 public class LocationsController(
     GetLocationsQueryHandler getLocationsQueryHandler,
     GetLocationByIdQueryHandler getLocationByIdQueryHandler,
@@ -26,6 +29,7 @@ public class LocationsController(
     : ApiControllerBase
 {
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<LocationDto>>> GetAll(
         [FromQuery] string? name,
@@ -39,6 +43,7 @@ public class LocationsController(
     }
 
     [HttpGet("{id:guid}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(LocationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LocationDto>> GetById(Guid id, CancellationToken cancellationToken)
@@ -48,6 +53,7 @@ public class LocationsController(
     }
 
     [HttpGet("{id:guid}/events")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<LocationEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IReadOnlyList<LocationEventDto>>> GetEvents(Guid id, CancellationToken cancellationToken)

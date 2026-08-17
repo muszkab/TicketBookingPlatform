@@ -24,7 +24,7 @@ public sealed class PayOrderCommandHandler
     public async Task<OrderDto> HandleAsync(PayOrderCommand command, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
-            ?? throw new NotFoundException(nameof(Order), command.OrderId);
+            ?? throw new InvalidOperationException("Current user could not be determined.");
 
         Order? order = await _context.Orders
             .Include(o => o.Items)

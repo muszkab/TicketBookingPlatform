@@ -1,4 +1,6 @@
 using Domain.Common;
+using Domain.Events;
+using Domain.Orders;
 using System;
 
 namespace Domain.Tickets;
@@ -6,9 +8,12 @@ namespace Domain.Tickets;
 public class Ticket : Entity
 {
     public Guid OrderId { get; private set; }
+    public Order Order { get; private set; } = null!;
     public Guid OrderItemId { get; private set; }
     public Guid EventId { get; private set; }
+    public Event Event { get; private set; } = null!;
     public Guid TicketCategoryId { get; private set; }
+    public TicketCategory TicketCategory { get; private set; } = null!;
     public string Code { get; private set; }
     public TicketStatus Status { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
@@ -48,6 +53,7 @@ public class Ticket : Entity
         UsedAt = DateTimeOffset.UtcNow;
     }
 
+    // TODO when call?
     public void Cancel()
     {
         if (Status == TicketStatus.Used)

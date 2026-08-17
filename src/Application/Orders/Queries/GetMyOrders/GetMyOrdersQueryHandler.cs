@@ -1,4 +1,3 @@
-using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Paging;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +22,7 @@ public sealed class GetMyOrdersQueryHandler
     public async Task<PagedResult<OrderSummaryDto>> HandleAsync(GetMyOrdersQuery query, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
-            ?? throw new ConflictException("Current user could not be determined.");
+            ?? throw new InvalidOperationException("Current user could not be determined.");
 
         (int page, int pageSize) = PagingHelpers.Normalize(query.Page, query.PageSize, GetMyOrdersQuery.DefaultPageSize);
 

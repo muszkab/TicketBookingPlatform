@@ -1,4 +1,3 @@
-using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Domain.Orders;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +21,7 @@ public sealed class GetOrderByIdQueryHandler
     public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery query, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
-            ?? throw new NotFoundException(nameof(Order), query.OrderId);
+            ?? throw new InvalidOperationException("Current user could not be determined.");
 
         Order? order = await _context.Orders
             .AsNoTracking()

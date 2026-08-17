@@ -25,7 +25,7 @@ public sealed class CreateOrderCommandHandler
     public async Task<OrderDto> HandleAsync(CreateOrderCommand command, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
-            ?? throw new ConflictException("Current user could not be determined.");
+            ?? throw new InvalidOperationException("Current user could not be determined.");
 
         if (command.Items is null || command.Items.Count == 0)
             throw new ArgumentException("Order must contain at least one item.", nameof(command));

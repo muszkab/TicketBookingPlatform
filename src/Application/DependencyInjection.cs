@@ -19,6 +19,8 @@ using Application.Orders.Commands.CreateOrder;
 using Application.Orders.Commands.PayOrder;
 using Application.Orders.Queries.GetMyOrders;
 using Application.Orders.Queries.GetOrderById;
+using Application.Tickets.Queries.GetMyTickets;
+using Application.Tickets.Queries.GetTicketById;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -51,6 +53,9 @@ public static class DependencyInjection
         services.AddScoped<CancelOrderCommandHandler>();
         services.AddScoped<GetOrderByIdQueryHandler>();
         services.AddScoped<GetMyOrdersQueryHandler>();
+
+        services.AddScoped<GetTicketByIdQueryHandler>();
+        services.AddScoped<GetMyTicketsQueryHandler>();
 
         return services;
     }

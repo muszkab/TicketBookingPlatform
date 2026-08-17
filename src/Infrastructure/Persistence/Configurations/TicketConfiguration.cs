@@ -32,5 +32,20 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.HasIndex(t => t.Code).IsUnique();
         builder.HasIndex(t => t.OrderId);
         builder.HasIndex(t => t.EventId);
+
+        builder.HasOne(t => t.Order)
+            .WithMany()
+            .HasForeignKey(t => t.OrderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.Event)
+            .WithMany()
+            .HasForeignKey(t => t.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.TicketCategory)
+            .WithMany()
+            .HasForeignKey(t => t.TicketCategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

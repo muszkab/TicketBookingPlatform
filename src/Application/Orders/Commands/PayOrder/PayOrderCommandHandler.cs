@@ -2,6 +2,7 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Domain.Events;
 using Domain.Orders;
+using Domain.Tickets;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,37 +10,40 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Application.Orders.Queries.GetOrderById;
+namespace Application.Orders.Commands.PayOrder;
 
-public sealed class GetOrderByIdQueryHandler
+public sealed class PayOrderCommandHandler
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUser;
 
-    public GetOrderByIdQueryHandler(IApplicationDbContext context, ICurrentUserService currentUser)
+    public PayOrderCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
         _currentUser = currentUser;
     }
 
-    public async Task<OrderDto?> HandleAsync(GetOrderByIdQuery query, CancellationToken cancellationToken = default)
+    public async Task<OrderDto> HandleAsync(PayOrderCommand command, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
-            ?? throw new NotFoundException(nameof(Order), query.OrderId);
+            ?? throw new NotFoundException(nameof(Order), command.OrderId);
 
         Order? order = await _context.Orders
-            .AsNoTracking()
             .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == query.OrderId, cancellationToken);
+            .FirstOrDefaultAsync(o => o.Id == command.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)
-            return null;
+            throw new NotFoundException(nameof(Order), command.OrderId);
 
         List<Guid> categoryIds = order.Items.Select(i => i.TicketCategoryId).ToList();
         Dictionary<Guid, TicketCategory> categoriesById = await _context.TicketCategories
-            .AsNoTracking()
             .Where(c => categoryIds.Contains(c.Id))
             .ToDictionaryAsync(c => c.Id, cancellationToken);
+
+        IReadOnlyList<Ticket> tickets = order.Pay(categoriesById);
+
+        _context.Tickets.AddRange(tickets);
+        await _context.SaveChangesAsync(cancellationToken);
 
         return OrderMapper.ToDto(order, categoriesById);
     }

@@ -2,7 +2,6 @@ using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Domain.Events;
 using Domain.Orders;
-using Domain.Tickets;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -51,38 +50,9 @@ public sealed class CreateOrderCommandHandler
             order.AddItem(category, item.Quantity);
         }
 
-        IReadOnlyList<Ticket> tickets = order.Pay(categoriesById);
-
         _context.Orders.Add(order);
-        _context.Tickets.AddRange(tickets);
         await _context.SaveChangesAsync(cancellationToken);
 
-        List<OrderItemDto> itemDtos = order.Items
-            .Select(i => MapToItemDto(i, categoriesById[i.TicketCategoryId]))
-            .ToList();
-
-        return new OrderDto(
-            order.Id,
-            order.UserId,
-            order.EventId,
-            order.Status,
-            order.TotalAmount.Amount,
-            order.TotalAmount.Currency,
-            order.CreatedAt,
-            order.PaidAt,
-            order.CancelledAt,
-            itemDtos);
-    }
-
-    private static OrderItemDto MapToItemDto(OrderItem item, TicketCategory category)
-    {
-        return new OrderItemDto(
-            item.Id,
-            item.TicketCategoryId,
-            category.Name,
-            item.Quantity,
-            item.UnitPrice.Amount,
-            item.UnitPrice.Currency,
-            item.LineTotal.Amount);
+        return OrderMapper.ToDto(order, categoriesById);
     }
 }

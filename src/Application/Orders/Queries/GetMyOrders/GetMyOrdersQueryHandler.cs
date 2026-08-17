@@ -20,9 +20,7 @@ public sealed class GetMyOrdersQueryHandler
         _currentUser = currentUser;
     }
 
-    public async Task<PagedResult<OrderSummaryDto>> HandleAsync(
-        GetMyOrdersQuery query,
-        CancellationToken cancellationToken = default)
+    public async Task<PagedResult<OrderSummaryDto>> HandleAsync(GetMyOrdersQuery query, CancellationToken cancellationToken = default)
     {
         Guid userId = _currentUser.UserId
             ?? throw new ConflictException("Current user could not be determined.");

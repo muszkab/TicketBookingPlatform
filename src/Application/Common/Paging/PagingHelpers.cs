@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +29,8 @@ internal static class PagingHelpers
         int pageSize,
         CancellationToken cancellationToken)
     {
-        var totalCount = await source.CountAsync(cancellationToken);
-        var items = await source
+        int totalCount = await source.CountAsync(cancellationToken);
+        List<T> items = await source
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

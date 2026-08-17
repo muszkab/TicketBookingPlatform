@@ -1,11 +1,11 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
 using Application.Common.Paging;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Orders.Queries.GetMyOrders;
 
@@ -27,13 +27,13 @@ public sealed class GetMyOrdersQueryHandler
         Guid userId = _currentUser.UserId
             ?? throw new ConflictException("Current user could not be determined.");
 
-        var (page, pageSize) = PagingHelpers.Normalize(query.Page, query.PageSize, GetMyOrdersQuery.DefaultPageSize);
+        (int page, int pageSize) = PagingHelpers.Normalize(query.Page, query.PageSize, GetMyOrdersQuery.DefaultPageSize);
 
-        var source = _context.Orders
+        IQueryable<OrderSummaryDto> source = _context.Orders
             .AsNoTracking()
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.CreatedAt)
-            .Select(o => new OrderSummaryDto( // TODO OrderSummaryDto location
+            .Select(o => new OrderSummaryDto(
                 o.Id,
                 o.EventId,
                 o.Status,
@@ -41,7 +41,7 @@ public sealed class GetMyOrdersQueryHandler
                 o.TotalAmount.Currency,
                 o.Items.Count,
                 o.CreatedAt));
-        // TODO optimize?
+
         return await source.ToPagedResultAsync(page, pageSize, cancellationToken);
     }
 }

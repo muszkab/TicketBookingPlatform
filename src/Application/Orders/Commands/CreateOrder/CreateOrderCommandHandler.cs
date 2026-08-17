@@ -51,13 +51,16 @@ public sealed class CreateOrderCommandHandler
             order.AddItem(category, item.Quantity);
         }
 
-        IReadOnlyList<Ticket> tickets = order.Pay(categoriesById); // TODO refactor
+        IReadOnlyList<Ticket> tickets = order.Pay(categoriesById);
 
         _context.Orders.Add(order);
         _context.Tickets.AddRange(tickets);
         await _context.SaveChangesAsync(cancellationToken);
 
-        // TODO refactor
+        List<OrderItemDto> itemDtos = order.Items
+            .Select(i => MapToItemDto(i, categoriesById[i.TicketCategoryId]))
+            .ToList();
+
         return new OrderDto(
             order.Id,
             order.UserId,
@@ -68,19 +71,18 @@ public sealed class CreateOrderCommandHandler
             order.CreatedAt,
             order.PaidAt,
             order.CancelledAt,
-            order.Items
-                .Select(i =>
-                {
-                    TicketCategory cat = categoriesById[i.TicketCategoryId];
-                    return new OrderItemDto(
-                        i.Id,
-                        i.TicketCategoryId,
-                        cat.Name,
-                        i.Quantity,
-                        i.UnitPrice.Amount,
-                        i.UnitPrice.Currency,
-                        i.LineTotal.Amount);
-                })
-                .ToList());
+            itemDtos);
+    }
+
+    private static OrderItemDto MapToItemDto(OrderItem item, TicketCategory category)
+    {
+        return new OrderItemDto(
+            item.Id,
+            item.TicketCategoryId,
+            category.Name,
+            item.Quantity,
+            item.UnitPrice.Amount,
+            item.UnitPrice.Currency,
+            item.LineTotal.Amount);
     }
 }

@@ -14,6 +14,9 @@ using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
 using Application.Locations.Queries.GetLocations;
+using Application.Orders.Commands.CreateOrder;
+using Application.Orders.Queries.GetMyOrders;
+using Application.Orders.Queries.GetOrderById;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -40,6 +43,10 @@ public static class DependencyInjection
 
         services.AddScoped<RegisterUserCommandHandler>();
         services.AddScoped<LoginCommandHandler>();
+
+        services.AddScoped<CreateOrderCommandHandler>();
+        services.AddScoped<GetOrderByIdQueryHandler>();
+        services.AddScoped<GetMyOrdersQueryHandler>();
 
         return services;
     }

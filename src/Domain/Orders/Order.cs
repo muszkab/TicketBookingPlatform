@@ -1,4 +1,5 @@
 using Domain.Common;
+using Domain.Common.Exceptions;
 using Domain.Events;
 using Domain.Tickets;
 using System;
@@ -47,13 +48,13 @@ public class Order : Entity
         ArgumentNullException.ThrowIfNull(category);
 
         if (category.EventId != EventId)
-            throw new InvalidOperationException("Ticket category does not belong to this event.");
+            throw new BusinessRuleException("Ticket category does not belong to this event.");
 
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
 
         if (_items.Any(i => i.TicketCategoryId == category.Id))
-            throw new InvalidOperationException("This ticket category is already in the order.");
+            throw new BusinessRuleException("This ticket category is already in the order.");
 
         var item = new OrderItem(Id, category.Id, quantity, category.Price);
         _items.Add(item);
@@ -66,14 +67,14 @@ public class Order : Entity
         EnsurePending();
 
         if (_items.Count == 0)
-            throw new InvalidOperationException("Cannot pay for an order without items.");
+            throw new BusinessRuleException("Cannot pay for an order without items.");
 
         ArgumentNullException.ThrowIfNull(categoriesById);
 
         foreach (OrderItem item in _items)
         {
             if (!categoriesById.TryGetValue(item.TicketCategoryId, out TicketCategory? category))
-                throw new InvalidOperationException($"Ticket category {item.TicketCategoryId} not provided.");
+                throw new BusinessRuleException($"Ticket category {item.TicketCategoryId} not provided.");
 
             category.Reserve(item.Quantity);
         }
@@ -98,7 +99,7 @@ public class Order : Entity
             return;
 
         if (Status == OrderStatus.Paid)
-            throw new InvalidOperationException("Paid orders cannot be cancelled through this method.");
+            throw new BusinessRuleException("Paid orders cannot be cancelled through this method.");
 
         Status = OrderStatus.Cancelled;
         CancelledAt = DateTimeOffset.UtcNow;
@@ -107,6 +108,6 @@ public class Order : Entity
     private void EnsurePending()
     {
         if (Status != OrderStatus.Pending)
-            throw new InvalidOperationException($"Operation not allowed on order in status {Status}.");
+            throw new BusinessRuleException($"Operation not allowed on order in status {Status}.");
     }
 }

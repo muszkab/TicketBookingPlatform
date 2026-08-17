@@ -1,5 +1,6 @@
-using System;
 using Domain.Common;
+using Domain.Common.Exceptions;
+using System;
 
 namespace Domain.Events;
 
@@ -44,7 +45,7 @@ public class TicketCategory : Entity
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
 
         if (quantity > AvailableQuantity)
-            throw new InvalidOperationException($"Not enough tickets available in category '{Name}'. Requested {quantity}, available {AvailableQuantity}.");
+            throw new BusinessRuleException($"Not enough tickets available in category '{Name}'. Requested {quantity}, available {AvailableQuantity}.");
 
         AvailableQuantity -= quantity;
     }
@@ -55,7 +56,7 @@ public class TicketCategory : Entity
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
 
         if (AvailableQuantity + quantity > TotalQuantity)
-            throw new InvalidOperationException("Cannot release more tickets than were reserved.");
+            throw new BusinessRuleException("Cannot release more tickets than were reserved.");
 
         AvailableQuantity += quantity;
     }

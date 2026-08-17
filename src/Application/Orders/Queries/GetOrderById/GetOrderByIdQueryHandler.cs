@@ -1,11 +1,8 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
-using Domain.Events;
 using Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,17 +27,12 @@ public sealed class GetOrderByIdQueryHandler
         Order? order = await _context.Orders
             .AsNoTracking()
             .Include(o => o.Items)
+            .ThenInclude(i => i.TicketCategory)
             .FirstOrDefaultAsync(o => o.Id == query.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)
             return null;
 
-        List<Guid> categoryIds = order.Items.Select(i => i.TicketCategoryId).ToList();
-        Dictionary<Guid, TicketCategory> categoriesById = await _context.TicketCategories
-            .AsNoTracking()
-            .Where(c => categoryIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, cancellationToken);
-
-        return OrderMapper.ToDto(order, categoriesById);
+        return OrderMapper.ToDto(order);
     }
 }

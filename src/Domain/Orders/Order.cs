@@ -56,27 +56,25 @@ public class Order : Entity
         if (_items.Any(i => i.TicketCategoryId == category.Id))
             throw new BusinessRuleException("This ticket category is already in the order.");
 
-        var item = new OrderItem(Id, category.Id, quantity, category.Price);
+        var item = new OrderItem(Id, category, quantity, category.Price);
         _items.Add(item);
         TotalAmount = TotalAmount.Add(item.LineTotal);
         return item;
     }
 
-    public IReadOnlyList<Ticket> Pay(IReadOnlyDictionary<Guid, TicketCategory> categoriesById)
+    public IReadOnlyList<Ticket> Pay()
     {
         EnsurePending();
 
         if (_items.Count == 0)
             throw new BusinessRuleException("Cannot pay for an order without items.");
 
-        ArgumentNullException.ThrowIfNull(categoriesById);
-
         foreach (OrderItem item in _items)
         {
-            if (!categoriesById.TryGetValue(item.TicketCategoryId, out TicketCategory? category))
-                throw new BusinessRuleException($"Ticket category {item.TicketCategoryId} not provided.");
+            if (item.TicketCategory is null)
+                throw new BusinessRuleException($"Ticket category {item.TicketCategoryId} not loaded.");
 
-            category.Reserve(item.Quantity);
+            item.TicketCategory.Reserve(item.Quantity);
         }
 
         var tickets = new List<Ticket>();

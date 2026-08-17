@@ -53,6 +53,6 @@ public sealed class CreateOrderCommandHandler
         _context.Orders.Add(order);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return OrderMapper.ToDto(order, categoriesById);
+        return OrderMapper.ToDto(order);
     }
 }

@@ -313,7 +313,7 @@ namespace Infrastructure.Persistence.Migrations
 
                             b1.HasKey("TicketCategoryId");
 
-                            b1.ToTable("TicketCategories");
+                            b1.ToTable("TicketCategories", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("TicketCategoryId");
@@ -342,7 +342,7 @@ namespace Infrastructure.Persistence.Migrations
 
                             b1.HasKey("OrderId");
 
-                            b1.ToTable("Orders");
+                            b1.ToTable("Orders", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderId");
@@ -383,7 +383,7 @@ namespace Infrastructure.Persistence.Migrations
 
                             b1.HasKey("OrderItemId");
 
-                            b1.ToTable("OrderItems");
+                            b1.ToTable("OrderItems", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("OrderItemId");

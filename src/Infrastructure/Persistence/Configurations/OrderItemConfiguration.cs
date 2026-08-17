@@ -1,4 +1,3 @@
-using Domain.Events;
 using Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -35,7 +34,7 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
         builder.HasIndex(i => i.OrderId);
         builder.HasIndex(i => i.TicketCategoryId);
 
-        builder.HasOne<TicketCategory>()
+        builder.HasOne(i => i.TicketCategory)
             .WithMany()
             .HasForeignKey(i => i.TicketCategoryId)
             .OnDelete(DeleteBehavior.Restrict);

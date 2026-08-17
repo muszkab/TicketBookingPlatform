@@ -1,12 +1,10 @@
 using Application.Common.Exceptions;
 using Application.Common.Interfaces;
-using Domain.Events;
 using Domain.Orders;
 using Domain.Tickets;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,21 +28,17 @@ public sealed class PayOrderCommandHandler
 
         Order? order = await _context.Orders
             .Include(o => o.Items)
+            .ThenInclude(i => i.TicketCategory)
             .FirstOrDefaultAsync(o => o.Id == command.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)
             throw new NotFoundException(nameof(Order), command.OrderId);
 
-        List<Guid> categoryIds = order.Items.Select(i => i.TicketCategoryId).ToList();
-        Dictionary<Guid, TicketCategory> categoriesById = await _context.TicketCategories
-            .Where(c => categoryIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, cancellationToken);
-
-        IReadOnlyList<Ticket> tickets = order.Pay(categoriesById);
+        IReadOnlyList<Ticket> tickets = order.Pay();
 
         _context.Tickets.AddRange(tickets);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return OrderMapper.ToDto(order, categoriesById);
+        return OrderMapper.ToDto(order);
     }
 }

@@ -1,6 +1,4 @@
-using Domain.Events;
 using Domain.Orders;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,13 +6,13 @@ namespace Application.Orders;
 
 internal static class OrderMapper
 {
-    public static OrderDto ToDto(Order order, IReadOnlyDictionary<Guid, TicketCategory> categoriesById)
+    public static OrderDto ToDto(Order order)
     {
         List<OrderItemDto> items = order.Items
             .Select(i => new OrderItemDto(
                 i.Id,
                 i.TicketCategoryId,
-                categoriesById.TryGetValue(i.TicketCategoryId, out TicketCategory? cat) ? cat.Name : string.Empty,
+                i.TicketCategory?.Name ?? string.Empty,
                 i.Quantity,
                 i.UnitPrice.Amount,
                 i.UnitPrice.Currency,

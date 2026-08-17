@@ -38,12 +38,6 @@ public sealed class LoginCommandHandler
 
         (string accessToken, DateTimeOffset expiresAt) = _jwtTokenGenerator.GenerateToken(user);
 
-        return new AuthResultDto(
-            user.Id,
-            user.Email,
-            user.FullName,
-            user.Role,
-            accessToken,
-            expiresAt);
+        return new AuthResultDto(accessToken, expiresAt);
     }
 }

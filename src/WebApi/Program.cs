@@ -12,6 +12,8 @@ using Scalar.AspNetCore;
 using System;
 using WebApi.Infrastructure;
 
+string[] apiVersions = ["v1", "v2"];
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -37,11 +39,14 @@ builder.Services
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 // One OpenAPI document per API version.
-builder.Services.AddOpenApi("v1", options =>
+foreach (string version in apiVersions)
 {
-    options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-});
+    builder.Services.AddOpenApi(version, options =>
+    {
+        options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
+        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    });
+}
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -77,6 +82,11 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
     {
+        foreach (string version in apiVersions)
+        {
+            options.AddDocument(version, $"Version {version[1..]}.0");
+        }
+
         options.WithTitle("Ticket Booking Platform API")
                .AddPreferredSecuritySchemes("Bearer");
     });

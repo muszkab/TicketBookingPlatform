@@ -53,7 +53,6 @@ public class Ticket : Entity
         UsedAt = DateTimeOffset.UtcNow;
     }
 
-    // TODO when call?
     public void Cancel()
     {
         if (Status == TicketStatus.Used)

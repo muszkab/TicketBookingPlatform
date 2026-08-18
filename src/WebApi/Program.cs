@@ -1,5 +1,6 @@
 using Application;
 using Application.Common.Interfaces;
+using Asp.Versioning;
 using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
@@ -18,11 +19,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+// API versioning
+builder.Services
+    .AddApiVersioning(options =>
+    {
+        options.DefaultApiVersion = new ApiVersion(1, 0);
+        options.AssumeDefaultVersionWhenUnspecified = true;
+        options.ReportApiVersions = true;
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    })
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi(options =>
+// One OpenAPI document per API version.
+builder.Services.AddOpenApi("v1", options =>
 {
+    options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

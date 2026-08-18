@@ -14,8 +14,8 @@ public sealed class ApiInfoDocumentTransformer : IOpenApiDocumentTransformer
         CancellationToken cancellationToken)
     {
         document.Info ??= new OpenApiInfo();
-        document.Info.Title = "Ticket Booking Platform API";
         document.Info.Version = context.DocumentName;
+        document.Info.Title = $"Ticket Booking Platform API - {document.Info.Version}";
         document.Info.Description = "Public REST API for the Ticket Booking Platform.";
         document.Info.Contact = new OpenApiContact
         {

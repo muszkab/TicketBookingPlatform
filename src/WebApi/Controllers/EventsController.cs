@@ -8,6 +8,7 @@ using Application.Events.Commands.RemoveTicketCategory;
 using Application.Events.Commands.UpdateEvent;
 using Application.Events.Queries.GetEventById;
 using Application.Events.Queries.GetEvents;
+using Asp.Versioning;
 using Domain.Events;
 using Domain.Users;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ using WebApi.Contracts.Events;
 
 namespace WebApi.Controllers;
 
+[ApiVersion("2.0")] // just for demonstration purposes, we can have multiple API versions
 [Authorize(Roles = $"{nameof(UserRole.Organizer)},{nameof(UserRole.Admin)}")]
 public class EventsController(
     GetEventsQueryHandler getEventsQueryHandler,

@@ -77,4 +77,13 @@ public class TicketTests
         ticket.Cancel();
         ticket.Status.Should().Be(TicketStatus.Cancelled);
     }
+
+    [Fact]
+    public void Cancel_Should_BeIdempotent_When_AlreadyCancelled()
+    {
+        var ticket = new Ticket(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        ticket.Cancel();
+        ticket.Cancel();
+        ticket.Status.Should().Be(TicketStatus.Cancelled);
+    }
 }

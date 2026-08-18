@@ -24,12 +24,4 @@
     <ProjectReference Include="..\..\src\Domain\Domain.csproj" />
   </ItemGroup>
 
-  <Target Name="RunUnitTestsAfterBuild"
-          AfterTargets="Build"
-          Condition="'$(RunTestsOnBuild)' != 'false' AND '$(IsRunningTests)' != 'true'">
-    <Message Importance="high" Text="Running unit tests for $(MSBuildProjectName)..." />
-    <Exec Command="dotnet test &quot;$(MSBuildProjectFullPath)&quot; --no-build --nologo --verbosity quiet -c $(Configuration)"
-          EnvironmentVariables="IsRunningTests=true" />
-  </Target>
-
 </Project>

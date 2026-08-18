@@ -150,6 +150,23 @@ public class OrderTests
     }
 
     [Fact]
+    public void Pay_Should_KeepTotalAmount_And_LinkTicketsToOrderItems()
+    {
+        var order = new Order(Guid.NewGuid(), Guid.NewGuid(), "EUR");
+        var catA = OrderBuilder.NewCategory(order.EventId, "A", price: 10m, quantity: 10);
+        var catB = OrderBuilder.NewCategory(order.EventId, "B", price: 15m, quantity: 10);
+        var itemA = order.AddItem(catA, 2);
+        var itemB = order.AddItem(catB, 3);
+        var expectedTotal = order.TotalAmount;
+
+        var tickets = order.Pay(EventStatus.OnSale);
+
+        order.TotalAmount.Should().Be(expectedTotal);
+        tickets.Where(t => t.TicketCategoryId == catA.Id).Should().OnlyContain(t => t.OrderItemId == itemA.Id);
+        tickets.Where(t => t.TicketCategoryId == catB.Id).Should().OnlyContain(t => t.OrderItemId == itemB.Id);
+    }
+
+    [Fact]
     public void Cancel_Should_Throw_When_NotPending()
     {
         var order = new Order(Guid.NewGuid(), Guid.NewGuid(), "EUR");

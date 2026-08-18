@@ -62,9 +62,12 @@ public class Order : Entity
         return item;
     }
 
-    public IReadOnlyList<Ticket> Pay()
+    public IReadOnlyList<Ticket> Pay(EventStatus currentEventStatus)
     {
         EnsurePending();
+
+        if (currentEventStatus != EventStatus.OnSale)
+            throw new BusinessRuleException($"Order cannot be paid because the event is not on sale (current status: {currentEventStatus}).");
 
         if (_items.Count == 0)
             throw new BusinessRuleException("Cannot pay for an order without items.");
@@ -93,11 +96,8 @@ public class Order : Entity
 
     public void Cancel()
     {
-        if (Status == OrderStatus.Cancelled)
-            return;
-
-        if (Status == OrderStatus.Paid)
-            throw new BusinessRuleException("Paid orders cannot be cancelled through this method.");
+        if (Status != OrderStatus.Pending)
+            throw new BusinessRuleException($"Order cannot be cancelled in its current state ({Status}).");
 
         Status = OrderStatus.Cancelled;
         CancelledAt = DateTimeOffset.UtcNow;

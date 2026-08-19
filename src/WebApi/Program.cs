@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Scalar.AspNetCore;
 using System;
+using System.Text.Json.Serialization;
 using WebApi.Infrastructure;
 
 string[] apiVersions = ["v1", "v2"];
@@ -18,7 +19,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
@@ -45,6 +50,7 @@ foreach (string version in apiVersions)
     {
         options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
         options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+        options.AddSchemaTransformer<StringEnumSchemaTransformer>();
     });
 }
 

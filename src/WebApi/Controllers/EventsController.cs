@@ -61,7 +61,6 @@ public class EventsController(
         [FromQuery] int pageSize = GetEventsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        // TODO: v2-specific logic goes here (e.g. new filters, different DTO shape).
         PagedResult<EventDto> result = await getEventsQueryHandler.HandleAsync(new GetEventsQuery(eventCategory, status, page, pageSize), cancellationToken);
         return Ok(result);
     }

@@ -31,13 +31,11 @@ export interface EventsServiceInterface {
     /**
      * 
      * 
-     * @endpoint get /api/v1/Events
-     * @param category 
-     * @param status 
-     * @param page 
-     * @param pageSize 
+     * @endpoint post /api/v1/Events/{id}/ticket-categories
+     * @param id 
+     * @param addTicketCategoryRequest 
      */
-    apiV1EventsGet(category?: string, status?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
+    addTicketCategory(id: string, addTicketCategoryRequest: AddTicketCategoryRequest, extraHttpRequestParams?: any): Observable<TicketCategoryDto>;
 
     /**
      * 
@@ -45,7 +43,15 @@ export interface EventsServiceInterface {
      * @endpoint post /api/v1/Events/{id}/cancel
      * @param id 
      */
-    apiV1EventsIdCancelPost(id: string, extraHttpRequestParams?: any): Observable<{}>;
+    cancelEvent(id: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
+     * 
+     * 
+     * @endpoint post /api/v1/Events
+     * @param createEventRequest 
+     */
+    createEvent(createEventRequest: CreateEventRequest, extraHttpRequestParams?: any): Observable<EventDto>;
 
     /**
      * 
@@ -53,7 +59,18 @@ export interface EventsServiceInterface {
      * @endpoint get /api/v1/Events/{id}
      * @param id 
      */
-    apiV1EventsIdGet(id: string, extraHttpRequestParams?: any): Observable<EventDto>;
+    getEventById(id: string, extraHttpRequestParams?: any): Observable<EventDto>;
+
+    /**
+     * 
+     * 
+     * @endpoint get /api/v1/Events
+     * @param category 
+     * @param status 
+     * @param page 
+     * @param pageSize 
+     */
+    getEvents(category?: string, status?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
 
     /**
      * 
@@ -61,25 +78,7 @@ export interface EventsServiceInterface {
      * @endpoint post /api/v1/Events/{id}/publish
      * @param id 
      */
-    apiV1EventsIdPublishPost(id: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * 
-     * 
-     * @endpoint put /api/v1/Events/{id}
-     * @param id 
-     * @param updateEventRequest 
-     */
-    apiV1EventsIdPut(id: string, updateEventRequest: UpdateEventRequest, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * 
-     * 
-     * @endpoint post /api/v1/Events/{id}/ticket-categories
-     * @param id 
-     * @param addTicketCategoryRequest 
-     */
-    apiV1EventsIdTicketCategoriesPost(id: string, addTicketCategoryRequest: AddTicketCategoryRequest, extraHttpRequestParams?: any): Observable<TicketCategoryDto>;
+    publishEvent(id: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * 
@@ -88,14 +87,15 @@ export interface EventsServiceInterface {
      * @param id 
      * @param ticketCategoryId 
      */
-    apiV1EventsIdTicketCategoriesTicketCategoryIdDelete(id: string, ticketCategoryId: string, extraHttpRequestParams?: any): Observable<{}>;
+    removeTicketCategory(id: string, ticketCategoryId: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * 
      * 
-     * @endpoint post /api/v1/Events
-     * @param createEventRequest 
+     * @endpoint put /api/v1/Events/{id}
+     * @param id 
+     * @param updateEventRequest 
      */
-    apiV1EventsPost(createEventRequest: CreateEventRequest, extraHttpRequestParams?: any): Observable<EventDto>;
+    updateEvent(id: string, updateEventRequest: UpdateEventRequest, extraHttpRequestParams?: any): Observable<{}>;
 
 }

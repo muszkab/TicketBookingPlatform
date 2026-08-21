@@ -165,6 +165,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "GetEvents",
         "parameters": [
           {
             "name": "category",
@@ -226,6 +227,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "CreateEvent",
         "requestBody": {
           "content": {
             "application/json": {
@@ -355,6 +357,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "GetEventById",
         "parameters": [
           {
             "name": "id",
@@ -413,6 +416,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "UpdateEvent",
         "parameters": [
           {
             "name": "id",
@@ -556,6 +560,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "AddTicketCategory",
         "parameters": [
           {
             "name": "id",
@@ -716,6 +721,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "RemoveTicketCategory",
         "parameters": [
           {
             "name": "id",
@@ -828,6 +834,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "PublishEvent",
         "parameters": [
           {
             "name": "id",
@@ -931,6 +938,7 @@
         "tags": [
           "Events"
         ],
+        "operationId": "CancelEvent",
         "parameters": [
           {
             "name": "id",

@@ -18,7 +18,7 @@ export class App implements OnInit {
   protected readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.eventsService.apiV1EventsGet().subscribe({
+    this.eventsService.getEvents().subscribe({
       next: (result: PagedResultOfEventDto) => {
         this.events.set(result.items ?? []);
         this.loading.set(false);

@@ -2,6 +2,7 @@ using Application.Common.Paging;
 using Application.Tickets;
 using Application.Tickets.Queries.GetMyTickets;
 using Application.Tickets.Queries.GetTicketById;
+using Asp.Versioning;
 using Domain.Tickets;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -10,8 +11,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace WebApi.Controllers;
+namespace WebApi.Controllers.V1;
 
+[ApiVersion("1.0")]
 [Authorize]
 public class TicketsController(
     GetMyTicketsQueryHandler getMyTicketsQueryHandler,

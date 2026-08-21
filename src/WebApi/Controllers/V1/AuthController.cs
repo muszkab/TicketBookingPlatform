@@ -1,6 +1,7 @@
 using Application.Auth;
 using Application.Auth.Commands.Login;
 using Application.Auth.Commands.RegisterUser;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Contracts.Auth;
 
-namespace WebApi.Controllers;
+namespace WebApi.Controllers.V1;
 
+[ApiVersion("1.0")]
 [AllowAnonymous]
 public class AuthController(
     RegisterUserCommandHandler registerUserCommandHandler,

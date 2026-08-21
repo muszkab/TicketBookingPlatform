@@ -6,6 +6,7 @@ using Application.Locations.Commands.UpdateLocation;
 using Application.Locations.Queries.GetEventsByLocation;
 using Application.Locations.Queries.GetLocationById;
 using Application.Locations.Queries.GetLocations;
+using Asp.Versioning;
 using Domain.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,8 +17,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Contracts.Locations;
 
-namespace WebApi.Controllers;
+namespace WebApi.Controllers.V1;
 
+[ApiVersion("1.0")]
 [Authorize(Roles = nameof(UserRole.Admin))]
 public class LocationsController(
     GetLocationsQueryHandler getLocationsQueryHandler,

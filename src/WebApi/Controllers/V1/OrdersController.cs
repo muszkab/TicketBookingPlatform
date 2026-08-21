@@ -5,6 +5,7 @@ using Application.Orders.Commands.CreateOrder;
 using Application.Orders.Commands.PayOrder;
 using Application.Orders.Queries.GetMyOrders;
 using Application.Orders.Queries.GetOrderById;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +15,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebApi.Contracts.Orders;
 
-namespace WebApi.Controllers;
+namespace WebApi.Controllers.V1;
 
+[ApiVersion("1.0")]
 [Authorize]
 public class OrdersController(
     CreateOrderCommandHandler createOrderCommandHandler,

@@ -35,11 +35,11 @@ public class EventsController(
     CancelEventCommandHandler cancelEventCommandHandler)
     : ApiControllerBase
 {
-    [HttpGet]
+    [HttpGet(Name = nameof(GetEvents))]
     [MapToApiVersion("1.0")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<EventDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<EventDto>>> GetAll(
+    public async Task<ActionResult<PagedResult<EventDto>>> GetEvents(
         [FromQuery] EventCategory? category,
         [FromQuery] EventStatus? status,
         [FromQuery] int page = 1,
@@ -50,11 +50,11 @@ public class EventsController(
         return Ok(result);
     }
 
-    [HttpGet]
+    [HttpGet(Name = nameof(GetEventsV2))]
     [MapToApiVersion("2.0")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<EventDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<EventDto>>> GetAllV2(
+    public async Task<ActionResult<PagedResult<EventDto>>> GetEventsV2(
         [FromQuery] EventCategory? eventCategory,
         [FromQuery] EventStatus? status,
         [FromQuery] int page = 1,
@@ -65,23 +65,23 @@ public class EventsController(
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetEventById))]
     [AllowAnonymous]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EventDto>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<EventDto>> GetEventById(Guid id, CancellationToken cancellationToken)
     {
         EventDto? eventData = await getEventByIdQueryHandler.HandleAsync(new GetEventByIdQuery(id), cancellationToken);
         return eventData is null ? NotFound() : Ok(eventData);
     }
 
-    [HttpPost]
+    [HttpPost(Name = nameof(CreateEvent))]
     [ProducesResponseType(typeof(EventDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<EventDto>> Create([FromBody] CreateEventRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<EventDto>> CreateEvent([FromBody] CreateEventRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateEventCommand(
             request.Title,
@@ -93,17 +93,17 @@ public class EventsController(
 
         EventDto created = await createEventCommandHandler.HandleAsync(command, cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetEventById), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:guid}", Name = nameof(UpdateEvent))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEventRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateEventCommand(
             id,
@@ -117,7 +117,7 @@ public class EventsController(
         return NoContent();
     }
 
-    [HttpPost("{id:guid}/ticket-categories")]
+    [HttpPost("{id:guid}/ticket-categories", Name = nameof(AddTicketCategory))]
     [ProducesResponseType(typeof(TicketCategoryDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -135,10 +135,10 @@ public class EventsController(
 
         TicketCategoryDto created = await addTicketCategoryCommandHandler.HandleAsync(command, cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id }, created);
+        return CreatedAtAction(nameof(GetEventById), new { id }, created);
     }
 
-    [HttpDelete("{id:guid}/ticket-categories/{ticketCategoryId:guid}")]
+    [HttpDelete("{id:guid}/ticket-categories/{ticketCategoryId:guid}", Name = nameof(RemoveTicketCategory))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -150,25 +150,25 @@ public class EventsController(
         return NoContent();
     }
 
-    [HttpPost("{id:guid}/publish")]
+    [HttpPost("{id:guid}/publish", Name = nameof(PublishEvent))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> PublishEvent(Guid id, CancellationToken cancellationToken)
     {
         await publishEventCommandHandler.HandleAsync(new PublishEventCommand(id), cancellationToken);
         return NoContent();
     }
 
-    [HttpPost("{id:guid}/cancel")]
+    [HttpPost("{id:guid}/cancel", Name = nameof(CancelEvent))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> CancelEvent(Guid id, CancellationToken cancellationToken)
     {
         await cancelEventCommandHandler.HandleAsync(new CancelEventCommand(id), cancellationToken);
         return NoContent();

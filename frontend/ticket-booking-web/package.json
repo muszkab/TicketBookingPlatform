@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "openapi:fetch": "curl -k -o openapi/v1.json https://localhost:5001/openapi/v1.json",
+    "generate:api": "openapi-generator-cli generate -i openapi/v1.json -g typescript-angular -o src/app/api --additional-properties=fileNaming=kebab-case,ngVersion=22.0.0,providedInRoot=true,withInterfaces=true,npmName=@ticket-booking/api-client"
   },
   "private": true,
   "packageManager": "npm@11.17.0",
@@ -27,6 +29,7 @@
     "@angular/build": "^22.1.4",
     "@angular/cli": "^22.1.4",
     "@angular/compiler-cli": "^22.1.0",
+    "@openapitools/openapi-generator-cli": "^2.40.1",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",

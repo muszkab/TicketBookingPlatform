@@ -1,8 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-import { EventsService } from './core/api/events.service';
-import { EventDto, PagedResult } from './core/api/api-types';
+import { EventDto, EventsService, PagedResultOfEventDto } from './api';
 
 @Component({
   selector: 'app-root',
@@ -19,9 +18,9 @@ export class App implements OnInit {
   protected readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.eventsService.getAll().subscribe({
-      next: (result: PagedResult<EventDto>) => {
-        this.events.set(result.items);
+    this.eventsService.apiV1EventsGet().subscribe({
+      next: (result: PagedResultOfEventDto) => {
+        this.events.set(result.items ?? []);
         this.loading.set(false);
       },
       error: (err: unknown) => {

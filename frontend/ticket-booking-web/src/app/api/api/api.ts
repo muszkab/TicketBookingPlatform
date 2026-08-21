@@ -1,0 +1,16 @@
+export * from './auth.service';
+import { AuthService } from './auth.service';
+export * from './auth.serviceInterface';
+export * from './events.service';
+import { EventsService } from './events.service';
+export * from './events.serviceInterface';
+export * from './locations.service';
+import { LocationsService } from './locations.service';
+export * from './locations.serviceInterface';
+export * from './orders.service';
+import { OrdersService } from './orders.service';
+export * from './orders.serviceInterface';
+export * from './tickets.service';
+import { TicketsService } from './tickets.service';
+export * from './tickets.serviceInterface';
+export const APIS = [AuthService, EventsService, LocationsService, OrdersService, TicketsService];

@@ -16,7 +16,7 @@ public class AuthController(
     LoginCommandHandler loginCommandHandler)
     : ApiControllerBase
 {
-    [HttpPost("register")]
+    [HttpPost("register", Name = nameof(Register))]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -26,7 +26,7 @@ public class AuthController(
         return StatusCode(StatusCodes.Status201Created); // TODO CreatedAtAction or AuthResultDto ?
     }
 
-    [HttpPost("login")]
+    [HttpPost("login", Name = nameof(Login))]
     [ProducesResponseType(typeof(AuthResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<AuthResultDto>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)

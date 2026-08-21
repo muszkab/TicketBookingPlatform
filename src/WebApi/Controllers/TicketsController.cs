@@ -18,21 +18,21 @@ public class TicketsController(
     GetTicketByIdQueryHandler getTicketByIdQueryHandler)
     : ApiControllerBase
 {
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetTicketById))]
     [ProducesResponseType(typeof(TicketDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TicketDto>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<TicketDto>> GetTicketById(Guid id, CancellationToken cancellationToken)
     {
         TicketDto? ticket = await getTicketByIdQueryHandler.HandleAsync(new GetTicketByIdQuery(id), cancellationToken);
         return ticket is null ? NotFound() : Ok(ticket);
     }
 
-    [HttpGet("mine")]
+    [HttpGet("mine", Name = nameof(GetMyTickets))]
     [ProducesResponseType(typeof(PagedResult<TicketDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<PagedResult<TicketDto>>> GetMine(
+    public async Task<ActionResult<PagedResult<TicketDto>>> GetMyTickets(
         [FromQuery] TicketStatus? status,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = GetMyTicketsQuery.DefaultPageSize,

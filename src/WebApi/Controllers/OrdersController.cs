@@ -25,13 +25,13 @@ public class OrdersController(
     GetMyOrdersQueryHandler getMyOrdersQueryHandler)
     : ApiControllerBase
 {
-    [HttpPost]
+    [HttpPost(Name = nameof(CreateOrder))]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<OrderDto>> Create([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> CreateOrder([FromBody] CreateOrderRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateOrderCommand(
             request.EventId,
@@ -42,46 +42,46 @@ public class OrdersController(
 
         OrderDto created = await createOrderCommandHandler.HandleAsync(command, cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetOrderById), new { id = created.Id }, created);
     }
 
-    [HttpPost("{id:guid}/pay")]
+    [HttpPost("{id:guid}/pay", Name = nameof(PayOrder))]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<OrderDto>> Pay(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> PayOrder(Guid id, CancellationToken cancellationToken)
     {
         OrderDto result = await payOrderCommandHandler.HandleAsync(new PayOrderCommand(id), cancellationToken);
         return Ok(result);
     }
 
-    [HttpPost("{id:guid}/cancel")]
+    [HttpPost("{id:guid}/cancel", Name = nameof(CancelOrder))]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<OrderDto>> Cancel(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> CancelOrder(Guid id, CancellationToken cancellationToken)
     {
         OrderDto result = await cancelOrderCommandHandler.HandleAsync(new CancelOrderCommand(id), cancellationToken);
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetOrderById))]
     [ProducesResponseType(typeof(OrderDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<OrderDto>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> GetOrderById(Guid id, CancellationToken cancellationToken)
     {
         OrderDto? order = await getOrderByIdQueryHandler.HandleAsync(new GetOrderByIdQuery(id), cancellationToken);
         return order is null ? NotFound() : Ok(order);
     }
 
-    [HttpGet("mine")]
+    [HttpGet("mine", Name = nameof(GetMyOrders))]
     [ProducesResponseType(typeof(PagedResult<OrderSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<PagedResult<OrderSummaryDto>>> GetMine(
+    public async Task<ActionResult<PagedResult<OrderSummaryDto>>> GetMyOrders(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = GetMyOrdersQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)

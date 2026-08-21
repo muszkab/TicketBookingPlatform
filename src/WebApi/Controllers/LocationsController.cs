@@ -28,10 +28,10 @@ public class LocationsController(
     DeleteLocationCommandHandler deleteLocationCommandHandler)
     : ApiControllerBase
 {
-    [HttpGet]
+    [HttpGet(Name = nameof(GetLocations))]
     [AllowAnonymous]
     [ProducesResponseType(typeof(PagedResult<LocationDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<LocationDto>>> GetAll(
+    public async Task<ActionResult<PagedResult<LocationDto>>> GetLocations(
         [FromQuery] string? name,
         [FromQuery] string? city,
         [FromQuery] int page = 1,
@@ -42,33 +42,33 @@ public class LocationsController(
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetLocationById))]
     [AllowAnonymous]
     [ProducesResponseType(typeof(LocationDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<LocationDto>> GetById(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<LocationDto>> GetLocationById(Guid id, CancellationToken cancellationToken)
     {
         LocationDto? location = await getLocationByIdQueryHandler.HandleAsync(new GetLocationByIdQuery(id), cancellationToken);
         return location is null ? NotFound() : Ok(location);
     }
 
-    [HttpGet("{id:guid}/events")]
+    [HttpGet("{id:guid}/events", Name = nameof(GetEventsByLocation))]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<LocationEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<IReadOnlyList<LocationEventDto>>> GetEvents(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<LocationEventDto>>> GetEventsByLocation(Guid id, CancellationToken cancellationToken)
     {
         IReadOnlyList<LocationEventDto>? events = await getEventsByLocationQueryHandler.HandleAsync(new GetEventsByLocationQuery(id), cancellationToken);
         return events is null ? NotFound() : Ok(events);
     }
 
-    [HttpPost]
+    [HttpPost(Name = nameof(CreateLocation))]
     [ProducesResponseType(typeof(LocationDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<LocationDto>> Create([FromBody] CreateLocationRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<LocationDto>> CreateLocation([FromBody] CreateLocationRequest request, CancellationToken cancellationToken)
     {
         var command = new CreateLocationCommand(
             request.Name,
@@ -80,17 +80,17 @@ public class LocationsController(
 
         LocationDto created = await createLocationCommandHandler.HandleAsync(command, cancellationToken);
 
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        return CreatedAtAction(nameof(GetLocationById), new { id = created.Id }, created);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:guid}", Name = nameof(UpdateLocation))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] UpdateLocationRequest request, CancellationToken cancellationToken)
     {
         var command = new UpdateLocationCommand(
             id,
@@ -106,13 +106,13 @@ public class LocationsController(
         return NoContent();
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:guid}", Name = nameof(DeleteLocation))]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteLocation(Guid id, CancellationToken cancellationToken)
     {
         await deleteLocationCommandHandler.HandleAsync(new DeleteLocationCommand(id), cancellationToken);
 

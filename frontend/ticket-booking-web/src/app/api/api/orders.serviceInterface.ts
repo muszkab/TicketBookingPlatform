@@ -31,23 +31,15 @@ export interface OrdersServiceInterface {
      * @endpoint post /api/v1/Orders/{id}/cancel
      * @param id 
      */
-    apiV1OrdersIdCancelPost(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
+    cancelOrder(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
 
     /**
      * 
      * 
-     * @endpoint get /api/v1/Orders/{id}
-     * @param id 
+     * @endpoint post /api/v1/Orders
+     * @param createOrderRequest 
      */
-    apiV1OrdersIdGet(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
-
-    /**
-     * 
-     * 
-     * @endpoint post /api/v1/Orders/{id}/pay
-     * @param id 
-     */
-    apiV1OrdersIdPayPost(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
+    createOrder(createOrderRequest: CreateOrderRequest, extraHttpRequestParams?: any): Observable<OrderDto>;
 
     /**
      * 
@@ -56,14 +48,22 @@ export interface OrdersServiceInterface {
      * @param page 
      * @param pageSize 
      */
-    apiV1OrdersMineGet(page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfOrderSummaryDto>;
+    getMyOrders(page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfOrderSummaryDto>;
 
     /**
      * 
      * 
-     * @endpoint post /api/v1/Orders
-     * @param createOrderRequest 
+     * @endpoint get /api/v1/Orders/{id}
+     * @param id 
      */
-    apiV1OrdersPost(createOrderRequest: CreateOrderRequest, extraHttpRequestParams?: any): Observable<OrderDto>;
+    getOrderById(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
+
+    /**
+     * 
+     * 
+     * @endpoint post /api/v1/Orders/{id}/pay
+     * @param id 
+     */
+    payOrder(id: string, extraHttpRequestParams?: any): Observable<OrderDto>;
 
 }

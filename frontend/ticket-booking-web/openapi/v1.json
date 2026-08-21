@@ -24,6 +24,7 @@
         "tags": [
           "Auth"
         ],
+        "operationId": "Register",
         "requestBody": {
           "content": {
             "application/json": {
@@ -96,6 +97,7 @@
         "tags": [
           "Auth"
         ],
+        "operationId": "Login",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1042,6 +1044,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "GetLocations",
         "parameters": [
           {
             "name": "name",
@@ -1103,6 +1106,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "CreateLocation",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1232,6 +1236,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "GetLocationById",
         "parameters": [
           {
             "name": "id",
@@ -1290,6 +1295,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "UpdateLocation",
         "parameters": [
           {
             "name": "id",
@@ -1431,6 +1437,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "DeleteLocation",
         "parameters": [
           {
             "name": "id",
@@ -1534,6 +1541,7 @@
         "tags": [
           "Locations"
         ],
+        "operationId": "GetEventsByLocation",
         "parameters": [
           {
             "name": "id",
@@ -1603,6 +1611,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "CreateOrder",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1732,6 +1741,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "PayOrder",
         "parameters": [
           {
             "name": "id",
@@ -1832,6 +1842,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "CancelOrder",
         "parameters": [
           {
             "name": "id",
@@ -1932,6 +1943,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetOrderById",
         "parameters": [
           {
             "name": "id",
@@ -2012,6 +2024,7 @@
         "tags": [
           "Orders"
         ],
+        "operationId": "GetMyOrders",
         "parameters": [
           {
             "name": "page",
@@ -2101,6 +2114,7 @@
         "tags": [
           "Tickets"
         ],
+        "operationId": "GetTicketById",
         "parameters": [
           {
             "name": "id",
@@ -2181,6 +2195,7 @@
         "tags": [
           "Tickets"
         ],
+        "operationId": "GetMyTickets",
         "parameters": [
           {
             "name": "status",

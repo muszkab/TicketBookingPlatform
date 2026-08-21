@@ -30,13 +30,10 @@ export interface LocationsServiceInterface {
     /**
      * 
      * 
-     * @endpoint get /api/v1/Locations
-     * @param name 
-     * @param city 
-     * @param page 
-     * @param pageSize 
+     * @endpoint post /api/v1/Locations
+     * @param createLocationRequest 
      */
-    apiV1LocationsGet(name?: string, city?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfLocationDto>;
+    createLocation(createLocationRequest: CreateLocationRequest, extraHttpRequestParams?: any): Observable<LocationDto>;
 
     /**
      * 
@@ -44,7 +41,7 @@ export interface LocationsServiceInterface {
      * @endpoint delete /api/v1/Locations/{id}
      * @param id 
      */
-    apiV1LocationsIdDelete(id: string, extraHttpRequestParams?: any): Observable<{}>;
+    deleteLocation(id: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * 
@@ -52,7 +49,7 @@ export interface LocationsServiceInterface {
      * @endpoint get /api/v1/Locations/{id}/events
      * @param id 
      */
-    apiV1LocationsIdEventsGet(id: string, extraHttpRequestParams?: any): Observable<Array<LocationEventDto>>;
+    getEventsByLocation(id: string, extraHttpRequestParams?: any): Observable<Array<LocationEventDto>>;
 
     /**
      * 
@@ -60,7 +57,18 @@ export interface LocationsServiceInterface {
      * @endpoint get /api/v1/Locations/{id}
      * @param id 
      */
-    apiV1LocationsIdGet(id: string, extraHttpRequestParams?: any): Observable<LocationDto>;
+    getLocationById(id: string, extraHttpRequestParams?: any): Observable<LocationDto>;
+
+    /**
+     * 
+     * 
+     * @endpoint get /api/v1/Locations
+     * @param name 
+     * @param city 
+     * @param page 
+     * @param pageSize 
+     */
+    getLocations(name?: string, city?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfLocationDto>;
 
     /**
      * 
@@ -69,14 +77,6 @@ export interface LocationsServiceInterface {
      * @param id 
      * @param updateLocationRequest 
      */
-    apiV1LocationsIdPut(id: string, updateLocationRequest: UpdateLocationRequest, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * 
-     * 
-     * @endpoint post /api/v1/Locations
-     * @param createLocationRequest 
-     */
-    apiV1LocationsPost(createLocationRequest: CreateLocationRequest, extraHttpRequestParams?: any): Observable<LocationDto>;
+    updateLocation(id: string, updateLocationRequest: UpdateLocationRequest, extraHttpRequestParams?: any): Observable<{}>;
 
 }

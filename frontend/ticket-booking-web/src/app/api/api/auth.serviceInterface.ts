@@ -31,7 +31,7 @@ export interface AuthServiceInterface {
      * @endpoint post /api/v1/Auth/login
      * @param loginRequest 
      */
-    apiV1AuthLoginPost(loginRequest: LoginRequest, extraHttpRequestParams?: any): Observable<AuthResultDto>;
+    login(loginRequest: LoginRequest, extraHttpRequestParams?: any): Observable<AuthResultDto>;
 
     /**
      * 
@@ -39,6 +39,6 @@ export interface AuthServiceInterface {
      * @endpoint post /api/v1/Auth/register
      * @param registerUserRequest 
      */
-    apiV1AuthRegisterPost(registerUserRequest: RegisterUserRequest, extraHttpRequestParams?: any): Observable<{}>;
+    register(registerUserRequest: RegisterUserRequest, extraHttpRequestParams?: any): Observable<{}>;
 
 }

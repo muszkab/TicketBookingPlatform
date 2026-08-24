@@ -6,37 +6,72 @@
     </button>
   </header>
 
-  @if (loading()) {
-    <div class="events-list__state">
-      <mat-spinner diameter="40" />
-    </div>
-  } @else if (error(); as msg) {
-    <mat-card class="events-list__error">
-      <mat-card-content>{{ msg }}</mat-card-content>
-      <mat-card-actions>
-        <button mat-button color="primary" (click)="reload()">Retry</button>
-      </mat-card-actions>
-    </mat-card>
-  } @else if (events().length === 0) {
-    <p class="events-list__empty">No events found.</p>
-  } @else {
-    <div class="events-list__grid">
-      @for (evt of events(); track evt.id) {
-        <mat-card class="events-list__card">
-          <mat-card-header>
-            <mat-card-title>{{ evt.title }}</mat-card-title>
-            <mat-card-subtitle>{{ evt.category }} · {{ evt.status }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <p class="events-list__when">
-              {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'shortTime' }}
-            </p>
-            @if (evt.description) {
-              <p class="events-list__description">{{ evt.description }}</p>
-            }
-          </mat-card-content>
-        </mat-card>
-      }
-    </div>
-  }
+  <form class="events-list__filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Category</mat-label>
+      <mat-select [value]="category()" (selectionChange)="onCategoryChange($event.value)">
+        <mat-option [value]="null">All</mat-option>
+        @for (c of categories; track c) {
+          <mat-option [value]="c">{{ c }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [value]="status()" (selectionChange)="onStatusChange($event.value)">
+        <mat-option [value]="null">All</mat-option>
+        @for (s of statuses; track s) {
+          <mat-option [value]="s">{{ s }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <div class="events-list__content">
+    @if (error(); as msg) {
+      <mat-card class="events-list__error">
+        <mat-card-content>{{ msg }}</mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="reload()">Retry</button>
+        </mat-card-actions>
+      </mat-card>
+    } @else if (!loading() && events().length === 0) {
+      <p class="events-list__empty">No events found.</p>
+    } @else {
+      <div class="events-list__grid">
+        @for (evt of events(); track evt.id) {
+          <mat-card class="events-list__card">
+            <mat-card-header>
+              <mat-card-title>{{ evt.title }}</mat-card-title>
+              <mat-card-subtitle>{{ evt.category }} · {{ evt.status }}</mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <p class="events-list__when">
+                {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'shortTime' }}
+              </p>
+              @if (evt.description) {
+                <p class="events-list__description">{{ evt.description }}</p>
+              }
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="events-list__overlay">
+        <mat-spinner diameter="48" />
+      </div>
+    }
+  </div>
+
+  <mat-paginator
+    [length]="totalCount()"
+    [pageIndex]="page() - 1"
+    [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions"
+    (page)="onPageChange($event)"
+    showFirstLastButtons
+  />
 </section>

@@ -1,0 +1,52 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.event-detail {
+  &__back {
+    margin-top: 1.5rem;
+  }
+
+  &__state {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+  }
+
+  &__error {
+    max-width: 520px;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1.5rem;
+    margin: 0 0 1.5rem;
+
+    dt {
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__description {
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  &__tickets {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  &__muted {
+    color: rgba(0, 0, 0, 0.55);
+  }
+}

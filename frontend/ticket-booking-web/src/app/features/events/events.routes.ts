@@ -5,5 +5,10 @@ export const EVENTS_ROUTES: Routes = [
     path: '',
     loadComponent: () =>
       import('./events-list.component').then((m) => m.EventsListComponent)
+  },
+  {
+    path: ':id',
+    loadComponent: () =>
+      import('./event-detail.component').then((m) => m.EventDetailComponent)
   }
 ];

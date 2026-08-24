@@ -1,0 +1,82 @@
+<section class="event-detail">
+  @if (loading()) {
+    <div class="event-detail__state">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (notFound()) {
+    <mat-card class="event-detail__error">
+      <mat-card-title>Event not found</mat-card-title>
+      <mat-card-content>The requested event does not exist or is no longer available.</mat-card-content>
+    </mat-card>
+  } @else if (error(); as msg) {
+    <mat-card class="event-detail__error">
+      <mat-card-content>{{ msg }}</mat-card-content>
+    </mat-card>
+  } @else if (event(); as evt) {
+    <mat-card class="event-detail__card">
+      <mat-card-header>
+        <mat-card-title>{{ evt.title }}</mat-card-title>
+        <mat-card-subtitle>
+          <mat-chip-set>
+            <mat-chip>{{ evt.category }}</mat-chip>
+            <mat-chip [color]="'primary'" [highlighted]="true">{{ evt.status }}</mat-chip>
+          </mat-chip-set>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <dl class="event-detail__meta">
+          <dt>When</dt>
+          <dd>{{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'medium' }}</dd>
+
+          <dt>Location</dt>
+          <dd>
+            @if (location(); as loc) {
+              <strong>{{ loc.name }}</strong><br />
+              {{ loc.street }}, {{ loc.postalCode }} {{ loc.city }}, {{ loc.country }}
+              <br />
+              <small>Capacity: {{ loc.capacity }}</small>
+            } @else {
+              <small class="event-detail__muted">Location unavailable ({{ evt.locationId }})</small>
+            }
+          </dd>
+        </dl>
+
+        @if (evt.description) {
+          <h3>Description</h3>
+          <p class="event-detail__description">{{ evt.description }}</p>
+        }
+
+        <h3>Ticket categories</h3>
+        @if (evt.ticketCategories.length === 0) {
+          <p class="event-detail__muted">No ticket categories yet.</p>
+        } @else {
+          <table mat-table [dataSource]="evt.ticketCategories" [trackBy]="trackTicket" class="event-detail__tickets">
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Name</th>
+              <td mat-cell *matCellDef="let tc">{{ tc.name }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="price">
+              <th mat-header-cell *matHeaderCellDef>Price</th>
+              <td mat-cell *matCellDef="let tc">{{ tc.price | number: '1.2-2' }} {{ tc.currency }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="available">
+              <th mat-header-cell *matHeaderCellDef>Available / Total</th>
+              <td mat-cell *matCellDef="let tc">{{ tc.availableQuantity }} / {{ tc.totalQuantity }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="ticketColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: ticketColumns"></tr>
+          </table>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <a mat-button routerLink="/events" class="event-detail__back">
+    <mat-icon>arrow_back</mat-icon>
+    Back to events
+  </a>
+</section>

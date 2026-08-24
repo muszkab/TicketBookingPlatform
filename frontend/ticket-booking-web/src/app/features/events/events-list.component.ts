@@ -8,7 +8,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -39,7 +39,8 @@ const DEFAULT_PAGE_SIZE = 20;
     MatOptionModule,
     MatPaginatorModule,
     MatProgressSpinnerModule,
-    MatSelectModule
+    MatSelectModule,
+    RouterLink
   ],
   templateUrl: './events-list.component.html',
   styleUrl: './events-list.component.scss'

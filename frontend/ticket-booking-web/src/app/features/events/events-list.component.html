@@ -50,14 +50,14 @@
               <p class="events-list__when">
                 {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'shortTime' }}
               </p>
-                @if (evt.description) {
-                    <p class="events-list__description">{{ evt.description }}</p>
-                  }
-                </mat-card-content>
-                <mat-card-actions align="end">
-                  <a mat-button color="primary" [routerLink]="['/events', evt.id]">Details</a>
-                </mat-card-actions>
-              </mat-card>
+              @if (evt.description) {
+                <p class="events-list__description">{{ evt.description }}</p>
+              }
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <a mat-button color="primary" [routerLink]="['/events', evt.id]">Details</a>
+            </mat-card-actions>
+          </mat-card>
         }
       </div>
     }

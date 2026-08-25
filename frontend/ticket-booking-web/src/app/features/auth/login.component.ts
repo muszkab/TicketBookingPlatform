@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -34,7 +35,7 @@ export class LoginComponent {
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(1)]]
+    password: ['', [Validators.required]]
   });
 
   protected readonly loading = signal(false);
@@ -62,12 +63,24 @@ export class LoginComponent {
         error: (err: unknown) => {
           console.error('Login failed', err);
           this.loading.set(false);
-          this.error.set('Sikertelen bejelentkezés. Ellenőrizd az email-jelszó párost.');
+          this.error.set(this.mapError(err));
         }
       });
   }
 
   protected togglePasswordVisibility(): void {
     this.hidePassword.update((v) => !v);
+  }
+
+  private mapError(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 400 || err.status === 401) {
+        return 'Invalid email or password.';
+      }
+      if (err.status === 0) {
+        return 'Cannot reach the server. Is the backend running on https://localhost:5001?';
+      }
+    }
+    return 'Login failed. Please try again later.';
   }
 }

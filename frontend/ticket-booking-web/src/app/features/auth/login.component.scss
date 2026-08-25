@@ -1,22 +1,26 @@
-.login-page {
-  display: flex;
-  justify-content: center;
+:host {
+  display: block;
   padding: 3rem 1rem;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 420px;
-}
-
-.login-form {
+.login {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 1rem;
-}
+  justify-content: center;
 
-.login-error {
-  color: var(--mat-sys-error, #b00020);
-  margin: 0;
+  &__card {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+  }
+
+  &__error {
+    color: var(--mat-sys-error, #b00020);
+    margin: 0;
+  }
 }

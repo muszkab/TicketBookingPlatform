@@ -1,0 +1,65 @@
+<section class="login-page">
+  <mat-card appearance="outlined" class="login-card">
+    <mat-card-header>
+      <mat-card-title>Bejelentkezés</mat-card-title>
+      <mat-card-subtitle>Ticket Booking Platform</mat-card-subtitle>
+    </mat-card-header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-card-content class="login-form">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="username" required />
+          @if (form.controls.email.touched && form.controls.email.hasError('required')) {
+            <mat-error>Az email kötelező.</mat-error>
+          }
+          @if (form.controls.email.touched && form.controls.email.hasError('email')) {
+            <mat-error>Érvénytelen email cím.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Jelszó</mat-label>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+            autocomplete="current-password"
+            required
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="hidePassword() ? 'Jelszó mutatása' : 'Jelszó elrejtése'"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+          </button>
+          @if (form.controls.password.touched && form.controls.password.hasError('required')) {
+            <mat-error>A jelszó kötelező.</mat-error>
+          }
+        </mat-form-field>
+
+        @if (error(); as message) {
+          <p class="login-error">{{ message }}</p>
+        }
+      </mat-card-content>
+
+      <mat-card-actions align="end">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="loading() || form.invalid"
+        >
+          @if (loading()) {
+            <mat-progress-spinner diameter="20" mode="indeterminate" />
+          } @else {
+            Belépés
+          }
+        </button>
+      </mat-card-actions>
+    </form>
+  </mat-card>
+</section>

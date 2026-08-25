@@ -1,0 +1,25 @@
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__user {
+    margin-right: 0.75rem;
+    opacity: 0.85;
+    font-size: 0.9rem;
+  }
+}
+
+.app-content {
+  display: block;
+}

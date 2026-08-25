@@ -1,1 +1,27 @@
-<router-outlet />
+<mat-toolbar color="primary" class="app-toolbar">
+  <a mat-button routerLink="/events" class="app-toolbar__brand">
+    <mat-icon>confirmation_number</mat-icon>
+    <span>Ticket Booking</span>
+  </a>
+
+  <span class="app-toolbar__spacer"></span>
+
+  @if (isAuthenticated()) {
+    @if (userName(); as name) {
+      <span class="app-toolbar__user">{{ name }}</span>
+    }
+    <button mat-button type="button" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Kilépés</span>
+    </button>
+  } @else {
+    <a mat-button routerLink="/login">
+      <mat-icon>login</mat-icon>
+      <span>Bejelentkezés</span>
+    </a>
+  }
+</mat-toolbar>
+
+<main class="app-content">
+  <router-outlet />
+</main>

@@ -44,6 +44,11 @@
   &__tickets {
     width: 100%;
     margin-top: 0.5rem;
+
+    th.mat-mdc-header-cell {
+      background-color: rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
   }
 
   &__muted {

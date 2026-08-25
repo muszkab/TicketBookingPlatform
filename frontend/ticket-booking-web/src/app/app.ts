@@ -18,6 +18,7 @@ export class App {
 
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly userName = this.auth.userName;
+  protected readonly isAdmin = this.auth.isAdmin;
 
   protected logout(): void {
     this.auth.logout();

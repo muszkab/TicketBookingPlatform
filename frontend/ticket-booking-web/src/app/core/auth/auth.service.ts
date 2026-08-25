@@ -18,6 +18,12 @@ interface JwtPayload {
   [claim: string]: unknown;
 }
 
+const ROLE_CLAIM_KEYS = [
+  'role',
+  'roles',
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+];
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(GeneratedAuthService);
@@ -40,6 +46,33 @@ export class AuthService {
     const p = this.payload();
     return p?.email ?? p?.sub ?? null;
   });
+
+  readonly roles = computed<string[]>(() => {
+    const p = this.payload();
+    if (!p) {
+      return [];
+    }
+    const collected: string[] = [];
+    for (const key of ROLE_CLAIM_KEYS) {
+      const value = p[key];
+      if (typeof value === 'string') {
+        collected.push(value);
+      } else if (Array.isArray(value)) {
+        for (const entry of value) {
+          if (typeof entry === 'string') {
+            collected.push(entry);
+          }
+        }
+      }
+    }
+    return Array.from(new Set(collected));
+  });
+
+  readonly isAdmin = computed(() => this.roles().includes('Admin'));
+
+  hasRole(role: string): boolean {
+    return this.roles().includes(role);
+  }
 
   login(request: LoginRequest): Observable<AuthResultDto> {
     return this.api.login(request).pipe(tap((result) => this.setSession(result)));

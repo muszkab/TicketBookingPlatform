@@ -10,8 +10,8 @@ export const ADMIN_ROUTES: Routes = [
       {
         path: 'events',
         loadComponent: () =>
-          import('./events/admin-events-placeholder.component').then(
-            (m) => m.AdminEventsPlaceholderComponent
+          import('./events/admin-events-list.component').then(
+            (m) => m.AdminEventsListComponent
           )
       }
     ]

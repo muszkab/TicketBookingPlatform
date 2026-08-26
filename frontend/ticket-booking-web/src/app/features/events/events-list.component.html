@@ -8,8 +8,8 @@
       <mat-label>Category</mat-label>
       <mat-select [value]="category()" (selectionChange)="onCategoryChange($event.value)">
         <mat-option [value]="null">All</mat-option>
-        @for (c of categories; track c) {
-          <mat-option [value]="c">{{ c }}</mat-option>
+        @for (c of categoryOptions; track c.value) {
+          <mat-option [value]="c.value">{{ c.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -18,8 +18,8 @@
       <mat-label>Status</mat-label>
       <mat-select [value]="status()" (selectionChange)="onStatusChange($event.value)">
         <mat-option [value]="null">All</mat-option>
-        @for (s of statuses; track s) {
-          <mat-option [value]="s">{{ s }}</mat-option>
+        @for (s of statusOptions; track s.value) {
+          <mat-option [value]="s.value">{{ s.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -42,7 +42,7 @@
             <mat-card class="events-list__card" appearance="outlined" tabindex="-1">
               <mat-card-header>
                 <mat-card-title>{{ evt.title }}</mat-card-title>
-                <mat-card-subtitle>{{ evt.category }} · {{ evt.status }}</mat-card-subtitle>
+                <mat-card-subtitle>{{ categoryLabel(evt.category) }} · {{ statusLabel(evt.status) }}</mat-card-subtitle>
               </mat-card-header>
               <mat-card-content>
                 <p class="events-list__when">

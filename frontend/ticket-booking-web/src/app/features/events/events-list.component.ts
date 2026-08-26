@@ -19,6 +19,12 @@ import {
   EventsService,
   PagedResultOfEventDto
 } from '../../api';
+import {
+  EVENT_CATEGORY_OPTIONS,
+  EVENT_STATUS_OPTIONS,
+  eventCategoryLabel,
+  eventStatusLabel
+} from './shared/event-labels';
 
 interface EventsQuery {
   category: EventCategory | null;
@@ -61,9 +67,12 @@ export class EventsListComponent implements OnInit {
   protected readonly page = signal(1);
   protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
 
-  protected readonly categories = Object.values(EventCategory);
-  protected readonly statuses = Object.values(EventStatus);
+  protected readonly categoryOptions = EVENT_CATEGORY_OPTIONS;
+  protected readonly statusOptions = EVENT_STATUS_OPTIONS;
   protected readonly pageSizeOptions = [10, 20, 50];
+
+  protected readonly categoryLabel = eventCategoryLabel;
+  protected readonly statusLabel = eventStatusLabel;
 
   private readonly load$ = new Subject<EventsQuery>();
 
@@ -158,10 +167,16 @@ export class EventsListComponent implements OnInit {
   }
 
   private isCategory(value: string | null): value is EventCategory {
-    return value !== null && (this.categories as string[]).includes(value);
+    return (
+      value !== null &&
+      EVENT_CATEGORY_OPTIONS.some((o) => o.value === (value as EventCategory))
+    );
   }
 
   private isStatus(value: string | null): value is EventStatus {
-    return value !== null && (this.statuses as string[]).includes(value);
+    return (
+      value !== null &&
+      EVENT_STATUS_OPTIONS.some((o) => o.value === (value as EventStatus))
+    );
   }
 }

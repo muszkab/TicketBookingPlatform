@@ -18,8 +18,8 @@
         <mat-card-title>{{ evt.title }}</mat-card-title>
         <mat-card-subtitle>
           <mat-chip-set>
-            <mat-chip>{{ evt.category }}</mat-chip>
-            <mat-chip [color]="'primary'" [highlighted]="true">{{ evt.status }}</mat-chip>
+            <mat-chip>{{ categoryLabel(evt.category) }}</mat-chip>
+            <mat-chip [color]="'primary'" [highlighted]="true">{{ statusLabel(evt.status) }}</mat-chip>
           </mat-chip-set>
         </mat-card-subtitle>
       </mat-card-header>

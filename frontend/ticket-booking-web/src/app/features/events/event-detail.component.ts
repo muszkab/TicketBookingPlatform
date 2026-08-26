@@ -18,6 +18,7 @@ import {
   LocationsService,
   TicketCategoryDto
 } from '../../api';
+import { eventCategoryLabel, eventStatusLabel } from './shared/event-labels';
 
 @Component({
   selector: 'app-event-detail',
@@ -48,6 +49,9 @@ export class EventDetailComponent implements OnInit {
   protected readonly notFound = signal(false);
 
   protected readonly ticketColumns = ['name', 'price', 'available'];
+
+  protected readonly categoryLabel = eventCategoryLabel;
+  protected readonly statusLabel = eventStatusLabel;
 
   ngOnInit(): void {
     this.route.paramMap

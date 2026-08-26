@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 
 import { AuthResultDto, AuthService as GeneratedAuthService, LoginRequest } from '../../api';
+import { USER_ROLES } from './roles';
 
 const STORAGE_KEY = 'tbp.auth';
 
@@ -68,7 +69,7 @@ export class AuthService {
     return Array.from(new Set(collected));
   });
 
-  readonly isAdmin = computed(() => this.roles().includes('Admin'));
+  readonly isAdmin = computed(() => this.roles().includes(USER_ROLES.Admin));
 
   hasRole(role: string): boolean {
     return this.roles().includes(role);

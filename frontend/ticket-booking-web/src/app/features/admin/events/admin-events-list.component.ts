@@ -32,7 +32,7 @@ import {
   EVENT_STATUS_OPTIONS,
   eventCategoryLabel,
   eventStatusLabel
-} from './event-labels';
+} from '../../events/shared/event-labels';
 
 interface EventsQuery {
   category: EventCategory | null;

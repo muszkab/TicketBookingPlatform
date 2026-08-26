@@ -26,6 +26,7 @@ import {
   ConfirmDialogComponent,
   ConfirmDialogData
 } from '../../../core/dialogs/confirm-dialog.component';
+import { ErrorCardComponent } from '../../../core/error-card/error-card.component';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import {
   EVENT_CATEGORY_OPTIONS,
@@ -58,7 +59,8 @@ const DEFAULT_PAGE_SIZE = 20;
     MatProgressBarModule,
     MatSelectModule,
     MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    ErrorCardComponent
   ],
   templateUrl: './admin-events-list.component.html',
   styleUrl: './admin-events-list.component.scss'

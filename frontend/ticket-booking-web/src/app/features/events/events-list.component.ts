@@ -12,6 +12,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { ErrorCardComponent } from '../../core/error-card/error-card.component';
+
 import {
   EventCategory,
   EventDto,
@@ -46,7 +48,8 @@ const DEFAULT_PAGE_SIZE = 20;
     MatPaginatorModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    RouterLink
+    RouterLink,
+    ErrorCardComponent
   ],
   templateUrl: './events-list.component.html',
   styleUrl: './events-list.component.scss'
@@ -92,7 +95,7 @@ export class EventsListComponent implements OnInit {
         },
         error: (err: unknown) => {
           console.error('Failed to load events', err);
-          this.error.set('Failed to load events. Is the backend running on https://localhost:5001?');
+          this.error.set('Failed to load events.');
           this.loading.set(false);
         }
       });

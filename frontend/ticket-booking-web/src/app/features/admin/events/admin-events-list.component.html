@@ -2,7 +2,6 @@
   <header class="admin-events__header">
     <div>
       <h1>Admin · Events</h1>
-      <p class="admin-events__subtitle">Manage draft and published events.</p>
     </div>
     <a mat-flat-button color="primary" routerLink="new">
       <mat-icon>add</mat-icon>
@@ -37,10 +36,7 @@
   }
 
   @if (error(); as msg) {
-    <div class="admin-events__error">
-      <p>{{ msg }}</p>
-      <button mat-button color="primary" (click)="reload()">Retry</button>
-    </div>
+    <app-error-card [message]="msg" (retry)="reload()" />
   } @else if (!loading() && events().length === 0) {
     <p class="admin-events__empty">No events found.</p>
   } @else {

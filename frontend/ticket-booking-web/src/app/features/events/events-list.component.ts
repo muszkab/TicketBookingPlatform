@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -60,6 +60,15 @@ export class EventsListComponent implements OnInit {
   protected readonly onPageChange = this.state.onPageChange;
 
   protected readonly locations = signal<LocationDto[]>([]);
+
+  private readonly locationsById = computed(
+    () => new Map(this.locations().map((loc) => [loc.id, loc]))
+  );
+
+  protected locationLabel(locationId: string): string | null {
+    const loc = this.locationsById().get(locationId);
+    return loc ? `${loc.name} — ${loc.city}` : null;
+  }
 
   ngOnInit(): void {
     this.locationsService

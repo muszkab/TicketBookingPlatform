@@ -53,6 +53,9 @@
                 <p class="events-list__when">
                   {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'shortTime' }}
                 </p>
+                @if (locationLabel(evt.locationId); as loc) {
+                  <p class="events-list__location">{{ loc }}</p>
+                }
                 @if (evt.description) {
                   <p class="events-list__description">{{ evt.description }}</p>
                 }

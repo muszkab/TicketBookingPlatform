@@ -67,10 +67,11 @@ export interface EventsServiceInterface {
      * @endpoint get /api/v1/Events
      * @param category 
      * @param status 
+     * @param locationId 
      * @param page 
      * @param pageSize 
      */
-    getEvents(category?: string, status?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
+    getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
 
     /**
      * 

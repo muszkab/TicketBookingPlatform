@@ -19,6 +19,8 @@ import {
   EventDto,
   EventStatus,
   EventsService,
+  LocationDto,
+  LocationsService,
   PagedResultOfEventDto
 } from '../../api';
 import {
@@ -31,6 +33,7 @@ import {
 interface EventsQuery {
   category: EventCategory | null;
   status: EventStatus | null;
+  locationId: string | null;
   page: number;
   pageSize: number;
 }
@@ -56,6 +59,7 @@ const DEFAULT_PAGE_SIZE = 20;
 })
 export class EventsListComponent implements OnInit {
   private readonly eventsService = inject(EventsService);
+  private readonly locationsService = inject(LocationsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -67,8 +71,11 @@ export class EventsListComponent implements OnInit {
 
   protected readonly category = signal<EventCategory | null>(null);
   protected readonly status = signal<EventStatus | null>(null);
+  protected readonly locationId = signal<string | null>(null);
   protected readonly page = signal(1);
   protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+
+  protected readonly locations = signal<LocationDto[]>([]);
 
   protected readonly categoryOptions = EVENT_CATEGORY_OPTIONS;
   protected readonly statusOptions = EVENT_STATUS_OPTIONS;
@@ -83,7 +90,13 @@ export class EventsListComponent implements OnInit {
     this.load$
       .pipe(
         switchMap((q) =>
-          this.eventsService.getEvents(q.category ?? undefined, q.status ?? undefined, q.page, q.pageSize)
+          this.eventsService.getEvents(
+            q.category ?? undefined,
+            q.status ?? undefined,
+            q.locationId ?? undefined,
+            q.page,
+            q.pageSize
+          )
         ),
         takeUntilDestroyed()
       )
@@ -102,14 +115,24 @@ export class EventsListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.locationsService
+      .getLocations(undefined, undefined, 1, 100)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => this.locations.set(result.items ?? []),
+        error: (err) => console.error('Failed to load locations', err)
+      });
+
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const rawCategory = params.get('category');
       const rawStatus = params.get('status');
+      const rawLocation = params.get('locationId');
       const rawPage = Number(params.get('page'));
       const rawPageSize = Number(params.get('pageSize'));
 
       this.category.set(this.isCategory(rawCategory) ? rawCategory : null);
       this.status.set(this.isStatus(rawStatus) ? rawStatus : null);
+      this.locationId.set(rawLocation && rawLocation.length > 0 ? rawLocation : null);
       this.page.set(Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1);
       this.pageSize.set(
         this.pageSizeOptions.includes(rawPageSize) ? rawPageSize : DEFAULT_PAGE_SIZE
@@ -131,6 +154,10 @@ export class EventsListComponent implements OnInit {
     this.updateQueryParams({ status: value, page: 1 });
   }
 
+  protected onLocationChange(value: string | null): void {
+    this.updateQueryParams({ locationId: value, page: 1 });
+  }
+
   protected onPageChange(event: PageEvent): void {
     this.updateQueryParams({
       page: event.pageIndex + 1,
@@ -144,6 +171,7 @@ export class EventsListComponent implements OnInit {
     this.load$.next({
       category: this.category(),
       status: this.status(),
+      locationId: this.locationId(),
       page: this.page(),
       pageSize: this.pageSize()
     });
@@ -152,12 +180,14 @@ export class EventsListComponent implements OnInit {
   private updateQueryParams(patch: Partial<{
     category: EventCategory | null;
     status: EventStatus | null;
+    locationId: string | null;
     page: number;
     pageSize: number;
   }>): void {
     const queryParams: Record<string, string | number | null> = {
       category: patch.category !== undefined ? patch.category : this.category(),
       status: patch.status !== undefined ? patch.status : this.status(),
+      locationId: patch.locationId !== undefined ? patch.locationId : this.locationId(),
       page: patch.page ?? this.page(),
       pageSize: patch.pageSize ?? this.pageSize()
     };

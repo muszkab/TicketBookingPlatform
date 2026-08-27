@@ -107,6 +107,7 @@ export class AdminEventsListComponent implements OnInit {
           this.eventsService.getEvents(
             q.category ?? undefined,
             q.status ?? undefined,
+            undefined,
             q.page,
             q.pageSize
           )

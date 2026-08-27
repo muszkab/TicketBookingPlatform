@@ -34,8 +34,6 @@
             @if (location(); as loc) {
               <strong>{{ loc.name }}</strong><br />
               {{ loc.street }}, {{ loc.postalCode }} {{ loc.city }}, {{ loc.country }}
-              <br />
-              <small>Capacity: {{ loc.capacity }}</small>
             } @else {
               <small class="event-detail__muted">Location unavailable ({{ evt.locationId }})</small>
             }

@@ -23,6 +23,16 @@
         }
       </mat-select>
     </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Location</mat-label>
+      <mat-select [value]="locationId()" (selectionChange)="onLocationChange($event.value)">
+        <mat-option [value]="null">All</mat-option>
+        @for (loc of locations(); track loc.id) {
+          <mat-option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </form>
 
   <div class="events-list__content">

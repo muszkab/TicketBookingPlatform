@@ -40,11 +40,12 @@ public class EventsController(
     public async Task<ActionResult<PagedResult<EventDto>>> GetEvents(
         [FromQuery] EventCategory? category,
         [FromQuery] EventStatus? status,
+        [FromQuery] Guid? locationId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = GetEventsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        PagedResult<EventDto> result = await getEventsQueryHandler.HandleAsync(new GetEventsQuery(category, status, page, pageSize), cancellationToken);
+        PagedResult<EventDto> result = await getEventsQueryHandler.HandleAsync(new GetEventsQuery(category, status, locationId, page, pageSize), cancellationToken);
         return Ok(result);
     }
 

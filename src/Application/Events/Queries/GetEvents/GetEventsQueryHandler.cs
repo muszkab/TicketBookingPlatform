@@ -30,6 +30,9 @@ public sealed class GetEventsQueryHandler
         if (query.Status.HasValue)
             source = source.Where(e => e.Status == query.Status.Value);
 
+        if (query.LocationId.HasValue)
+            source = source.Where(e => e.LocationId == query.LocationId.Value);
+
         return await source
             .OrderBy(e => e.StartsAt)
             .Select(e => new EventDto(

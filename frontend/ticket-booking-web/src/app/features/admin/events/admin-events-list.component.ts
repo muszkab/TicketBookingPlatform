@@ -7,42 +7,22 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject, filter, switchMap } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { filter, switchMap } from 'rxjs';
 
-import {
-  EventCategory,
-  EventDto,
-  EventStatus,
-  EventsService,
-  PagedResultOfEventDto
-} from '../../../api';
+import { EventDto, EventStatus, EventsService } from '../../../api';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData
 } from '../../../core/dialogs/confirm-dialog.component';
 import { ErrorCardComponent } from '../../../core/error-card/error-card.component';
 import { NotificationService } from '../../../core/notifications/notification.service';
-import {
-  EVENT_CATEGORY_OPTIONS,
-  EVENT_STATUS_OPTIONS,
-  eventCategoryLabel,
-  eventStatusLabel
-} from '../../events/shared/event-labels';
-
-interface EventsQuery {
-  category: EventCategory | null;
-  status: EventStatus | null;
-  page: number;
-  pageSize: number;
-}
-
-const DEFAULT_PAGE_SIZE = 20;
+import { createEventsListState } from '../../events/shared/events-list-state';
 
 @Component({
   selector: 'app-admin-events-list',
@@ -67,26 +47,37 @@ const DEFAULT_PAGE_SIZE = 20;
 })
 export class AdminEventsListComponent implements OnInit {
   private readonly eventsService = inject(EventsService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly events = signal<EventDto[]>([]);
-  protected readonly totalCount = signal(0);
-  protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
+  private readonly state = createEventsListState({
+    errorLogPrefix: 'Failed to load admin events'
+  });
+
+  protected readonly events = this.state.events;
+  protected readonly totalCount = this.state.totalCount;
+  protected readonly loading = this.state.loading;
+  protected readonly error = this.state.error;
+
+  protected readonly category = this.state.category;
+  protected readonly status = this.state.status;
+  protected readonly page = this.state.page;
+  protected readonly pageSize = this.state.pageSize;
+
+  protected readonly categoryOptions = this.state.categoryOptions;
+  protected readonly statusOptions = this.state.statusOptions;
+  protected readonly pageSizeOptions = this.state.pageSizeOptions;
+  protected readonly categoryLabel = this.state.categoryLabel;
+  protected readonly statusLabel = this.state.statusLabel;
+
+  protected readonly reload = this.state.reload;
+  protected readonly onCategoryChange = this.state.onCategoryChange;
+  protected readonly onStatusChange = this.state.onStatusChange;
+  protected readonly onPageChange = this.state.onPageChange;
+
   protected readonly acting = signal(false);
 
-  protected readonly category = signal<EventCategory | null>(null);
-  protected readonly status = signal<EventStatus | null>(null);
-  protected readonly page = signal(1);
-  protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
-
-  protected readonly categoryOptions = EVENT_CATEGORY_OPTIONS;
-  protected readonly statusOptions = EVENT_STATUS_OPTIONS;
-  protected readonly pageSizeOptions = [10, 20, 50];
   protected readonly displayedColumns = [
     'title',
     'category',
@@ -95,76 +86,8 @@ export class AdminEventsListComponent implements OnInit {
     'actions'
   ] as const;
 
-  protected readonly categoryLabel = eventCategoryLabel;
-  protected readonly statusLabel = eventStatusLabel;
-
-  private readonly load$ = new Subject<EventsQuery>();
-
-  constructor() {
-    this.load$
-      .pipe(
-        switchMap((q) =>
-          this.eventsService.getEvents(
-            q.category ?? undefined,
-            q.status ?? undefined,
-            undefined,
-            q.page,
-            q.pageSize
-          )
-        ),
-        takeUntilDestroyed()
-      )
-      .subscribe({
-        next: (result: PagedResultOfEventDto) => {
-          this.events.set(result.items ?? []);
-          this.totalCount.set(result.totalCount ?? 0);
-          this.loading.set(false);
-        },
-        error: (err: unknown) => {
-          console.error('Failed to load admin events', err);
-          this.error.set('Failed to load events.');
-          this.loading.set(false);
-        }
-      });
-  }
-
   ngOnInit(): void {
-    this.route.queryParamMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
-        const rawCategory = params.get('category');
-        const rawStatus = params.get('status');
-        const rawPage = Number(params.get('page'));
-        const rawPageSize = Number(params.get('pageSize'));
-
-        this.category.set(this.isCategory(rawCategory) ? rawCategory : null);
-        this.status.set(this.isStatus(rawStatus) ? rawStatus : null);
-        this.page.set(Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1);
-        this.pageSize.set(
-          this.pageSizeOptions.includes(rawPageSize) ? rawPageSize : DEFAULT_PAGE_SIZE
-        );
-
-        this.triggerLoad();
-      });
-  }
-
-  protected reload(): void {
-    this.triggerLoad();
-  }
-
-  protected onCategoryChange(value: EventCategory | null): void {
-    this.updateQueryParams({ category: value, page: 1 });
-  }
-
-  protected onStatusChange(value: EventStatus | null): void {
-    this.updateQueryParams({ status: value, page: 1 });
-  }
-
-  protected onPageChange(event: PageEvent): void {
-    this.updateQueryParams({
-      page: event.pageIndex + 1,
-      pageSize: event.pageSize
-    });
+    this.state.initFromRoute();
   }
 
   protected canPublish(evt: EventDto): boolean {
@@ -196,7 +119,7 @@ export class AdminEventsListComponent implements OnInit {
         next: () => {
           this.acting.set(false);
           this.notifications.success(`"${evt.title}" is now on sale.`);
-          this.triggerLoad();
+          this.state.triggerLoad();
         },
         error: (err) => {
           this.acting.set(false);
@@ -226,7 +149,7 @@ export class AdminEventsListComponent implements OnInit {
         next: () => {
           this.acting.set(false);
           this.notifications.success(`"${evt.title}" has been cancelled.`);
-          this.triggerLoad();
+          this.state.triggerLoad();
         },
         error: (err) => {
           this.acting.set(false);
@@ -243,52 +166,5 @@ export class AdminEventsListComponent implements OnInit {
         width: '420px'
       })
       .afterClosed();
-  }
-
-  private triggerLoad(): void {
-    this.loading.set(true);
-    this.error.set(null);
-    this.load$.next({
-      category: this.category(),
-      status: this.status(),
-      page: this.page(),
-      pageSize: this.pageSize()
-    });
-  }
-
-  private updateQueryParams(
-    patch: Partial<{
-      category: EventCategory | null;
-      status: EventStatus | null;
-      page: number;
-      pageSize: number;
-    }>
-  ): void {
-    const queryParams: Record<string, string | number | null> = {
-      category: patch.category !== undefined ? patch.category : this.category(),
-      status: patch.status !== undefined ? patch.status : this.status(),
-      page: patch.page ?? this.page(),
-      pageSize: patch.pageSize ?? this.pageSize()
-    };
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'merge'
-    });
-  }
-
-  private isCategory(value: string | null): value is EventCategory {
-    return (
-      value !== null &&
-      EVENT_CATEGORY_OPTIONS.some((o) => o.value === (value as EventCategory))
-    );
-  }
-
-  private isStatus(value: string | null): value is EventStatus {
-    return (
-      value !== null &&
-      EVENT_STATUS_OPTIONS.some((o) => o.value === (value as EventStatus))
-    );
   }
 }

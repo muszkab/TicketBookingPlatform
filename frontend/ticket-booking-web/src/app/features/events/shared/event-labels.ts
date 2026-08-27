@@ -23,5 +23,19 @@ export function eventStatusLabel(value: EventStatus): string {
   return EVENT_STATUS_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }
 
+export function isEventCategory(value: string | null): value is EventCategory {
+  return (
+    value !== null &&
+    EVENT_CATEGORY_OPTIONS.some((o) => o.value === (value as EventCategory))
+  );
+}
+
+export function isEventStatus(value: string | null): value is EventStatus {
+  return (
+    value !== null &&
+    EVENT_STATUS_OPTIONS.some((o) => o.value === (value as EventStatus))
+  );
+}
+
 export const SUPPORTED_CURRENCIES = ['HUF', 'EUR', 'USD'] as const;
 export type SupportedCurrency = (typeof SUPPORTED_CURRENCIES)[number];

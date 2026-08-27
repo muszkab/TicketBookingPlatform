@@ -9,7 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, catchError, forkJoin, of, switchMap } from 'rxjs';
+import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
 
 import {
   EventDto,
@@ -72,12 +72,10 @@ export class EventDetailComponent implements OnInit {
 
           return this.eventsService.getEventById(id).pipe(
             switchMap((evt) =>
-              forkJoin({
-                event: of(evt),
-                location: this.locationsService
-                  .getLocationById(evt.locationId)
-                  .pipe(catchError(() => of<LocationDto | null>(null)))
-              })
+              this.locationsService.getLocationById(evt.locationId).pipe(
+                catchError(() => of<LocationDto | null>(null)),
+                map((location) => ({ event: evt, location }))
+              )
             ),
             catchError((err: unknown) => {
               if (err instanceof HttpErrorResponse && err.status === 404) {

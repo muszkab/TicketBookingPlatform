@@ -2,7 +2,6 @@ import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
-import { MatOptionModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,7 +28,6 @@ import { AdminEventActionsService } from './shared/admin-event-actions.service';
     MatFormFieldModule,
     MatIconModule,
     MatMenuModule,
-    MatOptionModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatSelectModule,

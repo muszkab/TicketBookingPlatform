@@ -1,6 +1,6 @@
 <section class="admin-event-create">
   <header class="admin-event-create__header">
-    <a mat-icon-button routerLink=".." aria-label="Back">
+    <a mat-icon-button routerLink="/admin/events" aria-label="Back">
       <mat-icon>arrow_back</mat-icon>
     </a>
     <h1>Create event</h1>
@@ -12,93 +12,25 @@
 
   <mat-card appearance="outlined">
     <mat-card-content>
-      <form [formGroup]="form" class="admin-event-create__form" (ngSubmit)="submit()">
-        <mat-form-field appearance="outline">
-          <mat-label>Title</mat-label>
-          <input matInput formControlName="title" maxlength="200" required />
-          @if (form.controls['title'].touched && form.controls['title'].hasError('required')) {
-            <mat-error>Title is required.</mat-error>
-          }
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Description</mat-label>
-          <textarea matInput formControlName="description" rows="4" maxlength="2000"></textarea>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Category</mat-label>
-          <mat-select formControlName="category" required>
-            @for (c of categoryOptions; track c.value) {
-              <mat-option [value]="c.value">{{ c.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <div class="admin-event-create__row">
-          <mat-form-field appearance="outline">
-            <mat-label>Starts at</mat-label>
-            <input matInput type="datetime-local" formControlName="startsAt" required />
-            @if (form.controls['startsAt'].touched && form.controls['startsAt'].hasError('required')) {
-              <mat-error>Start is required.</mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Ends at</mat-label>
-            <input matInput type="datetime-local" formControlName="endsAt" required />
-            @if (form.controls['endsAt'].touched && form.controls['endsAt'].hasError('required')) {
-              <mat-error>End is required.</mat-error>
-            }
-          </mat-form-field>
+      @if (locationsError(); as msg) {
+        <div class="admin-event-create__inline-error">
+          <span>{{ msg }}</span>
+          <button mat-button color="primary" type="button" (click)="reloadLocations()">Retry</button>
         </div>
+      }
 
-        @if (form.touched && form.hasError('dateRange')) {
-          <p class="admin-event-create__form-error">End must be after start.</p>
-        }
+      <app-admin-event-form
+        [locations]="locations()"
+        [locationsLoading]="locationsLoading()"
+        [submitting]="submitting()"
+        submitLabel="Create"
+        (formSubmit)="onSubmit($event)"
+        (cancelled)="cancel()"
+      />
 
-        <mat-form-field appearance="outline">
-          <mat-label>Location</mat-label>
-          <mat-select formControlName="locationId" required [disabled]="locationsLoading()">
-            @for (loc of locations(); track loc.id) {
-              <mat-option [value]="loc.id">
-                {{ loc.name }} — {{ loc.city }}
-              </mat-option>
-            }
-          </mat-select>
-          @if (locationsLoading()) {
-            <mat-hint>Loading locations…</mat-hint>
-          } @else if (locations().length === 0) {
-            <mat-hint>No locations available.</mat-hint>
-          }
-          @if (form.controls['locationId'].touched && form.controls['locationId'].hasError('required')) {
-            <mat-error>Location is required.</mat-error>
-          }
-        </mat-form-field>
-
-        @if (locationsError(); as msg) {
-          <div class="admin-event-create__inline-error">
-            <span>{{ msg }}</span>
-            <button mat-button color="primary" type="button" (click)="reloadLocations()">Retry</button>
-          </div>
-        }
-
-        @if (formError(); as msg) {
-          <p class="admin-event-create__form-error">{{ msg }}</p>
-        }
-
-        <div class="admin-event-create__actions">
-          <a mat-button routerLink="..">Cancel</a>
-          <button
-            mat-flat-button
-            color="primary"
-            type="submit"
-            [disabled]="submitting() || locationsLoading()"
-          >
-            Create
-          </button>
-        </div>
-      </form>
+      @if (formError(); as msg) {
+        <p class="admin-event-create__form-error">{{ msg }}</p>
+      }
     </mat-card-content>
   </mat-card>
 </section>

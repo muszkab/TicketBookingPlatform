@@ -20,6 +20,13 @@ export const ADMIN_ROUTES: Routes = [
           import('./events/admin-event-create.component').then(
             (m) => m.AdminEventCreateComponent
           )
+      },
+      {
+        path: 'events/:id/edit',
+        loadComponent: () =>
+          import('./events/admin-event-edit.component').then(
+            (m) => m.AdminEventEditComponent
+          )
       }
     ]
   }

@@ -1,0 +1,119 @@
+<section class="admin-event-edit">
+  <header class="admin-event-edit__header">
+    <a mat-icon-button routerLink="/admin/events" aria-label="Back">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div class="admin-event-edit__title">
+      <h1>{{ event()?.title ?? 'Edit event' }}</h1>
+      @if (event(); as evt) {
+        <p class="admin-event-edit__subtitle">
+          {{ categoryLabel(evt.category) }} · {{ statusLabel(evt.status) }} ·
+          {{ evt.startsAt | date: 'medium' }}
+        </p>
+      }
+    </div>
+  </header>
+
+  @if (loading() || submitting() || acting()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (notFound()) {
+    <mat-card appearance="outlined">
+      <mat-card-title>Event not found</mat-card-title>
+      <mat-card-content>The requested event does not exist.</mat-card-content>
+    </mat-card>
+  } @else if (loadError(); as msg) {
+    <mat-card appearance="outlined">
+      <mat-card-content>{{ msg }}</mat-card-content>
+    </mat-card>
+  } @else if (event(); as evt) {
+    <mat-tab-group animationDuration="0ms">
+      <mat-tab label="Details">
+        <div class="admin-event-edit__tab">
+          @if (!isDraft()) {
+            <mat-card appearance="outlined" class="admin-event-edit__banner">
+              <mat-card-content>
+                Details can only be edited while the event is in Draft.
+              </mat-card-content>
+            </mat-card>
+          }
+
+          <app-admin-event-form
+            [initialValue]="{
+              title: evt.title,
+              description: evt.description,
+              category: evt.category,
+              startsAt: evt.startsAt,
+              endsAt: evt.endsAt,
+              locationId: evt.locationId
+            }"
+            [locations]="locations()"
+            [readOnly]="!isDraft()"
+            [disableLocation]="true"
+            [submitting]="submitting()"
+            submitLabel="Save changes"
+            (formSubmit)="onDetailsSubmit($event)"
+            (cancelled)="cancelEditing()"
+          />
+
+          @if (formError(); as msg) {
+            <p class="admin-event-edit__form-error">{{ msg }}</p>
+          }
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Ticket categories">
+        <div class="admin-event-edit__tab">
+          <mat-card appearance="outlined">
+            <mat-card-content>
+              Ticket categories management is coming in the next PR.
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <mat-tab label="Danger zone">
+        <div class="admin-event-edit__tab admin-event-edit__danger">
+          <mat-card appearance="outlined">
+            <mat-card-title>Publish</mat-card-title>
+            <mat-card-content>
+              Put the event on sale. Only available while in Draft.
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="!canPublish() || acting()"
+                (click)="publish()"
+              >
+                <mat-icon>publish</mat-icon>
+                <span>Publish</span>
+              </button>
+            </mat-card-actions>
+          </mat-card>
+
+          <mat-card appearance="outlined">
+            <mat-card-title>Cancel event</mat-card-title>
+            <mat-card-content>
+              Cancels the event. Cannot be undone.
+            </mat-card-content>
+            <mat-card-actions align="end">
+              <button
+                mat-flat-button
+                color="warn"
+                type="button"
+                [disabled]="!canCancel() || acting()"
+                (click)="cancelEvent()"
+              >
+                <mat-icon>block</mat-icon>
+                <span>Cancel event</span>
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</section>

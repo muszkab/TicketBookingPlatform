@@ -1,27 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
-  Validators
-} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatOptionModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 
 import {
   CreateEventRequest,
-  EventCategory,
   EventsService,
   LocationDto,
   LocationsService,
@@ -29,68 +16,37 @@ import {
 } from '../../../api';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import {
-  EVENT_CATEGORY_OPTIONS,
-  eventCategoryLabel
-} from '../../events/shared/event-labels';
+  AdminEventFormComponent,
+  AdminEventFormValue
+} from './admin-event-form.component';
 
 const LOCATION_PAGE_SIZE = 100;
-
-function dateRangeValidator(startKey: string, endKey: string): ValidatorFn {
-  return (group): ValidationErrors | null => {
-    const start = group.get(startKey)?.value as string | null;
-    const end = group.get(endKey)?.value as string | null;
-    if (!start || !end) {
-      return null;
-    }
-    return Date.parse(end) > Date.parse(start) ? null : { dateRange: true };
-  };
-}
 
 @Component({
   selector: 'app-admin-event-create',
   imports: [
-    ReactiveFormsModule,
     RouterLink,
+    AdminEventFormComponent,
     MatButtonModule,
     MatCardModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
-    MatOptionModule,
-    MatProgressBarModule,
-    MatSelectModule
+    MatProgressBarModule
   ],
   templateUrl: './admin-event-create.component.html',
   styleUrl: './admin-event-create.component.scss'
 })
 export class AdminEventCreateComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly eventsService = inject(EventsService);
   private readonly locationsService = inject(LocationsService);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly categoryOptions = EVENT_CATEGORY_OPTIONS;
-  protected readonly categoryLabel = eventCategoryLabel;
-
   protected readonly locations = signal<LocationDto[]>([]);
   protected readonly locationsLoading = signal(true);
   protected readonly locationsError = signal<string | null>(null);
   protected readonly submitting = signal(false);
   protected readonly formError = signal<string | null>(null);
-
-  protected readonly form: FormGroup = this.fb.nonNullable.group(
-    {
-      title: ['', [Validators.required, Validators.maxLength(200)]],
-      description: ['', [Validators.maxLength(2000)]],
-      category: [EventCategory.Concert, [Validators.required]],
-      startsAt: ['', [Validators.required]],
-      endsAt: ['', [Validators.required]],
-      locationId: ['', [Validators.required]]
-    },
-    { validators: [dateRangeValidator('startsAt', 'endsAt')] }
-  );
 
   ngOnInit(): void {
     this.loadLocations();
@@ -100,33 +56,8 @@ export class AdminEventCreateComponent implements OnInit {
     this.loadLocations();
   }
 
-  protected submit(): void {
-    if (this.submitting()) {
-      return;
-    }
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const raw = this.form.getRawValue() as {
-      title: string;
-      description: string;
-      category: EventCategory;
-      startsAt: string;
-      endsAt: string;
-      locationId: string;
-    };
-
-    const request: CreateEventRequest = {
-      title: raw.title.trim(),
-      description: raw.description ?? '',
-      category: raw.category,
-      startsAt: new Date(raw.startsAt).toISOString(),
-      endsAt: new Date(raw.endsAt).toISOString(),
-      locationId: raw.locationId
-    };
-
+  protected onSubmit(value: AdminEventFormValue): void {
+    const request: CreateEventRequest = { ...value };
     this.submitting.set(true);
     this.formError.set(null);
 
@@ -137,7 +68,7 @@ export class AdminEventCreateComponent implements OnInit {
         next: (created) => {
           this.submitting.set(false);
           this.notifications.success(`Event "${created.title}" created as Draft.`);
-          this.router.navigate(['/admin/events']);
+          this.router.navigate(['/admin/events', created.id, 'edit']);
         },
         error: (err: unknown) => {
           this.submitting.set(false);
@@ -145,6 +76,10 @@ export class AdminEventCreateComponent implements OnInit {
           this.formError.set(this.mapError(err));
         }
       });
+  }
+
+  protected cancel(): void {
+    this.router.navigate(['/admin/events']);
   }
 
   private loadLocations(): void {

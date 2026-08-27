@@ -11,12 +11,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { EMPTY, catchError, filter, forkJoin, of, switchMap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, of, switchMap } from 'rxjs';
 
 import {
   EventDto,
@@ -24,18 +24,14 @@ import {
   EventsService,
   LocationDto,
   LocationsService,
-  ProblemDetails,
   UpdateEventRequest
 } from '../../../api';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogData
-} from '../../../core/dialogs/confirm-dialog.component';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import {
   eventCategoryLabel,
   eventStatusLabel
 } from '../../events/shared/event-labels';
+import { AdminEventActionsService } from './shared/admin-event-actions.service';
 import {
   AdminEventFormComponent,
   AdminEventFormValue
@@ -64,7 +60,7 @@ export class AdminEventEditComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly dialog = inject(MatDialog);
+  private readonly actions = inject(AdminEventActionsService);
   private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -159,7 +155,7 @@ export class AdminEventEditComponent implements OnInit {
         error: (err: unknown) => {
           this.submitting.set(false);
           console.error('Update failed', err);
-          this.formError.set(this.mapError(err, 'Failed to update event.'));
+          this.formError.set(this.actions.mapError(err, 'Failed to update event.'));
         }
       });
   }
@@ -173,32 +169,10 @@ export class AdminEventEditComponent implements OnInit {
     if (!current) {
       return;
     }
-    this.confirm({
-      title: 'Publish event',
-      message: `Put "${current.title}" on sale? Details and ticket categories will no longer be editable.`,
-      confirmLabel: 'Publish'
-    })
-      .pipe(
-        filter((ok) => ok === true),
-        switchMap(() => {
-          this.acting.set(true);
-          return this.eventsService.publishEvent(current.id);
-        }),
-        switchMap(() => this.eventsService.getEventById(current.id)),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (updated) => {
-          this.event.set(updated);
-          this.acting.set(false);
-          this.notifications.success(`"${updated.title}" is now on sale.`);
-        },
-        error: (err) => {
-          this.acting.set(false);
-          console.error('Publish failed', err);
-          this.notifications.error(this.mapError(err, 'Failed to publish event.'));
-        }
-      });
+    this.actions
+      .publish(current, this.acting)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updated) => this.event.set(updated));
   }
 
   protected cancelEvent(): void {
@@ -206,58 +180,9 @@ export class AdminEventEditComponent implements OnInit {
     if (!current) {
       return;
     }
-    this.confirm({
-      title: 'Cancel event',
-      message: `Cancel "${current.title}"? This cannot be undone.`,
-      confirmLabel: 'Cancel event',
-      cancelLabel: 'Keep',
-      confirmColor: 'warn'
-    })
-      .pipe(
-        filter((ok) => ok === true),
-        switchMap(() => {
-          this.acting.set(true);
-          return this.eventsService.cancelEvent(current.id);
-        }),
-        switchMap(() => this.eventsService.getEventById(current.id)),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: (updated) => {
-          this.event.set(updated);
-          this.acting.set(false);
-          this.notifications.success(`"${updated.title}" has been cancelled.`);
-        },
-        error: (err) => {
-          this.acting.set(false);
-          console.error('Cancel failed', err);
-          this.notifications.error(this.mapError(err, 'Failed to cancel event.'));
-        }
-      });
-  }
-
-  private confirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data,
-        width: '420px'
-      })
-      .afterClosed();
-  }
-
-  private mapError(err: unknown, fallback: string): string {
-    if (err instanceof HttpErrorResponse) {
-      const problem = err.error as ProblemDetails | undefined;
-      if (problem?.detail) {
-        return problem.detail;
-      }
-      if (problem?.title) {
-        return problem.title;
-      }
-      if (err.status === 0) {
-        return 'Cannot reach the server.';
-      }
-    }
-    return fallback;
+    this.actions
+      .cancel(current, this.acting)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((updated) => this.event.set(updated));
   }
 }

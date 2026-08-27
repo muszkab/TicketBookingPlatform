@@ -3,7 +3,7 @@ import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -13,16 +13,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { filter, switchMap } from 'rxjs';
 
-import { EventDto, EventStatus, EventsService } from '../../../api';
-import {
-  ConfirmDialogComponent,
-  ConfirmDialogData
-} from '../../../core/dialogs/confirm-dialog.component';
+import { EventDto, EventStatus } from '../../../api';
 import { ErrorCardComponent } from '../../../core/error-card/error-card.component';
-import { NotificationService } from '../../../core/notifications/notification.service';
 import { createEventsListState } from '../../events/shared/events-list-state';
+import { AdminEventActionsService } from './shared/admin-event-actions.service';
 
 @Component({
   selector: 'app-admin-events-list',
@@ -46,9 +41,7 @@ import { createEventsListState } from '../../events/shared/events-list-state';
   styleUrl: './admin-events-list.component.scss'
 })
 export class AdminEventsListComponent implements OnInit {
-  private readonly eventsService = inject(EventsService);
-  private readonly dialog = inject(MatDialog);
-  private readonly notifications = inject(NotificationService);
+  private readonly actions = inject(AdminEventActionsService);
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly state = createEventsListState({
@@ -101,70 +94,16 @@ export class AdminEventsListComponent implements OnInit {
   }
 
   protected publish(evt: EventDto): void {
-    this.confirm({
-      title: 'Publish event',
-      message: `Put "${evt.title}" on sale? Details and ticket categories will no longer be editable.`,
-      confirmLabel: 'Publish',
-      cancelLabel: 'Cancel'
-    })
-      .pipe(
-        filter((ok) => ok === true),
-        switchMap(() => {
-          this.acting.set(true);
-          return this.eventsService.publishEvent(evt.id);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: () => {
-          this.acting.set(false);
-          this.notifications.success(`"${evt.title}" is now on sale.`);
-          this.state.triggerLoad();
-        },
-        error: (err) => {
-          this.acting.set(false);
-          console.error('Publish failed', err);
-          this.notifications.error('Failed to publish event.');
-        }
-      });
+    this.actions
+      .publish(evt, this.acting)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.state.triggerLoad());
   }
 
   protected cancelEvent(evt: EventDto): void {
-    this.confirm({
-      title: 'Cancel event',
-      message: `Cancel "${evt.title}"? This cannot be undone.`,
-      confirmLabel: 'Cancel event',
-      cancelLabel: 'Keep',
-      confirmColor: 'warn'
-    })
-      .pipe(
-        filter((ok) => ok === true),
-        switchMap(() => {
-          this.acting.set(true);
-          return this.eventsService.cancelEvent(evt.id);
-        }),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe({
-        next: () => {
-          this.acting.set(false);
-          this.notifications.success(`"${evt.title}" has been cancelled.`);
-          this.state.triggerLoad();
-        },
-        error: (err) => {
-          this.acting.set(false);
-          console.error('Cancel failed', err);
-          this.notifications.error('Failed to cancel event.');
-        }
-      });
-  }
-
-  private confirm(data: ConfirmDialogData) {
-    return this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-        data,
-        width: '420px'
-      })
-      .afterClosed();
+    this.actions
+      .cancel(evt, this.acting)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.state.triggerLoad());
   }
 }

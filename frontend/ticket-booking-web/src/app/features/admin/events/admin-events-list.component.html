@@ -68,24 +68,32 @@
             <a mat-icon-button [routerLink]="[evt.id, 'edit']" matTooltip="Edit">
               <mat-icon>edit</mat-icon>
             </a>
-            <button
-              mat-icon-button
-              type="button"
-              [disabled]="!canPublish(evt) || acting()"
-              matTooltip="Publish"
-              (click)="publish(evt)"
+            <span
+              class="admin-events__action-wrapper"
+              [matTooltip]="canPublish(evt) ? 'Publish' : 'Only draft events can be published'"
             >
-              <mat-icon>publish</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              type="button"
-              [disabled]="!canCancel(evt) || acting()"
-              matTooltip="Cancel"
-              (click)="cancelEvent(evt)"
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="!canPublish(evt) || acting()"
+                (click)="publish(evt)"
+              >
+                <mat-icon>publish</mat-icon>
+              </button>
+            </span>
+            <span
+              class="admin-events__action-wrapper"
+              [matTooltip]="canCancel(evt) ? 'Cancel' : 'Event is already cancelled or completed'"
             >
-              <mat-icon>block</mat-icon>
-            </button>
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="!canCancel(evt) || acting()"
+                (click)="cancelEvent(evt)"
+              >
+                <mat-icon>block</mat-icon>
+              </button>
+            </span>
           </td>
         </ng-container>
 

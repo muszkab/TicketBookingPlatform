@@ -49,6 +49,9 @@
 
   &__actions-col {
     width: 160px;
-    text-align: right;
+  }
+
+  &__action-wrapper {
+    display: inline-block;
   }
 }

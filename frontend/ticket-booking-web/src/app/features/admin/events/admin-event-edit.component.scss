@@ -1,6 +1,6 @@
 .admin-event-edit {
   padding: 1.5rem;
-  max-width: 900px;
+  max-width: var(--app-content-max-width);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -46,6 +46,7 @@
   &__danger {
     mat-card {
       border-color: var(--mat-sys-error);
+      max-width: 480px;
     }
   }
 }

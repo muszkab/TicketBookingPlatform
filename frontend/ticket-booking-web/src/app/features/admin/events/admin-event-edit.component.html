@@ -65,11 +65,13 @@
 
       <mat-tab label="Ticket categories">
         <div class="admin-event-edit__tab">
-          <mat-card appearance="outlined">
-            <mat-card-content>
-              Ticket categories management is coming in the next PR.
-            </mat-card-content>
-          </mat-card>
+          <app-ticket-categories-panel
+            [eventId]="evt.id"
+            [ticketCategories]="evt.ticketCategories"
+            [locationCapacity]="locationCapacity()"
+            [readOnly]="!isDraft()"
+            (changed)="reloadEvent()"
+          />
         </div>
       </mat-tab>
 

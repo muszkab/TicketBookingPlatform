@@ -1,0 +1,117 @@
+<section class="ticket-categories">
+  @if (submitting() || acting()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (readOnly) {
+    <mat-card appearance="outlined" class="ticket-categories__banner">
+      <mat-card-content>
+        Ticket categories can only be modified while the event is in Draft.
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <mat-card appearance="outlined">
+      <mat-card-title class="ticket-categories__section-title">Add category</mat-card-title>
+      <mat-card-content>
+        <form [formGroup]="form" class="ticket-categories__form" (ngSubmit)="addCategory()">
+          <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" maxlength="100" required />
+            @if (form.controls['name'].touched && form.controls['name'].hasError('required')) {
+              <mat-error>Name is required.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="ticket-categories__price">
+            <mat-label>Price</mat-label>
+            <input matInput type="number" formControlName="price" min="0" step="0.01" required />
+            @if (form.controls['price'].touched && form.controls['price'].hasError('min')) {
+              <mat-error>Price must be non-negative.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="ticket-categories__currency">
+            <mat-label>Currency</mat-label>
+            <mat-select formControlName="currency" required>
+              @for (c of currencies; track c) {
+                <mat-option [value]="c">{{ c }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="ticket-categories__quantity">
+            <mat-label>Quantity</mat-label>
+            <input matInput type="number" formControlName="quantity" min="1" step="1" required />
+            @if (remainingCapacity !== null) {
+              <mat-hint>{{ remainingCapacity }} remaining</mat-hint>
+            }
+            @if (form.controls['quantity'].touched && form.controls['quantity'].hasError('min')) {
+              <mat-error>Quantity must be at least 1.</mat-error>
+            }
+          </mat-form-field>
+
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="submitting() || form.invalid"
+          >
+            <mat-icon>add</mat-icon>
+            <span>Add</span>
+          </button>
+        </form>
+
+        @if (formError(); as msg) {
+          <p class="ticket-categories__form-error">{{ msg }}</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+
+  @if (ticketCategories.length === 0) {
+    <p class="ticket-categories__empty">No ticket categories yet.</p>
+  } @else {
+    <div class="ticket-categories__table-wrapper">
+      <table mat-table [dataSource]="ticketCategories" class="ticket-categories__table">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let cat">{{ cat.name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef>Price</th>
+          <td mat-cell *matCellDef="let cat">{{ cat.price }} {{ cat.currency }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef>Available / Total</th>
+          <td mat-cell *matCellDef="let cat">
+            {{ cat.availableQuantity }} / {{ cat.totalQuantity }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let cat">
+            <span
+              class="ticket-categories__action-wrapper"
+              [matTooltip]="readOnly ? 'Only draft events can be modified' : 'Remove'"
+            >
+              <button
+                mat-icon-button
+                type="button"
+                [disabled]="readOnly || acting()"
+                (click)="removeCategory(cat)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  }
+</section>

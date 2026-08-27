@@ -36,6 +36,7 @@ import {
   AdminEventFormComponent,
   AdminEventFormValue
 } from './admin-event-form.component';
+import { TicketCategoriesPanelComponent } from './ticket-categories/ticket-categories-panel.component';
 
 const LOCATION_PAGE_SIZE = 100;
 
@@ -45,6 +46,7 @@ const LOCATION_PAGE_SIZE = 100;
     DatePipe,
     RouterLink,
     AdminEventFormComponent,
+    TicketCategoriesPanelComponent,
     MatButtonModule,
     MatCardModule,
     MatDialogModule,
@@ -82,6 +84,12 @@ export class AdminEventEditComponent implements OnInit {
 
   protected readonly categoryLabel = eventCategoryLabel;
   protected readonly statusLabel = eventStatusLabel;
+
+  protected readonly locationCapacity = computed(() => {
+    const evt = this.event();
+    const loc = this.locations().find((l) => l.id === evt?.locationId);
+    return loc?.capacity ?? null;
+  });
 
   ngOnInit(): void {
     this.route.paramMap
@@ -162,6 +170,20 @@ export class AdminEventEditComponent implements OnInit {
 
   protected cancelEditing(): void {
     this.router.navigate(['/admin/events']);
+  }
+
+  protected reloadEvent(): void {
+    const current = this.event();
+    if (!current) {
+      return;
+    }
+    this.eventsService
+      .getEventById(current.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => this.event.set(updated),
+        error: (err) => console.error('Failed to reload event', err)
+      });
   }
 
   protected publish(): void {

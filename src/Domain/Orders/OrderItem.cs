@@ -14,7 +14,7 @@ public class OrderItem : Entity
 
     public Money LineTotal => UnitPrice.Multiply(Quantity);
 
-    private OrderItem()
+    private OrderItem() : base(EmptyId)
     {
         UnitPrice = null!;
     }

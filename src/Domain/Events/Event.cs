@@ -22,7 +22,7 @@ public class Event : Entity
     private readonly List<TicketCategory> _ticketCategories = new();
     public IReadOnlyCollection<TicketCategory> TicketCategories => new ReadOnlyCollection<TicketCategory>(_ticketCategories);
 
-    private Event()
+    private Event() : base(EmptyId)
     {
         Title = string.Empty;
         Description = string.Empty;

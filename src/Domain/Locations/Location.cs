@@ -12,7 +12,7 @@ public class Location : Entity
     public string Country { get; private set; }
     public int Capacity { get; private set; }
 
-    private Location()
+    private Location() : base(EmptyId)
     {
         Name = string.Empty;
         Street = string.Empty;

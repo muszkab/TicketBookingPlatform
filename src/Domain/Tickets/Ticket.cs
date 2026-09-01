@@ -19,7 +19,7 @@ public class Ticket : Entity
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? UsedAt { get; private set; }
 
-    private Ticket()
+    private Ticket() : base(EmptyId)
     {
         Code = string.Empty;
     }

@@ -22,7 +22,7 @@ public class Order : Entity
     private readonly List<OrderItem> _items = new();
     public IReadOnlyCollection<OrderItem> Items => new ReadOnlyCollection<OrderItem>(_items);
 
-    private Order()
+    private Order() : base(EmptyId)
     {
         TotalAmount = null!;
     }

@@ -11,7 +11,7 @@ public class User : Entity
     public UserRole Role { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
 
-    private User()
+    private User() : base(EmptyId)
     {
         Email = string.Empty;
         PasswordHash = string.Empty;

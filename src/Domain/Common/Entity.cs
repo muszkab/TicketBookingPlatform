@@ -4,15 +4,13 @@ namespace Domain.Common;
 
 public abstract class Entity
 {
-    protected Entity() { Id = Guid.Empty; }
+    protected Entity() { Id = Guid.CreateVersion7(); }
 
-    protected Entity(Guid id) => Id = id;
+    protected Entity(Guid id) { Id = id; }
 
-    protected static Guid CreateId() => Guid.CreateVersion7();
+    protected static Guid EmptyId => Guid.Empty;
 
     public Guid Id { get; protected set; }
-
-    public bool IsTransient => Id == Guid.Empty;
 
     public override bool Equals(object? obj)
     {
@@ -25,14 +23,10 @@ public abstract class Entity
         if (GetType() != other.GetType())
             return false;
 
-        if (IsTransient || other.IsTransient)
-            return false;
-
         return Id == other.Id;
     }
 
-    public override int GetHashCode()
-        => IsTransient ? base.GetHashCode() : Id.GetHashCode();
+    public override int GetHashCode() => Id.GetHashCode();
 
     public static bool operator ==(Entity? left, Entity? right)
         => left is null ? right is null : left.Equals(right);

@@ -12,14 +12,13 @@ public class TicketCategory : Entity
     public int TotalQuantity { get; private set; }
     public int AvailableQuantity { get; private set; }
 
-    private TicketCategory()
+    private TicketCategory() : base(EmptyId)
     {
         Name = string.Empty;
         Price = null!;
     }
 
     internal TicketCategory(Guid eventId, string name, Money price, int totalQuantity)
-        : base(CreateId())
     {
         if (eventId == Guid.Empty)
             throw new ArgumentException("EventId is required.", nameof(eventId));

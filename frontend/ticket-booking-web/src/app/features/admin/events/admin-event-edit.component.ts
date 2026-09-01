@@ -27,6 +27,7 @@ import {
   UpdateEventRequest
 } from '../../../api';
 import { NotificationService } from '../../../core/notifications/notification.service';
+import { withActionLock } from '../../../core/http/action-lock';
 import {
   eventCategoryLabel,
   eventStatusLabel
@@ -146,22 +147,20 @@ export class AdminEventEditComponent implements OnInit {
       endsAt: value.endsAt
     };
 
-    this.submitting.set(true);
     this.formError.set(null);
     this.eventsService
       .updateEvent(current.id, request)
       .pipe(
         switchMap(() => this.eventsService.getEventById(current.id)),
+        withActionLock(this.submitting),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (updated) => {
           this.event.set(updated);
-          this.submitting.set(false);
           this.notifications.success('Event updated.');
         },
         error: (err: unknown) => {
-          this.submitting.set(false);
           console.error('Update failed', err);
           this.formError.set(this.actions.mapError(err, 'Failed to update event.'));
         }

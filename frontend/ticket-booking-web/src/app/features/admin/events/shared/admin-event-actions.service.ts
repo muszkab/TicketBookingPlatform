@@ -1,13 +1,14 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, WritableSignal, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { EMPTY, Observable, catchError, filter, switchMap, tap } from 'rxjs';
 
-import { EventDto, EventsService, ProblemDetails } from '../../../../api';
+import { EventDto, EventsService } from '../../../../api';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData
 } from '../../../../core/dialogs/confirm-dialog.component';
+import { withActionLock } from '../../../../core/http/action-lock';
+import { mapProblemDetails } from '../../../../core/http/map-error';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -51,19 +52,7 @@ export class AdminEventActionsService {
   }
 
   mapError(err: unknown, fallback: string): string {
-    if (err instanceof HttpErrorResponse) {
-      const problem = err.error as ProblemDetails | undefined;
-      if (problem?.detail) {
-        return problem.detail;
-      }
-      if (problem?.title) {
-        return problem.title;
-      }
-      if (err.status === 0) {
-        return 'Cannot reach the server.';
-      }
-    }
-    return fallback;
+    return mapProblemDetails(err, fallback);
   }
 
   private confirm(data: ConfirmDialogData): Observable<boolean | undefined> {
@@ -86,22 +75,18 @@ export class AdminEventActionsService {
   ): Observable<EventDto> {
     return this.confirm(confirmData).pipe(
       filter((ok): ok is true => ok === true),
-      switchMap(() => {
-        acting?.set(true);
-        return action().pipe(
+      switchMap(() =>
+        action().pipe(
           switchMap(() => this.eventsService.getEventById(evt.id)),
           catchError((err: unknown) => {
-            acting?.set(false);
             console.error(logPrefix, err);
             this.notifications.error(this.mapError(err, errorFallback));
             return EMPTY;
-          })
-        );
-      }),
-      // success side effects (notify + reset acting) are attached here so they run
-      // only on the successful branch.
+          }),
+          acting ? withActionLock(acting) : (src) => src
+        )
+      ),
       tap((updated) => {
-        acting?.set(false);
         this.notifications.success(successMessage(updated));
       })
     );

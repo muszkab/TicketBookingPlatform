@@ -1,10 +1,16 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 import { AuthResultDto, AuthService as GeneratedAuthService, LoginRequest } from '../../api';
+import { NotificationService } from '../notifications/notification.service';
 import { USER_ROLES } from './roles';
 
 const STORAGE_KEY = 'tbp.auth';
+
+const EXPIRY_BUFFER_MS = 2_000;
+
+const MAX_TIMER_MS = 2_147_483_000;
 
 interface StoredAuth {
   accessToken: string;
@@ -28,8 +34,49 @@ const ROLE_CLAIM_KEYS = [
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly api = inject(GeneratedAuthService);
+  private readonly router = inject(Router);
+  private readonly notifications = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   private readonly state = signal<StoredAuth | null>(this.readStorage());
+
+  private expiryTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect(() => {
+      const value = this.state();
+      this.clearExpiryTimer();
+      if (!value) {
+        return;
+      }
+      const expiresAt = Date.parse(value.expiresAt);
+      if (!Number.isFinite(expiresAt)) {
+        return;
+      }
+      const delay = Math.min(
+        Math.max(expiresAt - Date.now() - EXPIRY_BUFFER_MS, 0),
+        MAX_TIMER_MS
+      );
+      if (typeof window === 'undefined') {
+        return;
+      }
+      this.expiryTimer = setTimeout(() => this.handleExpiry(), delay);
+    });
+
+    if (typeof window !== 'undefined') {
+      const listener = (event: StorageEvent) => {
+        if (event.key !== STORAGE_KEY) {
+          return;
+        }
+        this.state.set(this.readStorage());
+      };
+      window.addEventListener('storage', listener);
+      this.destroyRef.onDestroy(() => {
+        window.removeEventListener('storage', listener);
+        this.clearExpiryTimer();
+      });
+    }
+  }
 
   readonly accessToken = computed(() => {
     const value = this.state();
@@ -85,6 +132,27 @@ export class AuthService {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
       // ignore storage errors (private mode / SSR)
+    }
+  }
+
+  private handleExpiry(): void {
+    this.expiryTimer = null;
+    if (this.state() === null) {
+      return;
+    }
+    this.logout();
+    this.notifications.info('Your session has expired. Please sign in again.');
+    const currentUrl = this.router.url;
+    const isOnLogin = currentUrl.startsWith('/login');
+    this.router.navigate(['/login'], {
+      queryParams: isOnLogin ? {} : { returnUrl: currentUrl }
+    });
+  }
+
+  private clearExpiryTimer(): void {
+    if (this.expiryTimer !== null) {
+      clearTimeout(this.expiryTimer);
+      this.expiryTimer = null;
     }
   }
 

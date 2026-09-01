@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,9 +10,10 @@ import {
   CreateEventRequest,
   EventsService,
   LocationDto,
-  LocationsService,
-  ProblemDetails
+  LocationsService
 } from '../../../api';
+import { withActionLock } from '../../../core/http/action-lock';
+import { mapProblemDetails } from '../../../core/http/map-error';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import {
   AdminEventFormComponent,
@@ -58,22 +58,21 @@ export class AdminEventCreateComponent implements OnInit {
 
   protected onSubmit(value: AdminEventFormValue): void {
     const request: CreateEventRequest = { ...value };
-    this.submitting.set(true);
     this.formError.set(null);
 
     this.eventsService
       .createEvent(request)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(withActionLock(this.submitting), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (created) => {
-          this.submitting.set(false);
           this.notifications.success(`Event "${created.title}" created as Draft.`);
           this.router.navigate(['/admin/events', created.id, 'edit']);
         },
         error: (err: unknown) => {
-          this.submitting.set(false);
           console.error('Create event failed', err);
-          this.formError.set(this.mapError(err));
+          this.formError.set(
+            mapProblemDetails(err, 'Failed to create event. Please try again.')
+          );
         }
       });
   }
@@ -99,21 +98,5 @@ export class AdminEventCreateComponent implements OnInit {
           this.locationsLoading.set(false);
         }
       });
-  }
-
-  private mapError(err: unknown): string {
-    if (err instanceof HttpErrorResponse) {
-      const problem = err.error as ProblemDetails | undefined;
-      if (problem?.detail) {
-        return problem.detail;
-      }
-      if (problem?.title) {
-        return problem.title;
-      }
-      if (err.status === 0) {
-        return 'Cannot reach the server.';
-      }
-    }
-    return 'Failed to create event. Please try again.';
   }
 }

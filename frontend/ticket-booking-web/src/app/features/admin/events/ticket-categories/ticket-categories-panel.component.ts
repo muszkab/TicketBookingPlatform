@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   Component,
   DestroyRef,
@@ -31,13 +30,14 @@ import { filter, switchMap } from 'rxjs';
 import {
   AddTicketCategoryRequest,
   EventsService,
-  ProblemDetails,
   TicketCategoryDto
 } from '../../../../api';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData
 } from '../../../../core/dialogs/confirm-dialog.component';
+import { withActionLock } from '../../../../core/http/action-lock';
+import { mapProblemDetails } from '../../../../core/http/map-error';
 import { NotificationService } from '../../../../core/notifications/notification.service';
 import { SUPPORTED_CURRENCIES } from '../../../events/shared/event-labels';
 
@@ -123,14 +123,12 @@ export class TicketCategoriesPanelComponent {
       quantity: raw.quantity
     };
 
-    this.submitting.set(true);
     this.formError.set(null);
     this.eventsService
       .addTicketCategory(this.eventId, request)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(withActionLock(this.submitting), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
-          this.submitting.set(false);
           this.notifications.success(`Ticket category "${request.name}" added.`);
           this.form.reset({
             name: '',
@@ -141,9 +139,8 @@ export class TicketCategoriesPanelComponent {
           this.changed.emit();
         },
         error: (err: unknown) => {
-          this.submitting.set(false);
           console.error('Add ticket category failed', err);
-          this.formError.set(this.mapError(err, 'Failed to add ticket category.'));
+          this.formError.set(mapProblemDetails(err, 'Failed to add ticket category.'));
         }
       });
   }
@@ -166,41 +163,24 @@ export class TicketCategoriesPanelComponent {
       .afterClosed()
       .pipe(
         filter((ok) => ok === true),
-        switchMap(() => {
-          this.acting.set(true);
-          return this.eventsService.removeTicketCategory(this.eventId, category.id);
-        }),
+        switchMap(() =>
+          this.eventsService
+            .removeTicketCategory(this.eventId, category.id)
+            .pipe(withActionLock(this.acting))
+        ),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: () => {
-          this.acting.set(false);
           this.notifications.success(`"${category.name}" removed.`);
           this.changed.emit();
         },
         error: (err: unknown) => {
-          this.acting.set(false);
           console.error('Remove ticket category failed', err);
           this.notifications.error(
-            this.mapError(err, 'Failed to remove ticket category.')
+            mapProblemDetails(err, 'Failed to remove ticket category.')
           );
         }
       });
-  }
-
-  private mapError(err: unknown, fallback: string): string {
-    if (err instanceof HttpErrorResponse) {
-      const problem = err.error as ProblemDetails | undefined;
-      if (problem?.detail) {
-        return problem.detail;
-      }
-      if (problem?.title) {
-        return problem.title;
-      }
-      if (err.status === 0) {
-        return 'Cannot reach the server.';
-      }
-    }
-    return fallback;
   }
 }

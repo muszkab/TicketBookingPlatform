@@ -4,6 +4,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter } from '@angular/router';
 import { provideApi } from './api';
 import { authInterceptor } from './core/auth/auth.interceptor';
+import { timeoutInterceptor } from './core/http/timeout.interceptor';
 import { environment } from '../environments/environment';
 import { routes } from './app.routes';
 
@@ -11,7 +12,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([authInterceptor, timeoutInterceptor])
+    ),
     provideAnimationsAsync(),
     provideApi(environment.apiBasePath)
   ]

@@ -11,6 +11,7 @@ public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
         builder.ToTable("OrderItems");
 
         builder.HasKey(i => i.Id);
+        builder.Property(i => i.Id).ValueGeneratedNever();
 
         builder.Property(i => i.OrderId).IsRequired();
         builder.Property(i => i.TicketCategoryId).IsRequired();

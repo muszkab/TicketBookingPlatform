@@ -19,6 +19,7 @@ public class TicketCategory : Entity
     }
 
     internal TicketCategory(Guid eventId, string name, Money price, int totalQuantity)
+        : base(CreateId())
     {
         if (eventId == Guid.Empty)
             throw new ArgumentException("EventId is required.", nameof(eventId));

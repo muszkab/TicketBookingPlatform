@@ -11,6 +11,7 @@ public class TicketCategoryConfiguration : IEntityTypeConfiguration<TicketCatego
         builder.ToTable("TicketCategories");
 
         builder.HasKey(tc => tc.Id);
+        builder.Property(tc => tc.Id).ValueGeneratedNever();
 
         builder.Property(tc => tc.EventId).IsRequired();
 

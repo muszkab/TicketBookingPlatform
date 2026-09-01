@@ -11,7 +11,6 @@ public class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         builder.ToTable("Tickets");
 
         builder.HasKey(t => t.Id);
-        builder.Property(t => t.Id).ValueGeneratedNever();
 
         builder.Property(t => t.OrderId).IsRequired();
         builder.Property(t => t.OrderItemId).IsRequired();

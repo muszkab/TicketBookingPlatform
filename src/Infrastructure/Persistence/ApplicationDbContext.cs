@@ -1,4 +1,5 @@
 using Application.Common.Interfaces;
+using Domain.Common;
 using Domain.Events;
 using Domain.Locations;
 using Domain.Orders;
@@ -26,6 +27,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(Entity).IsAssignableFrom(entityType.ClrType))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(Entity.Id))
+                    .ValueGeneratedNever();
+            }
+        }
+
         base.OnModelCreating(modelBuilder);
     }
 }

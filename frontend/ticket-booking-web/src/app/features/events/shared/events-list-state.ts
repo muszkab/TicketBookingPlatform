@@ -19,6 +19,7 @@ import {
   isEventCategory,
   isEventStatus
 } from './event-labels';
+import { mapProblemDetails } from '../../../core/http/map-error';
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const PAGE_SIZE_OPTIONS: readonly number[] = [10, 20, 50];
@@ -90,7 +91,7 @@ export function createEventsListState(options: EventsListStateOptions = {}) {
       },
       error: (err: unknown) => {
         console.error(errorLogPrefix, err);
-        error.set(errorMessage);
+        error.set(mapProblemDetails(err, errorMessage));
         loading.set(false);
       }
     });

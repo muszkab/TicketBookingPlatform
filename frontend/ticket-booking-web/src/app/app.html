@@ -15,6 +15,10 @@
     }
 
     @if (isAuthenticated()) {
+      <a mat-button routerLink="/my-orders">
+        <mat-icon>receipt_long</mat-icon>
+        <span>My orders</span>
+      </a>
       @if (userName(); as name) {
         <span class="app-toolbar__user">{{ name }}</span>
       }

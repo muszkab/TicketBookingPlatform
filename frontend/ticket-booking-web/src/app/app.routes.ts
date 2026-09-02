@@ -23,6 +23,12 @@ export const routes: Routes = [
       import('./features/orders/orders.routes').then((m) => m.ORDERS_ROUTES)
   },
   {
+    path: 'my-orders',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/orders/my-orders.component').then((m) => m.MyOrdersComponent)
+  },
+  {
     path: 'checkout',
     canActivate: [authGuard],
     loadComponent: () =>

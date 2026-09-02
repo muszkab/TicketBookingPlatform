@@ -1,0 +1,27 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: var(--app-content-max-width);
+  margin: 0 auto;
+}
+
+.my-orders {
+  &__table {
+    width: 100%;
+
+    th.mat-mdc-header-cell {
+      background-color: rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
+  }
+
+  &__empty,
+  &__error {
+    padding: 1.5rem 0;
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  &__error {
+    color: #b00020;
+  }
+}

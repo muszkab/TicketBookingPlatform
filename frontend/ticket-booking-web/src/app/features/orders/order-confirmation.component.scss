@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: var(--app-content-max-width);
+  margin: 0 auto;
+}
+
+.order-confirmation {
+  &__state {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 0;
+  }
+
+  &__error {
+    max-width: 520px;
+  }
+
+  &__meta {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1.5rem;
+    margin: 0 0 1.5rem;
+
+    dt {
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
+    dd {
+      margin: 0;
+    }
+  }
+
+  &__items {
+    width: 100%;
+    margin-top: 0.5rem;
+
+    th.mat-mdc-header-cell {
+      background-color: rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
+  }
+
+  &__grand-total {
+    td.mat-mdc-footer-cell {
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      padding-top: 0.75rem;
+    }
+  }
+}

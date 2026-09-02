@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { EMPTY, catchError, from, map, of, switchMap } from 'rxjs';
@@ -24,8 +24,10 @@ import {
   TicketCategoryDto
 } from '../../api';
 import { AuthService } from '../../core/auth/auth.service';
-import { CartItem, CartService, MAX_TICKETS_PER_ORDER } from '../../core/cart/cart.service';
+import { CartItem, CartService, CartState, MAX_TICKETS_PER_ORDER } from '../../core/cart/cart.service';
+import { CheckoutError, CheckoutService } from '../../core/cart/checkout.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../core/dialogs/confirm-dialog.component';
+import { withActionLock } from '../../core/http/action-lock';
 import { NotificationService } from '../../core/notifications/notification.service';
 import { eventCategoryLabel, eventStatusLabel } from './shared/event-labels';
 
@@ -61,8 +63,10 @@ export class EventDetailComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
   private readonly cart = inject(CartService);
+  private readonly checkout = inject(CheckoutService);
   private readonly dialog = inject(MatDialog);
   private readonly notifications = inject(NotificationService);
+  private readonly router = inject(Router);
 
   protected readonly event = signal<EventDto | null>(null);
   protected readonly location = signal<LocationDto | null>(null);
@@ -70,6 +74,7 @@ export class EventDetailComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly notFound = signal(false);
   protected readonly quantities = signal<Record<string, number>>({});
+  protected readonly submitting = signal(false);
 
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly maxPerOrder = MAX_TICKETS_PER_ORDER;
@@ -115,7 +120,8 @@ export class EventDetailComponent implements OnInit {
       this.isAuthenticated() &&
       this.bookingOpen() &&
       this.totalQuantity() > 0 &&
-      !this.overLimit()
+      !this.overLimit() &&
+      !this.submitting()
   );
 
   protected readonly ticketColumns = ['name', 'price', 'available', 'quantity'];
@@ -230,15 +236,67 @@ export class EventDetailComponent implements OnInit {
         unitPrice: s.category.price,
         quantity: s.quantity
       }));
-      this.cart.setCart({
+      const cartState = {
         eventId: evt.id,
         eventTitle: evt.title,
         currency: this.currency(),
         items
-      });
-      this.notifications.success('Tickets added to your cart.');
-      // TODO(part 2a/4): navigate to /checkout once the checkout screen exists.
+      };
+      this.cart.setCart(cartState);
+      const saved = this.cart.cart();
+      if (saved) {
+        this.placeOrder(saved);
+      }
     });
+  }
+
+  private placeOrder(cartState: CartState): void {
+    this.checkout
+      .placeOrder(cartState)
+      .pipe(withActionLock(this.submitting), takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (order) => {
+          this.cart.clear();
+          this.notifications.success('Booking confirmed.');
+          this.router.navigate(['/orders', order.id, 'confirmation']);
+        },
+        error: (err: CheckoutError) => {
+          if (err.kind === 'unauthorized') {
+            this.notifications.error(err.message);
+            this.router.navigate(['/login'], {
+              queryParams: { returnUrl: `/events/${this.event()?.id ?? ''}` }
+            });
+            return;
+          }
+          this.notifications.error(err.message);
+          if (err.kind === 'conflict' || err.kind === 'notFound') {
+            this.reloadEvent();
+          }
+        }
+      });
+  }
+
+  private reloadEvent(): void {
+    const id = this.event()?.id;
+    if (!id) {
+      return;
+    }
+    this.loading.set(true);
+    this.eventsService
+      .getEventById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (evt) => {
+          this.event.set(evt);
+          const next: Record<string, number> = {};
+          for (const category of evt.ticketCategories) {
+            next[category.id] = 0;
+          }
+          this.quantities.set(next);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false)
+      });
   }
 
   protected trackTicket = (_: number, item: TicketCategoryDto): string => item.id;

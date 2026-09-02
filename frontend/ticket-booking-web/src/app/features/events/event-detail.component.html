@@ -142,7 +142,7 @@
                         type="button"
                         [disabled]="!canBook()"
                         (click)="bookSelected()">
-                  Continue to checkout
+                  {{ submitting() ? 'Placing order…' : 'Continue to checkout' }}
                 </button>
               </div>
             </section>

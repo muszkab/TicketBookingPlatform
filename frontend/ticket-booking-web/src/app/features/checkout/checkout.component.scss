@@ -1,0 +1,50 @@
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: var(--app-content-max-width);
+  margin: 0 auto;
+}
+
+.checkout {
+  &__when {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(0, 0, 0, 0.7);
+    margin: 0 0 1rem;
+  }
+
+  &__items {
+    width: 100%;
+    margin-top: 0.5rem;
+
+    th.mat-mdc-header-cell {
+      background-color: rgba(0, 0, 0, 0.06);
+      font-weight: 600;
+    }
+  }
+
+  &__grand-total {
+    td.mat-mdc-footer-cell {
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      padding-top: 0.75rem;
+    }
+  }
+
+  &__email {
+    display: block;
+    max-width: 360px;
+    margin-top: 0.5rem;
+  }
+
+  &__terms {
+    display: block;
+    margin-top: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}

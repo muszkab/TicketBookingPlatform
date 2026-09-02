@@ -23,6 +23,12 @@ export const routes: Routes = [
       import('./features/orders/orders.routes').then((m) => m.ORDERS_ROUTES)
   },
   {
+    path: 'checkout',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/checkout/checkout.component').then((m) => m.CheckoutComponent)
+  },
+  {
     path: 'admin',
     canActivate: [authGuard, roleGuard([USER_ROLES.Admin])],
     loadChildren: () =>

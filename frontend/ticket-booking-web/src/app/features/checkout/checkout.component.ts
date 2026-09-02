@@ -94,8 +94,8 @@ export class CheckoutComponent implements OnInit {
       .subscribe({
         next: (order) => {
           this.cart.clear();
-          this.notifications.success('Booking confirmed.');
-          this.router.navigate(['/orders', order.id, 'confirmation']);
+          this.notifications.success('Order placed. Please complete the payment.');
+          this.router.navigate(['/orders', order.id, 'pay']);
         },
         error: (err: CheckoutError) => {
           if (err.kind === 'unauthorized') {

@@ -1,0 +1,90 @@
+<section class="order-payment">
+  @if (submitting()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (loading()) {
+    <div class="order-payment__state">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (notFound()) {
+    <mat-card class="order-payment__error">
+      <mat-card-title>Order not found</mat-card-title>
+      <mat-card-content>The requested order does not exist or is not accessible.</mat-card-content>
+    </mat-card>
+  } @else if (error(); as msg) {
+    <mat-card class="order-payment__error">
+      <mat-card-content>{{ msg }}</mat-card-content>
+    </mat-card>
+  } @else if (order(); as ord) {
+    <mat-card class="order-payment__card">
+      <mat-card-header>
+        <mat-card-title>Pay for your booking</mat-card-title>
+        @if (event(); as evt) {
+          <mat-card-subtitle>{{ evt.title }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+
+      <mat-card-content>
+        @if (event(); as evt) {
+          <p class="order-payment__when">
+            <mat-icon>event</mat-icon>
+            {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'medium' }}
+          </p>
+        }
+
+        <h3>Items</h3>
+        <table mat-table [dataSource]="ord.items" [trackBy]="trackItem" class="order-payment__items">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let item">{{ item.ticketCategoryName }}</td>
+            <td mat-footer-cell *matFooterCellDef><strong>Grand total</strong></td>
+          </ng-container>
+
+          <ng-container matColumnDef="quantity">
+            <th mat-header-cell *matHeaderCellDef>Qty</th>
+            <td mat-cell *matCellDef="let item">{{ item.quantity }}</td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-container>
+
+          <ng-container matColumnDef="unitPrice">
+            <th mat-header-cell *matHeaderCellDef>Unit price</th>
+            <td mat-cell *matCellDef="let item">{{ item.unitPriceAmount | number: '1.0-0' }} {{ item.currency }}</td>
+            <td mat-footer-cell *matFooterCellDef></td>
+          </ng-container>
+
+          <ng-container matColumnDef="lineTotal">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let item">{{ lineTotal(item) | number: '1.0-0' }} {{ item.currency }}</td>
+            <td mat-footer-cell *matFooterCellDef>
+              <strong>{{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}</strong>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="itemColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: itemColumns"></tr>
+          <tr mat-footer-row *matFooterRowDef="itemColumns" class="order-payment__grand-total"></tr>
+        </table>
+
+        <p class="order-payment__note">
+          <mat-icon>info</mat-icon>
+          This is a mock payment step. No real payment provider is called.
+        </p>
+      </mat-card-content>
+
+      <mat-card-actions class="order-payment__actions">
+        @if (event(); as evt) {
+          <a mat-button [routerLink]="['/events', evt.id]">
+            <mat-icon>arrow_back</mat-icon>
+            Back to event
+          </a>
+        }
+        <button mat-raised-button color="primary" type="button"
+                [disabled]="!canPay()"
+                (click)="simulatePayment()">
+          {{ submitting() ? 'Processing…' : 'Simulate payment' }}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  }
+</section>

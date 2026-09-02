@@ -54,4 +54,63 @@
   &__muted {
     color: rgba(0, 0, 0, 0.55);
   }
+
+  &__qty {
+    width: 6rem;
+  }
+
+  &__signin {
+    max-width: 520px;
+    margin: 0.5rem 0 1rem;
+  }
+
+  &__summary {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  &__summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+
+    h4 {
+      margin: 0;
+    }
+  }
+
+  &__summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem;
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+    }
+  }
+
+  &__summary-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  &__warn {
+    color: #b00020;
+    margin: 0.75rem 0 0;
+  }
+
+  &__actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+  }
 }

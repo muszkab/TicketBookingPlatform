@@ -1,10 +1,13 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,22 +16,35 @@ import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
 
 import {
   EventDto,
+  EventStatus,
   EventsService,
   LocationDto,
   LocationsService,
   TicketCategoryDto
 } from '../../api';
+import { AuthService } from '../../core/auth/auth.service';
 import { eventCategoryLabel, eventStatusLabel } from './shared/event-labels';
+
+export const MAX_TICKETS_PER_ORDER = 10;
+
+interface SelectedTicket {
+  readonly category: TicketCategoryDto;
+  readonly quantity: number;
+  readonly subtotal: number;
+}
 
 @Component({
   selector: 'app-event-detail',
   imports: [
     DatePipe,
     DecimalPipe,
+    FormsModule,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
     MatProgressSpinnerModule,
     MatTableModule,
     RouterLink
@@ -41,14 +57,63 @@ export class EventDetailComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly auth = inject(AuthService);
 
   protected readonly event = signal<EventDto | null>(null);
   protected readonly location = signal<LocationDto | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly notFound = signal(false);
+  protected readonly quantities = signal<Record<string, number>>({});
 
-  protected readonly ticketColumns = ['name', 'price', 'available'];
+  protected readonly isAuthenticated = this.auth.isAuthenticated;
+  protected readonly maxPerOrder = MAX_TICKETS_PER_ORDER;
+
+  protected readonly bookingOpen = computed(() => this.event()?.status === EventStatus.OnSale);
+
+  protected readonly selectedItems = computed<SelectedTicket[]>(() => {
+    const evt = this.event();
+    if (!evt) {
+      return [];
+    }
+    const map = this.quantities();
+    const items: SelectedTicket[] = [];
+    for (const category of evt.ticketCategories) {
+      const qty = map[category.id] ?? 0;
+      if (qty > 0) {
+        items.push({ category, quantity: qty, subtotal: qty * category.price });
+      }
+    }
+    return items;
+  });
+
+  protected readonly totalQuantity = computed(() =>
+    this.selectedItems().reduce((sum, item) => sum + item.quantity, 0)
+  );
+
+  protected readonly totalAmount = computed(() =>
+    this.selectedItems().reduce((sum, item) => sum + item.subtotal, 0)
+  );
+
+  protected readonly remainingCapacity = computed(() =>
+    Math.max(0, MAX_TICKETS_PER_ORDER - this.totalQuantity())
+  );
+
+  protected readonly currency = computed(
+    () => this.event()?.ticketCategories[0]?.currency ?? ''
+  );
+
+  protected readonly overLimit = computed(() => this.totalQuantity() > MAX_TICKETS_PER_ORDER);
+
+  protected readonly canBook = computed(
+    () =>
+      this.isAuthenticated() &&
+      this.bookingOpen() &&
+      this.totalQuantity() > 0 &&
+      !this.overLimit()
+  );
+
+  protected readonly ticketColumns = ['name', 'price', 'available', 'quantity'];
 
   protected readonly categoryLabel = eventCategoryLabel;
   protected readonly statusLabel = eventStatusLabel;
@@ -94,8 +159,24 @@ export class EventDetailComponent implements OnInit {
       .subscribe(({ event, location }) => {
         this.event.set(event);
         this.location.set(location);
+        const initial: Record<string, number> = {};
+        for (const category of event.ticketCategories) {
+          initial[category.id] = 0;
+        }
+        this.quantities.set(initial);
         this.loading.set(false);
       });
+  }
+
+  protected updateQuantity(category: TicketCategoryDto, raw: number | string | null): void {
+    const parsed = typeof raw === 'number' ? raw : Number.parseInt(String(raw ?? '0'), 10);
+    const numeric = Number.isFinite(parsed) ? Math.floor(parsed) : 0;
+    const capped = Math.max(0, Math.min(numeric, category.availableQuantity, MAX_TICKETS_PER_ORDER));
+    const current = this.quantities();
+    if (current[category.id] === capped) {
+      return;
+    }
+    this.quantities.set({ ...current, [category.id]: capped });
   }
 
   protected trackTicket = (_: number, item: TicketCategoryDto): string => item.id;

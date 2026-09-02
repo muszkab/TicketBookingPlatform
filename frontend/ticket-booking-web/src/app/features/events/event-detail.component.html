@@ -49,6 +49,22 @@
         @if (evt.ticketCategories.length === 0) {
           <p class="event-detail__muted">No ticket categories yet.</p>
         } @else {
+          @if (!bookingOpen()) {
+            <p class="event-detail__muted">
+              Booking is not available for this event (status: {{ statusLabel(evt.status) }}).
+            </p>
+          } @else if (!isAuthenticated()) {
+            <mat-card class="event-detail__signin">
+              <mat-card-content>
+                <p>Sign in to book tickets for this event.</p>
+                <a mat-raised-button color="primary" [routerLink]="['/login']"
+                   [queryParams]="{ returnUrl: '/events/' + evt.id }">
+                  Sign in to book
+                </a>
+              </mat-card-content>
+            </mat-card>
+          }
+
           <table mat-table [dataSource]="evt.ticketCategories" [trackBy]="trackTicket" class="event-detail__tickets">
             <ng-container matColumnDef="name">
               <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -65,9 +81,70 @@
               <td mat-cell *matCellDef="let tc">{{ tc.availableQuantity }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef>Quantity</th>
+              <td mat-cell *matCellDef="let tc">
+                @if (bookingOpen() && isAuthenticated()) {
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="event-detail__qty">
+                    <input matInput
+                           type="number"
+                           min="0"
+                           [max]="tc.availableQuantity"
+                           [disabled]="tc.availableQuantity === 0"
+                           [ngModel]="quantities()[tc.id] ?? 0"
+                           (ngModelChange)="updateQuantity(tc, $event)" />
+                  </mat-form-field>
+                } @else {
+                  <span class="event-detail__muted">—</span>
+                }
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="ticketColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: ticketColumns"></tr>
           </table>
+
+          @if (bookingOpen() && isAuthenticated()) {
+            <section class="event-detail__summary">
+              <div class="event-detail__summary-header">
+                <h4>Your selection</h4>
+                <span class="event-detail__muted">
+                  Max {{ maxPerOrder }} tickets per order · {{ remainingCapacity() }} left
+                </span>
+              </div>
+
+              @if (selectedItems().length === 0) {
+                <p class="event-detail__muted">No tickets selected yet.</p>
+              } @else {
+                <ul class="event-detail__summary-list">
+                  @for (item of selectedItems(); track item.category.id) {
+                    <li>
+                      <span>{{ item.quantity }} × {{ item.category.name }}</span>
+                      <span>{{ item.subtotal | number: '1.0-0' }} {{ item.category.currency }}</span>
+                    </li>
+                  }
+                </ul>
+                <div class="event-detail__summary-total">
+                  <strong>Total</strong>
+                  <strong>{{ totalAmount() | number: '1.0-0' }} {{ currency() }}</strong>
+                </div>
+              }
+
+              @if (overLimit()) {
+                <p class="event-detail__warn">
+                  You can book up to {{ maxPerOrder }} tickets per order.
+                </p>
+              }
+
+              <div class="event-detail__actions">
+                <button mat-raised-button color="primary"
+                        type="button"
+                        [disabled]="!canBook()">
+                  Continue to checkout
+                </button>
+              </div>
+            </section>
+          }
         }
       </mat-card-content>
     </mat-card>

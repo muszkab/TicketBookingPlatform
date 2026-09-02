@@ -91,8 +91,9 @@
                            min="0"
                            [max]="tc.availableQuantity"
                            [disabled]="tc.availableQuantity === 0"
+                           #qtyInput
                            [ngModel]="quantities()[tc.id] ?? 0"
-                           (ngModelChange)="updateQuantity(tc, $event)" />
+                           (ngModelChange)="updateQuantity(tc, $event); qtyInput.value = (quantities()[tc.id] ?? 0).toString()" />
                   </mat-form-field>
                 } @else {
                   <span class="event-detail__muted">—</span>

@@ -188,11 +188,13 @@ export class EventDetailComponent implements OnInit {
   protected updateQuantity(category: TicketCategoryDto, raw: number | string | null): void {
     const parsed = typeof raw === 'number' ? raw : Number.parseInt(String(raw ?? '0'), 10);
     const numeric = Number.isFinite(parsed) ? Math.floor(parsed) : 0;
-    const capped = Math.max(0, Math.min(numeric, category.availableQuantity, MAX_TICKETS_PER_ORDER));
     const current = this.quantities();
-    if (current[category.id] === capped) {
-      return;
-    }
+    const otherTotal = Object.entries(current).reduce(
+      (sum, [id, qty]) => (id === category.id ? sum : sum + (qty ?? 0)),
+      0
+    );
+    const remainingBudget = Math.max(0, MAX_TICKETS_PER_ORDER - otherTotal);
+    const capped = Math.max(0, Math.min(numeric, category.availableQuantity, remainingBudget));
     this.quantities.set({ ...current, [category.id]: capped });
   }
 

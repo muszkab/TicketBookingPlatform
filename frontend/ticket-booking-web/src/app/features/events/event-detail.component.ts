@@ -12,7 +12,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { EMPTY, catchError, from, map, of, switchMap } from 'rxjs';
 
 import {
   EventDto,
@@ -23,9 +24,10 @@ import {
   TicketCategoryDto
 } from '../../api';
 import { AuthService } from '../../core/auth/auth.service';
+import { CartItem, CartService, MAX_TICKETS_PER_ORDER } from '../../core/cart/cart.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../core/dialogs/confirm-dialog.component';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { eventCategoryLabel, eventStatusLabel } from './shared/event-labels';
-
-export const MAX_TICKETS_PER_ORDER = 10;
 
 interface SelectedTicket {
   readonly category: TicketCategoryDto;
@@ -58,6 +60,9 @@ export class EventDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly auth = inject(AuthService);
+  private readonly cart = inject(CartService);
+  private readonly dialog = inject(MatDialog);
+  private readonly notifications = inject(NotificationService);
 
   protected readonly event = signal<EventDto | null>(null);
   protected readonly location = signal<LocationDto | null>(null);
@@ -163,6 +168,18 @@ export class EventDetailComponent implements OnInit {
         for (const category of event.ticketCategories) {
           initial[category.id] = 0;
         }
+        if (this.cart.isSameEvent(event.id)) {
+          const existing = this.cart.cart();
+          if (existing) {
+            for (const item of existing.items) {
+              if (item.ticketCategoryId in initial) {
+                const category = event.ticketCategories.find((c) => c.id === item.ticketCategoryId);
+                const max = Math.min(category?.availableQuantity ?? 0, MAX_TICKETS_PER_ORDER);
+                initial[item.ticketCategoryId] = Math.min(item.quantity, max);
+              }
+            }
+          }
+        }
         this.quantities.set(initial);
         this.loading.set(false);
       });
@@ -177,6 +194,49 @@ export class EventDetailComponent implements OnInit {
       return;
     }
     this.quantities.set({ ...current, [category.id]: capped });
+  }
+
+  protected bookSelected(): void {
+    const evt = this.event();
+    if (!evt || !this.canBook()) {
+      return;
+    }
+
+    const proceed$ = this.cart.hasDifferentEvent(evt.id)
+      ? from(
+          this.dialog
+            .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+              data: {
+                title: 'Replace cart?',
+                message:
+                  'Your cart already contains tickets for a different event. Continuing will replace them with your new selection.',
+                confirmLabel: 'Replace',
+                confirmColor: 'warn'
+              }
+            })
+            .afterClosed()
+        ).pipe(map((result) => result === true))
+      : of(true);
+
+    proceed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ok) => {
+      if (!ok) {
+        return;
+      }
+      const items: CartItem[] = this.selectedItems().map((s) => ({
+        ticketCategoryId: s.category.id,
+        name: s.category.name,
+        unitPrice: s.category.price,
+        quantity: s.quantity
+      }));
+      this.cart.setCart({
+        eventId: evt.id,
+        eventTitle: evt.title,
+        currency: this.currency(),
+        items
+      });
+      this.notifications.success('Tickets added to your cart.');
+      // TODO(part 2a/4): navigate to /checkout once the checkout screen exists.
+    });
   }
 
   protected trackTicket = (_: number, item: TicketCategoryDto): string => item.id;

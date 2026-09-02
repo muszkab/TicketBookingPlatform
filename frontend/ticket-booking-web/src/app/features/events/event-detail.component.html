@@ -139,7 +139,8 @@
               <div class="event-detail__actions">
                 <button mat-raised-button color="primary"
                         type="button"
-                        [disabled]="!canBook()">
+                        [disabled]="!canBook()"
+                        (click)="bookSelected()">
                   Continue to checkout
                 </button>
               </div>

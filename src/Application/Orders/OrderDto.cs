@@ -9,6 +9,8 @@ public sealed record OrderDto(
     Guid UserId,
     Guid EventId,
     string EventTitle,
+    DateTimeOffset EventStartsAt,
+    DateTimeOffset EventEndsAt,
     OrderStatus Status,
     decimal TotalAmount,
     string Currency,

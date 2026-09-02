@@ -2610,6 +2610,8 @@
           "userId",
           "eventId",
           "eventTitle",
+          "eventStartsAt",
+          "eventEndsAt",
           "status",
           "totalAmount",
           "currency",
@@ -2634,6 +2636,14 @@
           },
           "eventTitle": {
             "type": "string"
+          },
+          "eventStartsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eventEndsAt": {
+            "type": "string",
+            "format": "date-time"
           },
           "status": {
             "$ref": "#/components/schemas/OrderStatus"

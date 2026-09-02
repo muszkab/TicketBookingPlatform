@@ -30,17 +30,11 @@
         <dl class="order-confirmation__meta">
           <dt>Event</dt>
           <dd>
-            @if (event(); as evt) {
-              <a [routerLink]="['/events', evt.id]"><strong>{{ evt.title }}</strong></a>
-            } @else {
-              <a [routerLink]="['/events', ord.eventId]">View event</a>
-            }
+            <a [routerLink]="['/events', ord.eventId]"><strong>{{ ord.eventTitle }}</strong></a>
           </dd>
 
-          @if (event(); as evt) {
-            <dt>When</dt>
-            <dd>{{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'medium' }}</dd>
-          }
+          <dt>When</dt>
+          <dd>{{ ord.eventStartsAt | date: 'medium' }} → {{ ord.eventEndsAt | date: 'medium' }}</dd>
         </dl>
 
         <h3>Items</h3>

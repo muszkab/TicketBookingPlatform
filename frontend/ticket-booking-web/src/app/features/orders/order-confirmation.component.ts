@@ -9,9 +9,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
+import { EMPTY, catchError, switchMap } from 'rxjs';
 
-import { EventDto, EventsService, OrderDto, OrderItemDto, OrdersService } from '../../api';
+import { OrderDto, OrderItemDto, OrdersService } from '../../api';
 
 @Component({
   selector: 'app-order-confirmation',
@@ -31,12 +31,10 @@ import { EventDto, EventsService, OrderDto, OrderItemDto, OrdersService } from '
 })
 export class OrderConfirmationComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
-  private readonly eventsService = inject(EventsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly order = signal<OrderDto | null>(null);
-  protected readonly event = signal<EventDto | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly notFound = signal(false);
@@ -51,7 +49,6 @@ export class OrderConfirmationComponent implements OnInit {
           this.error.set(null);
           this.notFound.set(false);
           this.order.set(null);
-          this.event.set(null);
 
           if (!id) {
             this.notFound.set(true);
@@ -60,12 +57,6 @@ export class OrderConfirmationComponent implements OnInit {
           }
 
           return this.ordersService.getOrderById(id).pipe(
-            switchMap((order) =>
-              this.eventsService.getEventById(order.eventId).pipe(
-                catchError(() => of<EventDto | null>(null)),
-                map((event) => ({ order, event }))
-              )
-            ),
             catchError((err: unknown) => {
               if (err instanceof HttpErrorResponse && err.status === 404) {
                 this.notFound.set(true);
@@ -80,9 +71,8 @@ export class OrderConfirmationComponent implements OnInit {
         }),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(({ order, event }) => {
+      .subscribe((order) => {
         this.order.set(order);
-        this.event.set(event);
         this.loading.set(false);
       });
   }

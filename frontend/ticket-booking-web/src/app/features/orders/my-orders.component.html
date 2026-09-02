@@ -20,9 +20,11 @@
             <td mat-cell *matCellDef="let ord">{{ ord.createdAt | date: 'medium' }}</td>
           </ng-container>
 
-          <ng-container matColumnDef="itemCount">
-            <th mat-header-cell *matHeaderCellDef>Tickets</th>
-            <td mat-cell *matCellDef="let ord">{{ ord.itemCount }}</td>
+          <ng-container matColumnDef="eventTitle">
+            <th mat-header-cell *matHeaderCellDef>Event</th>
+            <td mat-cell *matCellDef="let ord">
+              <a [routerLink]="['/events', ord.eventId]">{{ ord.eventTitle }}</a>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="total">

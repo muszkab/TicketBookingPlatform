@@ -53,7 +53,7 @@ export class MyOrdersComponent implements OnInit {
   protected readonly page = signal(1);
   protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
 
-  protected readonly displayedColumns = ['createdAt', 'itemCount', 'total', 'status', 'actions'];
+  protected readonly displayedColumns = ['createdAt', 'eventTitle', 'total', 'status', 'actions'];
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = OrderStatus;
 

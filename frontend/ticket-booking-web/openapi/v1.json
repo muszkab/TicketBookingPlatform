@@ -2609,6 +2609,7 @@
           "id",
           "userId",
           "eventId",
+          "eventTitle",
           "status",
           "totalAmount",
           "currency",
@@ -2630,6 +2631,9 @@
           "eventId": {
             "type": "string",
             "format": "uuid"
+          },
+          "eventTitle": {
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/OrderStatus"
@@ -2715,6 +2719,7 @@
         "required": [
           "id",
           "eventId",
+          "eventTitle",
           "status",
           "totalAmount",
           "currency",
@@ -2730,6 +2735,9 @@
           "eventId": {
             "type": "string",
             "format": "uuid"
+          },
+          "eventTitle": {
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/OrderStatus"

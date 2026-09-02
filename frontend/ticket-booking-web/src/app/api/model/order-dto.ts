@@ -15,6 +15,7 @@ export interface OrderDto {
     id: string;
     userId: string;
     eventId: string;
+    eventTitle: string;
     status: OrderStatus;
     totalAmount: number;
     currency: string;

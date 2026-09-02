@@ -13,6 +13,7 @@ import { OrderStatus } from './order-status';
 export interface OrderSummaryDto { 
     id: string;
     eventId: string;
+    eventTitle: string;
     status: OrderStatus;
     totalAmount: number;
     currency: string;

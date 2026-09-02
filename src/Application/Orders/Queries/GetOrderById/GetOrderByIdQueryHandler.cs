@@ -27,6 +27,7 @@ public sealed class GetOrderByIdQueryHandler
             .AsNoTracking()
             .Include(o => o.Items)
             .ThenInclude(i => i.TicketCategory)
+            .Include(o => o.Event)
             .FirstOrDefaultAsync(o => o.Id == query.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)

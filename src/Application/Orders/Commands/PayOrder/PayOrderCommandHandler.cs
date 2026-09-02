@@ -31,6 +31,7 @@ public sealed class PayOrderCommandHandler
         Order? order = await _context.Orders
             .Include(o => o.Items)
             .ThenInclude(i => i.TicketCategory)
+            .Include(o => o.Event)
             .FirstOrDefaultAsync(o => o.Id == command.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)

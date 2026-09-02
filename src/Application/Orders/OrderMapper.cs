@@ -23,6 +23,7 @@ internal static class OrderMapper
             order.Id,
             order.UserId,
             order.EventId,
+            order.Event?.Title ?? string.Empty,
             order.Status,
             order.TotalAmount.Amount,
             order.TotalAmount.Currency,

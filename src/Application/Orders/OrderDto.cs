@@ -8,6 +8,7 @@ public sealed record OrderDto(
     Guid Id,
     Guid UserId,
     Guid EventId,
+    string EventTitle,
     OrderStatus Status,
     decimal TotalAmount,
     string Currency,

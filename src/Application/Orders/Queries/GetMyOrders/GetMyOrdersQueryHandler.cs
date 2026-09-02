@@ -33,6 +33,7 @@ public sealed class GetMyOrdersQueryHandler
             .Select(o => new OrderSummaryDto(
                 o.Id,
                 o.EventId,
+                o.Event!.Title,
                 o.Status,
                 o.TotalAmount.Amount,
                 o.TotalAmount.Currency,

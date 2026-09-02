@@ -13,6 +13,7 @@ public class Order : Entity
 {
     public Guid UserId { get; private set; }
     public Guid EventId { get; private set; }
+    public Event? Event { get; private set; }
     public OrderStatus Status { get; private set; }
     public Money TotalAmount { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }

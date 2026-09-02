@@ -40,6 +40,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(o => o.UserId);
         builder.HasIndex(o => o.EventId);
 
+        builder.HasOne(o => o.Event)
+            .WithMany()
+            .HasForeignKey(o => o.EventId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasMany(o => o.Items)
             .WithOne()
             .HasForeignKey(i => i.OrderId)

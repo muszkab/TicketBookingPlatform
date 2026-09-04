@@ -1,5 +1,6 @@
 using Application.Common.Interfaces;
 using Application.Common.Paging;
+using Domain.Orders;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -26,10 +27,12 @@ public sealed class GetMyOrdersQueryHandler
 
         (int page, int pageSize) = PagingHelpers.Normalize(query.Page, query.PageSize, GetMyOrdersQuery.DefaultPageSize);
 
-        IQueryable<OrderSummaryDto> source = _context.Orders
-            .AsNoTracking()
-            .Where(o => o.UserId == userId)
-            .OrderByDescending(o => o.CreatedAt)
+        IQueryable<Order> ordered = ApplySort(
+            _context.Orders.AsNoTracking().Where(o => o.UserId == userId),
+            query.SortBy,
+            query.SortDir);
+
+        IQueryable<OrderSummaryDto> source = ordered
             .Select(o => new OrderSummaryDto(
                 o.Id,
                 o.EventId,
@@ -41,5 +44,31 @@ public sealed class GetMyOrdersQueryHandler
                 o.CreatedAt));
 
         return await source.ToPagedResultAsync(page, pageSize, cancellationToken);
+    }
+
+    private static IQueryable<Order> ApplySort(
+        IQueryable<Order> source,
+        OrderSortField sortBy,
+        SortDirection sortDir)
+    {
+        bool desc = sortDir == SortDirection.Desc;
+
+        IOrderedQueryable<Order> ordered = sortBy switch
+        {
+            OrderSortField.TotalAmount => desc
+                ? source.OrderByDescending(o => o.TotalAmount.Amount)
+                : source.OrderBy(o => o.TotalAmount.Amount),
+            OrderSortField.Status => desc
+                ? source.OrderByDescending(o => o.Status)
+                : source.OrderBy(o => o.Status),
+            OrderSortField.EventTitle => desc
+                ? source.OrderByDescending(o => o.Event!.Title)
+                : source.OrderBy(o => o.Event!.Title),
+            _ => desc
+                ? source.OrderByDescending(o => o.CreatedAt)
+                : source.OrderBy(o => o.CreatedAt)
+        };
+
+        return ordered.ThenBy(o => o.Id);
     }
 }

@@ -86,9 +86,11 @@ public class OrdersController(
     public async Task<ActionResult<PagedResult<OrderSummaryDto>>> GetMyOrders(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = GetMyOrdersQuery.DefaultPageSize,
+        [FromQuery] OrderSortField sortBy = OrderSortField.CreatedAt,
+        [FromQuery] SortDirection sortDir = SortDirection.Desc,
         CancellationToken cancellationToken = default)
     {
-        PagedResult<OrderSummaryDto> result = await getMyOrdersQueryHandler.HandleAsync(new GetMyOrdersQuery(page, pageSize), cancellationToken);
+        PagedResult<OrderSummaryDto> result = await getMyOrdersQueryHandler.HandleAsync(new GetMyOrdersQuery(page, pageSize, sortBy, sortDir), cancellationToken);
         return Ok(result);
     }
 }

@@ -1,0 +1,26 @@
+.my-tickets {
+  padding: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.my-tickets__filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.my-tickets__table {
+  width: 100%;
+}
+
+.my-tickets__error {
+  color: var(--mat-sys-color-error, #b00020);
+}
+
+.my-tickets__empty {
+  color: rgba(0, 0, 0, 0.6);
+  font-style: italic;
+}

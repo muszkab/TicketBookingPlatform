@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -63,6 +63,25 @@ export class TicketDetailsComponent implements OnInit {
   });
 
   protected readonly isActive = computed(() => this.ticket()?.status === TicketStatus.Valid);
+
+  @ViewChild(QrCodeComponent) private qrCode?: QrCodeComponent;
+
+  protected downloadPng(): void {
+    const t = this.ticket();
+    const dataUrl = this.qrCode?.toPngDataUrl();
+    if (!t || !dataUrl) return;
+
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = `ticket-${t.code}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  protected print(): void {
+    window.print();
+  }
 
   ngOnInit(): void {
     this.route.paramMap

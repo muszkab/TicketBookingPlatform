@@ -1,0 +1,90 @@
+<section class="my-tickets">
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <mat-card class="my-tickets__card">
+    <mat-card-header>
+      <mat-card-title>My tickets</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="my-tickets__filters">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select [ngModel]="status()" (ngModelChange)="onStatusChange($event)">
+            <mat-option [value]="null">All</mat-option>
+            @for (s of statusOptions; track s) {
+              <mat-option [value]="s">{{ s }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (hasOrderFilter()) {
+          <mat-chip-set>
+            <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
+              Filtered by order
+              <button matChipRemove type="button" aria-label="Clear order filter">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip>
+          </mat-chip-set>
+        }
+      </div>
+
+      @if (error(); as msg) {
+        <p class="my-tickets__error">{{ msg }}</p>
+      } @else if (!loading() && tickets().length === 0) {
+        <p class="my-tickets__empty">No tickets to display.</p>
+      } @else {
+        <table mat-table [dataSource]="tickets()" [trackBy]="trackTicket" class="my-tickets__table">
+          <ng-container matColumnDef="eventTitle">
+            <th mat-header-cell *matHeaderCellDef>Event</th>
+            <td mat-cell *matCellDef="let t">
+              <a [routerLink]="['/events', t.eventId]">{{ t.eventTitle }}</a>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let t">{{ t.ticketCategoryName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let t"><code>{{ t.code }}</code></td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let t">
+              <mat-chip [color]="statusColor(t.status)" [highlighted]="true">{{ t.status }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="createdAt">
+            <th mat-header-cell *matHeaderCellDef>Issued at</th>
+            <td mat-cell *matCellDef="let t">{{ t.createdAt | date: 'medium' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let t">
+              <a mat-button [routerLink]="['/tickets', t.id]">Details</a>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        <mat-paginator
+          [length]="totalCount()"
+          [pageIndex]="page() - 1"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          (page)="onPageChange($event)" />
+      }
+    </mat-card-content>
+  </mat-card>
+</section>

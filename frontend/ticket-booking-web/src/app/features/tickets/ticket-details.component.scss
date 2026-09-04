@@ -57,3 +57,31 @@
   color: rgba(0, 0, 0, 0.6);
   font-style: italic;
 }
+
+.ticket-details__actions {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+@media print {
+  :host {
+    display: block;
+  }
+
+  .ticket-details__back,
+  .ticket-details__actions,
+  mat-progress-bar {
+    display: none !important;
+  }
+
+  .ticket-details {
+    padding: 0;
+    max-width: none;
+  }
+
+  .ticket-details__card {
+    box-shadow: none !important;
+    border: 1px solid #000;
+  }
+}

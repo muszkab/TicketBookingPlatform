@@ -64,6 +64,17 @@
           </p>
         }
       </mat-card-content>
+
+      <mat-card-actions class="ticket-details__actions">
+        <button mat-stroked-button type="button" (click)="downloadPng()">
+          <mat-icon>download</mat-icon>
+          Download PNG
+        </button>
+        <button mat-stroked-button type="button" (click)="print()">
+          <mat-icon>print</mat-icon>
+          Print
+        </button>
+      </mat-card-actions>
     </mat-card>
   }
 </section>

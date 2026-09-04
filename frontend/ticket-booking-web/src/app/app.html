@@ -19,6 +19,10 @@
         <mat-icon>receipt_long</mat-icon>
         <span>My orders</span>
       </a>
+      <a mat-button routerLink="/my-tickets">
+        <mat-icon>confirmation_number</mat-icon>
+        <span>My tickets</span>
+      </a>
       @if (userName(); as name) {
         <span class="app-toolbar__user">{{ name }}</span>
       }

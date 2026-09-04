@@ -1,0 +1,69 @@
+<section class="ticket-details">
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <a mat-button routerLink="/my-tickets" class="ticket-details__back">
+    <mat-icon>arrow_back</mat-icon>
+    Back to my tickets
+  </a>
+
+  @if (loading()) {
+    <div class="ticket-details__state">
+      <mat-spinner diameter="48" />
+    </div>
+  } @else if (notFound()) {
+    <mat-card class="ticket-details__error">
+      <mat-card-title>Ticket not found</mat-card-title>
+      <mat-card-content>The requested ticket does not exist or is not accessible.</mat-card-content>
+    </mat-card>
+  } @else if (error(); as msg) {
+    <mat-card class="ticket-details__error">
+      <mat-card-content>{{ msg }}</mat-card-content>
+    </mat-card>
+  } @else if (ticket(); as t) {
+    <mat-card class="ticket-details__card">
+      <mat-card-header>
+        <mat-card-title>{{ t.eventTitle }}</mat-card-title>
+        <mat-card-subtitle>{{ t.ticketCategoryName }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="ticket-details__qr" [class.ticket-details__qr--inactive]="!isActive()">
+          <app-qr-code [code]="t.code" [size]="256" />
+        </div>
+
+        <dl class="ticket-details__meta">
+          <dt>Status</dt>
+          <dd>
+            @if (statusPresentation(); as sp) {
+              <mat-chip-set>
+                <mat-chip [highlighted]="true" [color]="sp.color">
+                  <mat-icon matChipAvatar>{{ sp.icon }}</mat-icon>
+                  {{ sp.label }}
+                </mat-chip>
+              </mat-chip-set>
+            }
+          </dd>
+
+          <dt>Code</dt>
+          <dd><code>{{ t.code }}</code></dd>
+
+          <dt>Issued at</dt>
+          <dd>{{ t.createdAt | date: 'medium' }}</dd>
+
+          @if (t.usedAt) {
+            <dt>Used at</dt>
+            <dd>{{ t.usedAt | date: 'medium' }}</dd>
+          }
+        </dl>
+
+        @if (!isActive()) {
+          <p class="ticket-details__inactive-hint">
+            This ticket is no longer valid.
+          </p>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

@@ -2227,6 +2227,15 @@
             }
           },
           {
+            "name": "orderId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "default": null
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {

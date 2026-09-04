@@ -29,10 +29,11 @@ export interface TicketsServiceInterface {
      * 
      * @endpoint get /api/v1/Tickets/mine
      * @param status 
+     * @param orderId 
      * @param page 
      * @param pageSize 
      */
-    getMyTickets(status?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfTicketDto>;
+    getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfTicketDto>;
 
     /**
      * 

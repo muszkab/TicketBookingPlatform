@@ -30,6 +30,7 @@ model/login-request.ts
 model/models.ts
 model/order-dto.ts
 model/order-item-dto.ts
+model/order-sort-field.ts
 model/order-status.ts
 model/order-summary-dto.ts
 model/paged-result-of-event-dto.ts
@@ -38,6 +39,7 @@ model/paged-result-of-order-summary-dto.ts
 model/paged-result-of-ticket-dto.ts
 model/problem-details.ts
 model/register-user-request.ts
+model/sort-direction.ts
 model/ticket-category-dto.ts
 model/ticket-dto.ts
 model/ticket-status.ts

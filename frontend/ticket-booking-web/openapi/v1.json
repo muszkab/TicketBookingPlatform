@@ -2051,6 +2051,20 @@
               "format": "int32",
               "default": 20
             }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/OrderSortField"
+            }
+          },
+          {
+            "name": "sortDir",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SortDirection"
+            }
           }
         ],
         "responses": {
@@ -2717,6 +2731,16 @@
           }
         }
       },
+      "OrderSortField": {
+        "enum": [
+          "CreatedAt",
+          "TotalAmount",
+          "Status",
+          "EventTitle"
+        ],
+        "type": "string",
+        "default": 0
+      },
       "OrderStatus": {
         "enum": [
           "Pending",
@@ -2945,6 +2969,14 @@
             "type": "string"
           }
         }
+      },
+      "SortDirection": {
+        "enum": [
+          "Asc",
+          "Desc"
+        ],
+        "type": "string",
+        "default": 1
       },
       "TicketCategoryDto": {
         "required": [

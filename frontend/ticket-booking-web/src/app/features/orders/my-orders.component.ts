@@ -7,21 +7,40 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSortModule, Sort, SortDirection as MatSortDirection } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { OrderStatus, OrderSummaryDto, OrdersService, PagedResultOfOrderSummaryDto } from '../../api';
+import { OrderSortField, OrderStatus, OrderSummaryDto, OrdersService, PagedResultOfOrderSummaryDto, SortDirection } from '../../api';
 import { OrderCancelService } from '../../core/orders/order-cancel.service';
 import { mapProblemDetails } from '../../core/http/map-error';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [5, 10, 25];
+const DEFAULT_SORT_BY: OrderSortField = OrderSortField.CreatedAt;
+const DEFAULT_SORT_DIR: SortDirection = SortDirection.Desc;
+
+const COLUMN_TO_SORT_FIELD: Readonly<Record<string, OrderSortField>> = {
+  eventTitle: OrderSortField.EventTitle,
+  total: OrderSortField.TotalAmount,
+  createdAt: OrderSortField.CreatedAt,
+  status: OrderSortField.Status
+};
+
+const SORT_FIELD_TO_COLUMN: Readonly<Record<OrderSortField, string>> = {
+  [OrderSortField.EventTitle]: 'eventTitle',
+  [OrderSortField.TotalAmount]: 'total',
+  [OrderSortField.CreatedAt]: 'createdAt',
+  [OrderSortField.Status]: 'status'
+};
 
 interface OrdersQuery {
   readonly page: number;
   readonly pageSize: number;
+  readonly sortBy: OrderSortField;
+  readonly sortDir: SortDirection;
 }
 
 @Component({
@@ -35,6 +54,7 @@ interface OrdersQuery {
     MatIconModule,
     MatPaginatorModule,
     MatProgressBarModule,
+    MatSortModule,
     MatTableModule,
     RouterLink
   ],
@@ -54,6 +74,8 @@ export class MyOrdersComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly page = signal(1);
   protected readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  protected readonly sortBy = signal<OrderSortField>(DEFAULT_SORT_BY);
+  protected readonly sortDir = signal<SortDirection>(DEFAULT_SORT_DIR);
   protected readonly cancelling = signal(false);
 
   protected readonly displayedColumns = ['eventTitle', 'total', 'createdAt', 'status', 'actions'];
@@ -65,7 +87,7 @@ export class MyOrdersComponent implements OnInit {
   constructor() {
     this.load$
       .pipe(
-        switchMap((q) => this.ordersService.getMyOrders(q.page, q.pageSize)),
+        switchMap((q) => this.ordersService.getMyOrders(q.page, q.pageSize, q.sortBy, q.sortDir)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
@@ -90,6 +112,8 @@ export class MyOrdersComponent implements OnInit {
       this.pageSize.set(
         PAGE_SIZE_OPTIONS.includes(rawPageSize) ? rawPageSize : DEFAULT_PAGE_SIZE
       );
+      this.sortBy.set(this.parseSortBy(params.get('sortBy')));
+      this.sortDir.set(this.parseSortDir(params.get('sortDir')));
       this.triggerLoad();
     });
   }
@@ -100,6 +124,35 @@ export class MyOrdersComponent implements OnInit {
       queryParams: { page: event.pageIndex + 1, pageSize: event.pageSize },
       queryParamsHandling: 'merge'
     });
+  }
+
+  protected onSortChange(sort: Sort): void {
+    const sortBy = sort.direction ? COLUMN_TO_SORT_FIELD[sort.active] ?? DEFAULT_SORT_BY : DEFAULT_SORT_BY;
+    const sortDir: SortDirection = sort.direction === 'asc' ? SortDirection.Asc : SortDirection.Desc;
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page: 1, sortBy, sortDir },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  protected get activeSortColumn(): string {
+    return SORT_FIELD_TO_COLUMN[this.sortBy()];
+  }
+
+  protected get activeSortDirection(): MatSortDirection {
+    return this.sortDir() === SortDirection.Asc ? 'asc' : 'desc';
+  }
+
+  private parseSortBy(value: string | null): OrderSortField {
+    return value && (Object.values(OrderSortField) as string[]).includes(value)
+      ? (value as OrderSortField)
+      : DEFAULT_SORT_BY;
+  }
+
+  private parseSortDir(value: string | null): SortDirection {
+    return value === SortDirection.Asc ? SortDirection.Asc : DEFAULT_SORT_DIR;
   }
 
   protected statusColor(status: OrderStatus): 'primary' | 'accent' | 'warn' | undefined {
@@ -137,6 +190,6 @@ export class MyOrdersComponent implements OnInit {
   private triggerLoad(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.load$.next({ page: this.page(), pageSize: this.pageSize() });
+    this.load$.next({ page: this.page(), pageSize: this.pageSize(), sortBy: this.sortBy(), sortDir: this.sortDir() });
   }
 }

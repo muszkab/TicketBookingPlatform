@@ -13,8 +13,10 @@ import { Observable }                                        from 'rxjs';
 
 import { CreateOrderRequest } from '../model/models';
 import { OrderDto } from '../model/models';
+import { OrderSortField } from '../model/models';
 import { PagedResultOfOrderSummaryDto } from '../model/models';
 import { ProblemDetails } from '../model/models';
+import { SortDirection } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -47,8 +49,10 @@ export interface OrdersServiceInterface {
      * @endpoint get /api/v1/Orders/mine
      * @param page 
      * @param pageSize 
+     * @param sortBy 
+     * @param sortDir 
      */
-    getMyOrders(page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfOrderSummaryDto>;
+    getMyOrders(page?: number, pageSize?: number, sortBy?: OrderSortField, sortDir?: SortDirection, extraHttpRequestParams?: any): Observable<PagedResultOfOrderSummaryDto>;
 
     /**
      * 

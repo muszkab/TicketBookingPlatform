@@ -21,9 +21,13 @@ import { CreateOrderRequest } from '../model/create-order-request';
 // @ts-ignore
 import { OrderDto } from '../model/order-dto';
 // @ts-ignore
+import { OrderSortField } from '../model/order-sort-field';
+// @ts-ignore
 import { PagedResultOfOrderSummaryDto } from '../model/paged-result-of-order-summary-dto';
 // @ts-ignore
 import { ProblemDetails } from '../model/problem-details';
+// @ts-ignore
+import { SortDirection } from '../model/sort-direction';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -180,14 +184,16 @@ export class OrdersService extends BaseService implements OrdersServiceInterface
      * @endpoint get /api/v1/Orders/mine
      * @param page 
      * @param pageSize 
+     * @param sortBy 
+     * @param sortDir 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getMyOrders(page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfOrderSummaryDto>;
-    public getMyOrders(page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfOrderSummaryDto>>;
-    public getMyOrders(page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfOrderSummaryDto>>;
-    public getMyOrders(page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMyOrders(page?: number, pageSize?: number, sortBy?: OrderSortField, sortDir?: SortDirection, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfOrderSummaryDto>;
+    public getMyOrders(page?: number, pageSize?: number, sortBy?: OrderSortField, sortDir?: SortDirection, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfOrderSummaryDto>>;
+    public getMyOrders(page?: number, pageSize?: number, sortBy?: OrderSortField, sortDir?: SortDirection, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfOrderSummaryDto>>;
+    public getMyOrders(page?: number, pageSize?: number, sortBy?: OrderSortField, sortDir?: SortDirection, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 
@@ -204,6 +210,24 @@ export class OrdersService extends BaseService implements OrdersServiceInterface
             localVarQueryParameters,
             'pageSize',
             <any>pageSize,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'sortBy',
+            <any>sortBy,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'sortDir',
+            <any>sortDir,
             QueryParamStyle.Form,
             true,
         );

@@ -112,6 +112,10 @@ export class MyOrdersComponent implements OnInit {
     }
   }
 
+  protected continuePaymentLink(order: OrderSummaryDto): (string | number)[] | null {
+    return order.status === OrderStatus.Pending ? ['/orders', order.id, 'pay'] : null;
+  }
+
   protected trackOrder = (_: number, order: OrderSummaryDto): string => order.id;
 
   private triggerLoad(): void {

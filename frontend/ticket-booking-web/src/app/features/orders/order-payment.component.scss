@@ -6,6 +6,10 @@
 }
 
 .order-payment {
+  &__back {
+    margin-top: 1.5rem;
+  }
+
   &__state {
     display: flex;
     justify-content: center;

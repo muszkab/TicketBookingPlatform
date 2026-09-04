@@ -1,4 +1,7 @@
 <section class="order-details">
+  @if (loading() || cancelling()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
   @if (loading()) {
     <div class="order-details__state">
       <mat-spinner diameter="48" />
@@ -74,11 +77,25 @@
         </table>
       </mat-card-content>
 
-      @if (canPay()) {
+      @if (canPay() || canCancel()) {
         <mat-card-actions class="order-details__actions" align="end">
-          <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
+          @if (canCancel()) {
+            <button mat-flat-button color="warn" type="button"
+                    [disabled]="cancelling()"
+                    (click)="cancelOrder()">
+              Cancel order
+            </button>
+          }
+          @if (canPay()) {
+            <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
+          }
         </mat-card-actions>
       }
     </mat-card>
   }
+
+  <a mat-button routerLink="/my-orders" class="order-details__back">
+    <mat-icon>arrow_back</mat-icon>
+    Back to my orders
+  </a>
 </section>

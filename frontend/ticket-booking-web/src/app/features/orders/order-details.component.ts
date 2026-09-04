@@ -5,13 +5,19 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { EMPTY, catchError, switchMap } from 'rxjs';
+import { EMPTY, catchError, filter, switchMap } from 'rxjs';
 
 import { OrderDto, OrderItemDto, OrderStatus, OrdersService } from '../../api';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../core/dialogs/confirm-dialog.component';
+import { withActionLock } from '../../core/http/action-lock';
+import { mapProblemDetails } from '../../core/http/map-error';
+import { NotificationService } from '../../core/notifications/notification.service';
 
 interface StatusPresentation {
   readonly icon: string;
@@ -28,6 +34,7 @@ interface StatusPresentation {
     MatCardModule,
     MatChipsModule,
     MatIconModule,
+    MatProgressBarModule,
     MatProgressSpinnerModule,
     MatTableModule,
     RouterLink
@@ -39,11 +46,14 @@ export class OrderDetailsComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialog = inject(MatDialog);
+  private readonly notifications = inject(NotificationService);
 
   protected readonly order = signal<OrderDto | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly notFound = signal(false);
+  protected readonly cancelling = signal(false);
 
   protected readonly itemColumns = ['name', 'quantity', 'unitPrice', 'lineTotal'];
 
@@ -62,6 +72,7 @@ export class OrderDetailsComponent implements OnInit {
   });
 
   protected readonly canPay = computed(() => this.order()?.status === OrderStatus.Pending);
+  protected readonly canCancel = computed(() => this.order()?.status === OrderStatus.Pending);
 
   ngOnInit(): void {
     this.route.paramMap
@@ -98,6 +109,59 @@ export class OrderDetailsComponent implements OnInit {
         this.order.set(order);
         this.loading.set(false);
       });
+  }
+
+  protected cancelOrder(): void {
+    const ord = this.order();
+    if (!ord || !this.canCancel() || this.cancelling()) return;
+
+    const data: ConfirmDialogData = {
+      title: 'Cancel order?',
+      message: 'This will cancel the order and release the reserved tickets. This action cannot be undone.',
+      confirmLabel: 'Cancel order',
+      cancelLabel: 'Keep order',
+      confirmColor: 'warn'
+    };
+
+    this.dialog
+      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data })
+      .afterClosed()
+      .pipe(
+        filter((confirmed): confirmed is true => confirmed === true),
+        switchMap(() =>
+          this.ordersService.cancelOrder(ord.id).pipe(
+            withActionLock(this.cancelling),
+            catchError((err: unknown) => {
+              if (err instanceof HttpErrorResponse && err.status === 409) {
+                this.notifications.error('This order can no longer be cancelled.');
+                this.reload(ord.id);
+              } else if (err instanceof HttpErrorResponse && err.status === 404) {
+                this.notFound.set(true);
+                this.order.set(null);
+              } else {
+                console.error('Failed to cancel order', err);
+                this.notifications.error(mapProblemDetails(err, 'Failed to cancel the order.'));
+              }
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((updated) => {
+        this.order.set(updated);
+        this.notifications.success('Order cancelled.');
+      });
+  }
+
+  private reload(id: string): void {
+    this.ordersService
+      .getOrderById(id)
+      .pipe(
+        catchError(() => EMPTY),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe((order) => this.order.set(order));
   }
 
   protected lineTotal(item: OrderItemDto): number {

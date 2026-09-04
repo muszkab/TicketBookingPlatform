@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
 
 import {
@@ -33,7 +33,8 @@ import { NotificationService } from '../../core/notifications/notification.servi
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatTableModule
+    MatTableModule,
+    RouterLink
   ],
   templateUrl: './order-payment.component.html',
   styleUrl: './order-payment.component.scss'

@@ -1,5 +1,5 @@
 <section class="my-orders">
-  @if (loading()) {
+  @if (loading() || cancelling()) {
     <mat-progress-bar mode="indeterminate" />
   }
 
@@ -45,6 +45,11 @@
               <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
               @if (continuePaymentLink(ord); as payLink) {
                 <a mat-button color="primary" [routerLink]="payLink">Pay</a>
+              }
+              @if (canCancel(ord)) {
+                <button mat-button color="warn" type="button"
+                        [disabled]="cancelling()"
+                        (click)="cancelOrder(ord)">Cancel</button>
               }
             </td>
           </ng-container>

@@ -69,7 +69,7 @@
           <mat-icon>arrow_back</mat-icon>
           Edit selection
         </a>
-        <button mat-raised-button color="primary" type="button"
+        <button mat-flat-button color="primary" type="button"
                 [disabled]="!canPlaceOrder()"
                 (click)="placeOrder()">
           {{ submitting() ? 'Placing order…' : 'Place order' }}

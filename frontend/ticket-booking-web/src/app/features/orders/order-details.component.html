@@ -16,22 +16,21 @@
     <mat-card class="order-details__card">
       <mat-card-header>
         <mat-card-title>
-          @if (statusPresentation(); as sp) {
-            <mat-icon [color]="sp.color">{{ sp.icon }}</mat-icon>
-          }
           Order details
         </mat-card-title>
-        <mat-card-subtitle>
-          @if (statusPresentation(); as sp) {
-            <mat-chip-set>
-              <mat-chip [highlighted]="true" [color]="sp.color">{{ sp.label }}</mat-chip>
-            </mat-chip-set>
-          }
-        </mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
         <dl class="order-details__meta">
+          <dt>Status</dt>
+          <dd>
+            @if (statusPresentation(); as sp) {
+              <mat-chip-set>
+                <mat-chip [highlighted]="true" [color]="sp.color">{{ sp.label }}</mat-chip>
+              </mat-chip-set>
+            }
+          </dd>
+
           <dt>Event</dt>
           <dd>
             <a [routerLink]="['/events', ord.eventId]"><strong>{{ ord.eventTitle }}</strong></a>
@@ -76,8 +75,8 @@
       </mat-card-content>
 
       @if (canPay()) {
-        <mat-card-actions class="order-details__actions">
-          <a mat-raised-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
+        <mat-card-actions class="order-details__actions" align="end">
+          <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
         </mat-card-actions>
       }
     </mat-card>

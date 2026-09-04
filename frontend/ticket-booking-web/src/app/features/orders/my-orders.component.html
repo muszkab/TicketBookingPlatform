@@ -42,9 +42,6 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let ord">
-              @if (continuePaymentLink(ord); as payLink) {
-                <a mat-button color="primary" [routerLink]="payLink">Pay</a>
-              }
               <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
             </td>
           </ng-container>

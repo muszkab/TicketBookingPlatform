@@ -72,8 +72,8 @@
         </p>
       </mat-card-content>
 
-      <mat-card-actions class="order-payment__actions">
-        <button mat-raised-button color="primary" type="button"
+      <mat-card-actions class="order-payment__actions" align="end">
+        <button mat-flat-button color="primary" type="button"
                 [disabled]="!canPay()"
                 (click)="simulatePayment()">
           {{ submitting() ? 'Processing…' : 'Simulate payment' }}

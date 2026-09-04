@@ -44,6 +44,7 @@
   &__note {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 0.5rem;
     margin-top: 1.25rem;
     color: rgba(0, 0, 0, 0.6);
@@ -52,7 +53,7 @@
 
   &__actions {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 1rem;
   }
 }

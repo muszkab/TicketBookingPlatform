@@ -103,15 +103,13 @@ export class MyOrdersComponent implements OnInit {
     switch (status) {
       case OrderStatus.Paid:
         return 'primary';
+      case OrderStatus.Pending:
+        return 'accent';
       case OrderStatus.Cancelled:
         return 'warn';
       default:
         return undefined;
     }
-  }
-
-  protected continuePaymentLink(order: OrderSummaryDto): (string | number)[] | null {
-    return order.status === OrderStatus.Pending ? ['/orders', order.id, 'pay'] : null;
   }
 
   protected trackOrder = (_: number, order: OrderSummaryDto): string => order.id;

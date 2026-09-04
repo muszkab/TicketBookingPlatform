@@ -8,17 +8,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
-import { HttpErrorResponse } from '@angular/common/http';
-import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { EMPTY, Subject, catchError, filter } from 'rxjs';
+import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { OrderStatus, OrderSummaryDto, OrdersService, PagedResultOfOrderSummaryDto } from '../../api';
-import { ConfirmDialogComponent, ConfirmDialogData } from '../../core/dialogs/confirm-dialog.component';
-import { withActionLock } from '../../core/http/action-lock';
+import { OrderCancelService } from '../../core/orders/order-cancel.service';
 import { mapProblemDetails } from '../../core/http/map-error';
-import { NotificationService } from '../../core/notifications/notification.service';
 
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [5, 10, 25];
@@ -50,8 +46,7 @@ export class MyOrdersComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly dialog = inject(MatDialog);
-  private readonly notifications = inject(NotificationService);
+  private readonly cancelService = inject(OrderCancelService);
 
   protected readonly orders = signal<OrderSummaryDto[]>([]);
   protected readonly totalCount = signal(0);
@@ -131,40 +126,10 @@ export class MyOrdersComponent implements OnInit {
   protected cancelOrder(order: OrderSummaryDto): void {
     if (!this.canCancel(order) || this.cancelling()) return;
 
-    const data: ConfirmDialogData = {
-      title: 'Cancel order?',
-      message: 'This will cancel the order and release the reserved tickets. This action cannot be undone.',
-      confirmLabel: 'Cancel order',
-      cancelLabel: 'Keep order',
-      confirmColor: 'warn'
-    };
-
-    this.dialog
-      .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, { data })
-      .afterClosed()
-      .pipe(
-        filter((confirmed): confirmed is true => confirmed === true),
-        switchMap(() =>
-          this.ordersService.cancelOrder(order.id).pipe(
-            withActionLock(this.cancelling),
-            catchError((err: unknown) => {
-              if (err instanceof HttpErrorResponse && err.status === 409) {
-                this.notifications.error('This order can no longer be cancelled.');
-                this.triggerLoad();
-              } else {
-                console.error('Failed to cancel order', err);
-                this.notifications.error(mapProblemDetails(err, 'Failed to cancel the order.'));
-              }
-              return EMPTY;
-            })
-          )
-        ),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(() => {
-        this.notifications.success('Order cancelled.');
-        this.triggerLoad();
-      });
+    this.cancelService
+      .confirmAndCancel(order.id, this.cancelling, { onConflict: () => this.triggerLoad() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.triggerLoad());
   }
 
   protected trackOrder = (_: number, order: OrderSummaryDto): string => order.id;

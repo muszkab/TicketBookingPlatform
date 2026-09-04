@@ -81,4 +81,24 @@ public class GetMyTicketsQueryHandlerTests
         cancelledResult.TotalCount.Should().Be(1);
         cancelledResult.Items[0].Id.Should().Be(oneTicket.Id);
     }
+
+    [Fact]
+    public async Task Handle_Should_FilterByOrderId()
+    {
+        using var db = TestDbContextFactory.CreateInMemory();
+        var userId = Guid.NewGuid();
+        await SeedTicketsAsync(db, userId, quantity: 2);
+        await SeedTicketsAsync(db, userId, quantity: 3);
+
+        var targetOrderId = db.Tickets.Select(t => t.OrderId).First();
+
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.UserId.Returns(userId);
+        var handler = new GetMyTicketsQueryHandler(db, currentUser);
+
+        var result = await handler.HandleAsync(new GetMyTicketsQuery(OrderId: targetOrderId));
+
+        result.Items.Should().OnlyContain(t => t.OrderId == targetOrderId);
+        result.TotalCount.Should().Be(db.Tickets.Count(t => t.OrderId == targetOrderId));
+    }
 }

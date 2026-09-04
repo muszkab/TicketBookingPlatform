@@ -33,6 +33,9 @@ public sealed class GetMyTicketsQueryHandler
         if (query.Status.HasValue)
             source = source.Where(t => t.Status == query.Status.Value);
 
+        if (query.OrderId.HasValue)
+            source = source.Where(t => t.OrderId == query.OrderId.Value);
+
         var projected = source
             .OrderByDescending(t => t.CreatedAt)
             .Select(t => new TicketDto(

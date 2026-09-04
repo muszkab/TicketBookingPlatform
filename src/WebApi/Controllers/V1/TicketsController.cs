@@ -36,11 +36,12 @@ public class TicketsController(
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<PagedResult<TicketDto>>> GetMyTickets(
         [FromQuery] TicketStatus? status,
+        [FromQuery] Guid? orderId = null,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = GetMyTicketsQuery.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        PagedResult<TicketDto> result = await getMyTicketsQueryHandler.HandleAsync(new GetMyTicketsQuery(status, page, pageSize), cancellationToken);
+        PagedResult<TicketDto> result = await getMyTicketsQueryHandler.HandleAsync(new GetMyTicketsQuery(status, orderId, page, pageSize), cancellationToken);
         return Ok(result);
     }
 }

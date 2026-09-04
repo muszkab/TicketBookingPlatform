@@ -7,8 +7,8 @@ export const ORDERS_ROUTES: Routes = [
       import('./order-payment.component').then((m) => m.OrderPaymentComponent)
   },
   {
-    path: ':id/confirmation',
+    path: ':id',
     loadComponent: () =>
-      import('./order-confirmation.component').then((m) => m.OrderConfirmationComponent)
+      import('./order-details.component').then((m) => m.OrderDetailsComponent)
   }
 ];

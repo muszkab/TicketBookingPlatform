@@ -73,12 +73,6 @@
       </mat-card-content>
 
       <mat-card-actions class="order-payment__actions">
-        @if (event(); as evt) {
-          <a mat-button [routerLink]="['/events', evt.id]">
-            <mat-icon>arrow_back</mat-icon>
-            Back to event
-          </a>
-        }
         <button mat-raised-button color="primary" type="button"
                 [disabled]="!canPay()"
                 (click)="simulatePayment()">

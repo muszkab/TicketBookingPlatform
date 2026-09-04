@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, catchError, map, of, switchMap } from 'rxjs';
 
 import {
@@ -33,8 +33,7 @@ import { NotificationService } from '../../core/notifications/notification.servi
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatTableModule,
-    RouterLink
+    MatTableModule
   ],
   templateUrl: './order-payment.component.html',
   styleUrl: './order-payment.component.scss'
@@ -104,7 +103,7 @@ export class OrderPaymentComponent implements OnInit {
         this.loading.set(false);
 
         if (order.status !== OrderStatus.Pending) {
-          this.router.navigate(['/orders', order.id, 'confirmation'], { replaceUrl: true });
+          this.router.navigate(['/orders', order.id], { replaceUrl: true });
         }
       });
   }
@@ -127,7 +126,7 @@ export class OrderPaymentComponent implements OnInit {
       .subscribe({
         next: (paid) => {
           this.notifications.success('Payment successful.');
-          this.router.navigate(['/orders', paid.id, 'confirmation'], { replaceUrl: true });
+          this.router.navigate(['/orders', paid.id], { replaceUrl: true });
         },
         error: (err: unknown) => {
           this.notifications.error(mapProblemDetails(err, 'Payment failed. Please try again.'));

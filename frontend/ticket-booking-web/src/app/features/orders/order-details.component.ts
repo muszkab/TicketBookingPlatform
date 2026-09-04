@@ -1,6 +1,6 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -11,10 +11,16 @@ import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, switchMap } from 'rxjs';
 
-import { OrderDto, OrderItemDto, OrdersService } from '../../api';
+import { OrderDto, OrderItemDto, OrderStatus, OrdersService } from '../../api';
+
+interface StatusPresentation {
+  readonly icon: string;
+  readonly color: 'primary' | 'accent' | 'warn' | undefined;
+  readonly label: string;
+}
 
 @Component({
-  selector: 'app-order-confirmation',
+  selector: 'app-order-details',
   imports: [
     DatePipe,
     DecimalPipe,
@@ -26,10 +32,10 @@ import { OrderDto, OrderItemDto, OrdersService } from '../../api';
     MatTableModule,
     RouterLink
   ],
-  templateUrl: './order-confirmation.component.html',
-  styleUrl: './order-confirmation.component.scss'
+  templateUrl: './order-details.component.html',
+  styleUrl: './order-details.component.scss'
 })
-export class OrderConfirmationComponent implements OnInit {
+export class OrderDetailsComponent implements OnInit {
   private readonly ordersService = inject(OrdersService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -40,6 +46,23 @@ export class OrderConfirmationComponent implements OnInit {
   protected readonly notFound = signal(false);
 
   protected readonly itemColumns = ['name', 'quantity', 'unitPrice', 'lineTotal'];
+
+  protected readonly statusPresentation = computed<StatusPresentation | null>(() => {
+    const ord = this.order();
+    if (!ord) return null;
+    switch (ord.status) {
+      case OrderStatus.Paid:
+        return { icon: 'check_circle', color: 'primary', label: ord.status };
+      case OrderStatus.Cancelled:
+        return { icon: 'cancel', color: 'warn', label: ord.status };
+      case OrderStatus.Pending:
+      default:
+        return { icon: 'hourglass_empty', color: 'accent', label: ord.status };
+    }
+  });
+
+  protected readonly canPay = computed(() => this.order()?.status === OrderStatus.Pending);
+
   ngOnInit(): void {
     this.route.paramMap
       .pipe(

@@ -45,7 +45,7 @@
               @if (continuePaymentLink(ord); as payLink) {
                 <a mat-button color="primary" [routerLink]="payLink">Pay</a>
               }
-              <a mat-button [routerLink]="['/orders', ord.id, 'confirmation']">Details</a>
+              <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
             </td>
           </ng-container>
 

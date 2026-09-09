@@ -41,11 +41,14 @@
             }
           </dd>
 
+          <dt>Venue</dt>
+          <dd>{{ t.location }}</dd>
+
+          <dt>Starts at</dt>
+          <dd>{{ t.startsAt | date: 'medium' }}</dd>
+
           <dt>Code</dt>
           <dd><code>{{ t.code }}</code></dd>
-
-          <dt>Issued at</dt>
-          <dd>{{ t.createdAt | date: 'medium' }}</dd>
 
           @if (t.usedAt) {
             <dt>Used at</dt>

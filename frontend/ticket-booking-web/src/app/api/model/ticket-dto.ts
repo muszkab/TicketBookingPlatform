@@ -15,6 +15,8 @@ export interface TicketDto {
     orderId: string;
     eventId: string;
     eventTitle: string;
+    startsAt: string;
+    location: string;
     ticketCategoryId: string;
     ticketCategoryName: string;
     code: string;

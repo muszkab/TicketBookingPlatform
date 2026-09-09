@@ -3028,6 +3028,8 @@
           "orderId",
           "eventId",
           "eventTitle",
+          "startsAt",
+          "location",
           "ticketCategoryId",
           "ticketCategoryName",
           "code",
@@ -3050,6 +3052,13 @@
             "format": "uuid"
           },
           "eventTitle": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "location": {
             "type": "string"
           },
           "ticketCategoryId": {

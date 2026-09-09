@@ -11,4 +11,5 @@ public sealed record OrderSummaryDto(
     decimal TotalAmount,
     string Currency,
     int ItemCount,
+    int TicketQuantity,
     DateTimeOffset CreatedAt);

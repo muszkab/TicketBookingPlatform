@@ -41,6 +41,7 @@ public sealed class GetMyOrdersQueryHandler
                 o.TotalAmount.Amount,
                 o.TotalAmount.Currency,
                 o.Items.Count,
+                o.Items.Sum(i => i.Quantity),
                 o.CreatedAt));
 
         return await source.ToPagedResultAsync(page, pageSize, cancellationToken);

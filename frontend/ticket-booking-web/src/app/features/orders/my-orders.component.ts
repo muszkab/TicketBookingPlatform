@@ -78,7 +78,7 @@ export class MyOrdersComponent implements OnInit {
   protected readonly sortDir = signal<SortDirection>(DEFAULT_SORT_DIR);
   protected readonly cancelling = signal(false);
 
-  protected readonly displayedColumns = ['eventTitle', 'total', 'createdAt', 'status', 'actions'];
+  protected readonly displayedColumns = ['eventTitle', 'ticketQuantity', 'total', 'createdAt', 'status', 'actions'];
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = OrderStatus;
 

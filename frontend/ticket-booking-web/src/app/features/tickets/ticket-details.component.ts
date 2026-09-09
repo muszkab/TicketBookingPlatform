@@ -1,6 +1,6 @@
-import { DatePipe, formatDate } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, LOCALE_ID, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,8 +13,8 @@ import { EMPTY, catchError, switchMap } from 'rxjs';
 
 import { TicketDto, TicketStatus, TicketsService } from '../../api';
 import { mapProblemDetails } from '../../core/http/map-error';
-import { NotificationService } from '../../core/notifications/notification.service';
 import { QrCodeComponent } from '../../core/qr-code/qr-code.component';
+import { TicketPdfService } from './ticket-pdf.service';
 
 interface StatusPresentation {
   readonly icon: string;
@@ -42,8 +42,7 @@ export class TicketDetailsComponent implements OnInit {
   private readonly ticketsService = inject(TicketsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly locale = inject(LOCALE_ID);
-  private readonly notification = inject(NotificationService);
+  private readonly ticketPdf = inject(TicketPdfService);
 
   protected readonly ticket = signal<TicketDto | null>(null);
   protected readonly loading = signal(true);
@@ -73,32 +72,11 @@ export class TicketDetailsComponent implements OnInit {
 
   protected async download(): Promise<void> {
     const t = this.ticket();
-    const qrCanvas = this.qrCode?.getCanvas();
-    if (!t || !qrCanvas || this.downloading()) return;
+    if (!t || this.downloading()) return;
 
     this.downloading.set(true);
     try {
-      const { jsPDF } = await import('jspdf');
-      const { renderTicketPdf } = await import('./ticket-pdf');
-
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-      renderTicketPdf(
-        doc,
-        {
-          eventTitle: t.eventTitle,
-          ticketCategoryName: t.ticketCategoryName,
-          location: t.location,
-          startsAt: formatDate(t.startsAt, 'medium', this.locale),
-          code: t.code,
-          status: t.status,
-          isValid: this.isActive()
-        },
-        qrCanvas
-      );
-      doc.save(`ticket-${t.code}.pdf`);
-    } catch (err) {
-      console.error('Failed to generate the ticket PDF', err);
-      this.notification.error('Could not generate the ticket.');
+      await this.ticketPdf.download(t, this.qrCode?.getCanvas() ?? null);
     } finally {
       this.downloading.set(false);
     }

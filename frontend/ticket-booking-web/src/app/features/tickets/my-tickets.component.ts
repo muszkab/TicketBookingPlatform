@@ -1,8 +1,7 @@
-import { DatePipe, formatDate } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
-  LOCALE_ID,
   OnInit,
   computed,
   inject,
@@ -26,8 +25,8 @@ import { switchMap } from 'rxjs/operators';
 
 import { PagedResultOfTicketDto, TicketDto, TicketStatus, TicketsService } from '../../api';
 import { mapProblemDetails } from '../../core/http/map-error';
-import { NotificationService } from '../../core/notifications/notification.service';
 import { QrCodeComponent } from '../../core/qr-code/qr-code.component';
+import { TicketPdfService } from './ticket-pdf.service';
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -66,8 +65,7 @@ export class MyTicketsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly locale = inject(LOCALE_ID);
-  private readonly notification = inject(NotificationService);
+  private readonly ticketPdf = inject(TicketPdfService);
 
   protected readonly tickets = signal<TicketDto[]>([]);
   protected readonly totalCount = signal(0);
@@ -175,32 +173,7 @@ export class MyTicketsComponent implements OnInit {
     this.downloadingTicketId.set(ticket.id);
     this.pdfTicket.set(ticket);
     try {
-      const qrCanvas = await this.waitForQrCanvas();
-      if (!qrCanvas) {
-        throw new Error('The QR code could not be rendered.');
-      }
-
-      const { jsPDF } = await import('jspdf');
-      const { renderTicketPdf } = await import('./ticket-pdf');
-
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
-      renderTicketPdf(
-        doc,
-        {
-          eventTitle: ticket.eventTitle,
-          ticketCategoryName: ticket.ticketCategoryName,
-          location: ticket.location,
-          startsAt: formatDate(ticket.startsAt, 'medium', this.locale),
-          code: ticket.code,
-          status: ticket.status,
-          isValid: ticket.status === TicketStatus.Valid
-        },
-        qrCanvas
-      );
-      doc.save(`ticket-${ticket.code}.pdf`);
-    } catch (err) {
-      console.error('Failed to generate the ticket PDF', err);
-      this.notification.error('Could not generate the ticket.');
+      await this.ticketPdf.download(ticket, await this.waitForQrCanvas());
     } finally {
       this.pdfTicket.set(null);
       this.downloadingTicketId.set(null);

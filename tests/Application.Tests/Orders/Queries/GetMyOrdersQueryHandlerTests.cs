@@ -49,4 +49,36 @@ public class GetMyOrdersQueryHandlerTests
         result.Items.Should().HaveCount(2);
         result.Items.Select(i => i.CreatedAt).Should().BeInDescendingOrder();
     }
+
+    [Fact]
+    public async Task Handle_Should_SortByTicketQuantity()
+    {
+        using var db = TestDbContextFactory.CreateInMemory();
+        var userId = Guid.NewGuid();
+        var location = DomainFactory.NewLocation();
+        var ev = DomainFactory.NewOnSaleEventWithCategory(location.Id, out var category);
+
+        var o1 = new Order(userId, ev.Id, "EUR"); o1.AddItem(category, 3);
+        var o2 = new Order(userId, ev.Id, "EUR"); o2.AddItem(category, 1);
+        var o3 = new Order(userId, ev.Id, "EUR"); o3.AddItem(category, 2);
+
+        db.Locations.Add(location);
+        db.Events.Add(ev);
+        db.Orders.AddRange(o1, o2, o3);
+        await db.SaveChangesAsync();
+
+        var currentUser = Substitute.For<ICurrentUserService>();
+        currentUser.UserId.Returns(userId);
+        var handler = new GetMyOrdersQueryHandler(db, currentUser);
+
+        var ascending = await handler.HandleAsync(
+            new GetMyOrdersQuery(SortBy: OrderSortField.TicketQuantity, SortDir: SortDirection.Asc));
+
+        ascending.Items.Select(i => i.TicketQuantity).Should().Equal(1, 2, 3);
+
+        var descending = await handler.HandleAsync(
+            new GetMyOrdersQuery(SortBy: OrderSortField.TicketQuantity, SortDir: SortDirection.Desc));
+
+        descending.Items.Select(i => i.TicketQuantity).Should().Equal(3, 2, 1);
+    }
 }

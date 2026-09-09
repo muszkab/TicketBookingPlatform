@@ -65,6 +65,9 @@ public sealed class GetMyOrdersQueryHandler
             OrderSortField.EventTitle => desc
                 ? source.OrderByDescending(o => o.Event!.Title)
                 : source.OrderBy(o => o.Event!.Title),
+            OrderSortField.TicketQuantity => desc
+                ? source.OrderByDescending(o => o.Items.Sum(i => i.Quantity))
+                : source.OrderBy(o => o.Items.Sum(i => i.Quantity)),
             _ => desc
                 ? source.OrderByDescending(o => o.CreatedAt)
                 : source.OrderBy(o => o.CreatedAt)

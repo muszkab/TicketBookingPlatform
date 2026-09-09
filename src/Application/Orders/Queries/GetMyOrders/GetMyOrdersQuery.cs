@@ -14,7 +14,8 @@ public enum OrderSortField
     CreatedAt,
     TotalAmount,
     Status,
-    EventTitle
+    EventTitle,
+    TicketQuantity
 }
 
 public enum SortDirection

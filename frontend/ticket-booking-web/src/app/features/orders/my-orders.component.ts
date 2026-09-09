@@ -24,6 +24,7 @@ const DEFAULT_SORT_DIR: SortDirection = SortDirection.Desc;
 
 const COLUMN_TO_SORT_FIELD: Readonly<Record<string, OrderSortField>> = {
   eventTitle: OrderSortField.EventTitle,
+  ticketQuantity: OrderSortField.TicketQuantity,
   total: OrderSortField.TotalAmount,
   createdAt: OrderSortField.CreatedAt,
   status: OrderSortField.Status
@@ -31,6 +32,7 @@ const COLUMN_TO_SORT_FIELD: Readonly<Record<string, OrderSortField>> = {
 
 const SORT_FIELD_TO_COLUMN: Readonly<Record<OrderSortField, string>> = {
   [OrderSortField.EventTitle]: 'eventTitle',
+  [OrderSortField.TicketQuantity]: 'ticketQuantity',
   [OrderSortField.TotalAmount]: 'total',
   [OrderSortField.CreatedAt]: 'createdAt',
   [OrderSortField.Status]: 'status'

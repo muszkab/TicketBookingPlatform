@@ -18,6 +18,11 @@
     }
   }
 
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
   &__subtitle {
     margin: 0.25rem 0 0;
     color: var(--mat-sys-on-surface-variant);

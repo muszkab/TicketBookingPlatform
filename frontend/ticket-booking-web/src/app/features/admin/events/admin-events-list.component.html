@@ -3,11 +3,7 @@
     <div>
       <h1>Admin · Events</h1>
     </div>
-    <a mat-flat-button color="primary" routerLink="new">
-      <mat-icon>add</mat-icon>
-      <span>Create event</span>
-    </a>
-  </header>
+    </header>
 
   <form class="admin-events__filters">
     <mat-form-field appearance="outline">
@@ -102,6 +98,13 @@
       </table>
     </div>
   }
+
+  <footer class="admin-events__footer">
+    <a mat-flat-button color="primary" routerLink="new">
+      <mat-icon>add</mat-icon>
+      <span>Create event</span>
+    </a>
+  </footer>
 
   <mat-paginator
     [length]="totalCount()"

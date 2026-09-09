@@ -79,10 +79,6 @@ export class TicketDetailsComponent implements OnInit {
     document.body.removeChild(link);
   }
 
-  protected print(): void {
-    window.print();
-  }
-
   ngOnInit(): void {
     this.route.paramMap
       .pipe(

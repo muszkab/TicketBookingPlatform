@@ -9,6 +9,7 @@
 
 .ticket-details__back {
   align-self: flex-start;
+  margin-top: 0.5rem;
 }
 
 .ticket-details__state {
@@ -39,16 +40,25 @@
 .ticket-details__meta {
   display: grid;
   grid-template-columns: max-content 1fr;
+  align-items: center;
   gap: 0.5rem 1rem;
   margin: 0;
 
   dt {
     font-weight: 600;
     color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
   }
 
   dd {
     margin: 0;
+    display: flex;
+    align-items: center;
+
+    mat-chip-set {
+      margin: 0;
+    }
   }
 }
 
@@ -60,8 +70,10 @@
 
 .ticket-details__actions {
   display: flex;
+  justify-content: flex-end;
   gap: 0.5rem;
   padding: 0 1rem 1rem;
+  margin-top: 1.5rem;
 }
 
 @media print {

@@ -3,11 +3,6 @@
     <mat-progress-bar mode="indeterminate" />
   }
 
-  <a mat-button routerLink="/my-tickets" class="ticket-details__back">
-    <mat-icon>arrow_back</mat-icon>
-    Back to my tickets
-  </a>
-
   @if (loading()) {
     <div class="ticket-details__state">
       <mat-spinner diameter="48" />
@@ -66,15 +61,18 @@
       </mat-card-content>
 
       <mat-card-actions class="ticket-details__actions">
-        <button mat-stroked-button type="button" (click)="downloadPng()">
+        <button mat-flat-button color="primary" type="button" (click)="downloadPng()">
           <mat-icon>download</mat-icon>
-          Download PNG
-        </button>
-        <button mat-stroked-button type="button" (click)="print()">
-          <mat-icon>print</mat-icon>
-          Print
+          Download
         </button>
       </mat-card-actions>
     </mat-card>
   }
+
+  <div class="ticket-details__back">
+    <a mat-button routerLink="/my-tickets">
+      <mat-icon>arrow_back</mat-icon>
+      Back to my tickets
+    </a>
+  </div>
 </section>

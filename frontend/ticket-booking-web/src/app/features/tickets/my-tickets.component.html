@@ -1,6 +1,12 @@
 <section class="my-tickets">
-  @if (loading()) {
+  @if (loading() || downloadingTicketId() !== null) {
     <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (pdfTicket(); as pdf) {
+    <div class="my-tickets__pdf-qr" aria-hidden="true">
+      <app-qr-code [code]="pdf.code" [size]="512" />
+    </div>
   }
 
   <mat-card class="my-tickets__card">
@@ -71,6 +77,14 @@
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let t">
               <a mat-button [routerLink]="['/tickets', t.id]">Details</a>
+              <button
+                mat-button
+                type="button"
+                [disabled]="downloadingTicketId() !== null"
+                (click)="download(t)"
+              >
+                Download
+              </button>
             </td>
           </ng-container>
 

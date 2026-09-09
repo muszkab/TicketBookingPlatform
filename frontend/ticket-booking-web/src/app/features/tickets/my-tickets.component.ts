@@ -1,5 +1,14 @@
-import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe, formatDate } from '@angular/common';
+import {
+  Component,
+  DestroyRef,
+  LOCALE_ID,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,9 +26,13 @@ import { switchMap } from 'rxjs/operators';
 
 import { PagedResultOfTicketDto, TicketDto, TicketStatus, TicketsService } from '../../api';
 import { mapProblemDetails } from '../../core/http/map-error';
+import { NotificationService } from '../../core/notifications/notification.service';
+import { QrCodeComponent } from '../../core/qr-code/qr-code.component';
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
+const QR_RENDER_ATTEMPTS = 20;
+const QR_RENDER_DELAY_MS = 25;
 
 interface TicketsQuery {
   readonly page: number;
@@ -42,6 +55,7 @@ interface TicketsQuery {
     MatProgressBarModule,
     MatSelectModule,
     MatTableModule,
+    QrCodeComponent,
     RouterLink
   ],
   templateUrl: './my-tickets.component.html',
@@ -52,6 +66,8 @@ export class MyTicketsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
+  private readonly notification = inject(NotificationService);
 
   protected readonly tickets = signal<TicketDto[]>([]);
   protected readonly totalCount = signal(0);
@@ -72,6 +88,11 @@ export class MyTicketsComponent implements OnInit {
   ];
 
   protected readonly hasOrderFilter = computed(() => this.orderId() !== null);
+
+  protected readonly pdfTicket = signal<TicketDto | null>(null);
+  protected readonly downloadingTicketId = signal<string | null>(null);
+
+  private readonly pdfQrCode = viewChild(QrCodeComponent);
 
   private readonly load$ = new Subject<TicketsQuery>();
 
@@ -147,6 +168,56 @@ export class MyTicketsComponent implements OnInit {
   }
 
   protected trackTicket = (_: number, t: TicketDto): string => t.id;
+
+  protected async download(ticket: TicketDto): Promise<void> {
+    if (this.downloadingTicketId() !== null) return;
+
+    this.downloadingTicketId.set(ticket.id);
+    this.pdfTicket.set(ticket);
+    try {
+      const qrCanvas = await this.waitForQrCanvas();
+      if (!qrCanvas) {
+        throw new Error('The QR code could not be rendered.');
+      }
+
+      const { jsPDF } = await import('jspdf');
+      const { renderTicketPdf } = await import('./ticket-pdf');
+
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      renderTicketPdf(
+        doc,
+        {
+          eventTitle: ticket.eventTitle,
+          ticketCategoryName: ticket.ticketCategoryName,
+          location: ticket.location,
+          startsAt: formatDate(ticket.startsAt, 'medium', this.locale),
+          code: ticket.code,
+          status: ticket.status,
+          isValid: ticket.status === TicketStatus.Valid
+        },
+        qrCanvas
+      );
+      doc.save(`ticket-${ticket.code}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate the ticket PDF', err);
+      this.notification.error('Could not generate the ticket.');
+    } finally {
+      this.pdfTicket.set(null);
+      this.downloadingTicketId.set(null);
+    }
+  }
+
+  private async waitForQrCanvas(): Promise<HTMLCanvasElement | null> {
+    for (let attempt = 0; attempt < QR_RENDER_ATTEMPTS; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, QR_RENDER_DELAY_MS));
+      const canvas = this.pdfQrCode()?.getCanvas();
+      if (canvas && canvas.width > 0) {
+        return canvas;
+      }
+    }
+
+    return null;
+  }
 
   private parseStatus(value: string | null): TicketStatus | null {
     return value && (Object.values(TicketStatus) as string[]).includes(value)

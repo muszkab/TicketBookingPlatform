@@ -24,3 +24,12 @@
   color: rgba(0, 0, 0, 0.6);
   font-style: italic;
 }
+
+.my-tickets__pdf-qr {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 512px;
+  height: 512px;
+  overflow: hidden;
+}

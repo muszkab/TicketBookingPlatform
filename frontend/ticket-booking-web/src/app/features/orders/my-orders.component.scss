@@ -15,6 +15,10 @@
     }
   }
 
+  &__qty-cell {
+    text-align: center;
+  }
+
   &__empty,
   &__error {
     padding: 1.5rem 0;

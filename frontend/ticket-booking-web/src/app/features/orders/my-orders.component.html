@@ -34,7 +34,7 @@
 
           <ng-container matColumnDef="ticketQuantity">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket qty</th>
-            <td mat-cell *matCellDef="let ord">{{ ord.ticketQuantity }}</td>
+            <td mat-cell *matCellDef="let ord" class="my-orders__qty-cell">{{ ord.ticketQuantity }}</td>
           </ng-container>
 
           <ng-container matColumnDef="total">

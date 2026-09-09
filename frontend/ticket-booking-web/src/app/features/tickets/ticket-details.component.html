@@ -1,5 +1,5 @@
 <section class="ticket-details">
-  @if (loading()) {
+  @if (loading() || downloading()) {
     <mat-progress-bar mode="indeterminate" />
   }
 
@@ -64,7 +64,13 @@
       </mat-card-content>
 
       <mat-card-actions class="ticket-details__actions">
-        <button mat-flat-button color="primary" type="button" (click)="downloadPng()">
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="downloading()"
+          (click)="download()"
+        >
           <mat-icon>download</mat-icon>
           Download
         </button>

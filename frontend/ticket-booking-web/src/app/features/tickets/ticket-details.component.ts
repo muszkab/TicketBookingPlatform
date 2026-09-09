@@ -13,8 +13,8 @@ import { EMPTY, catchError, switchMap } from 'rxjs';
 
 import { TicketDto, TicketStatus, TicketsService } from '../../api';
 import { mapProblemDetails } from '../../core/http/map-error';
+import { NotificationService } from '../../core/notifications/notification.service';
 import { QrCodeComponent } from '../../core/qr-code/qr-code.component';
-import { renderTicketPng } from './ticket-canvas';
 
 interface StatusPresentation {
   readonly icon: string;
@@ -43,6 +43,7 @@ export class TicketDetailsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly locale = inject(LOCALE_ID);
+  private readonly notification = inject(NotificationService);
 
   protected readonly ticket = signal<TicketDto | null>(null);
   protected readonly loading = signal(true);
@@ -68,31 +69,39 @@ export class TicketDetailsComponent implements OnInit {
 
   @ViewChild(QrCodeComponent) private qrCode?: QrCodeComponent;
 
-  protected downloadPng(): void {
+  protected readonly downloading = signal(false);
+
+  protected async download(): Promise<void> {
     const t = this.ticket();
     const qrCanvas = this.qrCode?.getCanvas();
-    if (!t || !qrCanvas) return;
+    if (!t || !qrCanvas || this.downloading()) return;
 
-    const dataUrl = renderTicketPng(
-      {
-        eventTitle: t.eventTitle,
-        ticketCategoryName: t.ticketCategoryName,
-        location: t.location,
-        startsAt: formatDate(t.startsAt, 'medium', this.locale),
-        code: t.code,
-        status: t.status,
-        isValid: this.isActive()
-      },
-      qrCanvas
-    );
-    if (!dataUrl) return;
+    this.downloading.set(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const { renderTicketPdf } = await import('./ticket-pdf');
 
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = `ticket-${t.code}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      renderTicketPdf(
+        doc,
+        {
+          eventTitle: t.eventTitle,
+          ticketCategoryName: t.ticketCategoryName,
+          location: t.location,
+          startsAt: formatDate(t.startsAt, 'medium', this.locale),
+          code: t.code,
+          status: t.status,
+          isValid: this.isActive()
+        },
+        qrCanvas
+      );
+      doc.save(`ticket-${t.code}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate the ticket PDF', err);
+      this.notification.error('Could not generate the ticket.');
+    } finally {
+      this.downloading.set(false);
+    }
   }
 
   ngOnInit(): void {

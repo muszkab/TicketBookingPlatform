@@ -31,6 +31,8 @@ public sealed class GetTicketByIdQueryHandler
                 t.OrderId,
                 t.EventId,
                 t.Event.Title,
+                t.Event.StartsAt,
+                t.Event.Location!.Name + ", " + t.Event.Location!.Street + ", " + t.Event.Location!.City,
                 t.TicketCategoryId,
                 t.TicketCategory.Name,
                 t.Code,

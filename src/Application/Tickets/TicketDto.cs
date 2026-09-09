@@ -8,6 +8,8 @@ public sealed record TicketDto(
     Guid OrderId,
     Guid EventId,
     string EventTitle,
+    DateTimeOffset StartsAt,
+    string Location,
     Guid TicketCategoryId,
     string TicketCategoryName,
     string Code,

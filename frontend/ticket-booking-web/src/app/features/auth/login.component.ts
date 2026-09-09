@@ -78,7 +78,7 @@ export class LoginComponent {
         return 'Invalid email or password.';
       }
       if (err.status === 0) {
-        return 'Cannot reach the server. Is the backend running on https://localhost:5001?';
+        return 'Cannot reach the server. Please check your connection and try again.';
       }
     }
     return 'Login failed. Please try again later.';

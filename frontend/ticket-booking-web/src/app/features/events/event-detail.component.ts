@@ -151,7 +151,7 @@ export class EventDetailComponent implements OnInit {
                 this.notFound.set(true);
               } else {
                 console.error('Failed to load event', err);
-                this.error.set('Failed to load event. Is the backend running on https://localhost:5001?');
+                this.error.set('Failed to load event. Please check your connection and try again.');
               }
               this.loading.set(false);
               return EMPTY;

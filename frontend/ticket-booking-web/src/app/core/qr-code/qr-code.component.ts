@@ -36,12 +36,8 @@ export class QrCodeComponent {
 
   @ViewChild('qr', { static: false }) private qr?: QRCodeComponent;
 
-  /**
-   * Returns a PNG data URL of the rendered QR code, or null if not ready yet.
-   */
-  toPngDataUrl(): string | null {
-    const canvas = this.findCanvas();
-    return canvas ? canvas.toDataURL('image/png') : null;
+  getCanvas(): HTMLCanvasElement | null {
+    return this.findCanvas();
   }
 
   private findCanvas(): HTMLCanvasElement | null {

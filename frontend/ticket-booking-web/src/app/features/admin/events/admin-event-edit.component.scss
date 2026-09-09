@@ -45,9 +45,13 @@
   }
 
   &__danger {
+    align-items: flex-end;
+
     mat-card {
       border-color: var(--mat-sys-error);
+      width: 40%;
       max-width: 480px;
+      text-align: right;
     }
   }
 }

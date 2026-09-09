@@ -12,7 +12,7 @@ export function mapProblemDetails(err: unknown, fallback: string): string {
       return problem.title;
     }
     if (err.status === 0) {
-      return 'Cannot reach the server.';
+      return 'Cannot reach the server. Please check your connection and try again.';
     }
   }
   return fallback;

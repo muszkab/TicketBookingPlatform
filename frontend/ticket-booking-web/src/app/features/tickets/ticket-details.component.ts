@@ -1,6 +1,6 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, LOCALE_ID, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,7 @@ import { EMPTY, catchError, switchMap } from 'rxjs';
 import { TicketDto, TicketStatus, TicketsService } from '../../api';
 import { mapProblemDetails } from '../../core/http/map-error';
 import { QrCodeComponent } from '../../core/qr-code/qr-code.component';
+import { renderTicketPng } from './ticket-canvas';
 
 interface StatusPresentation {
   readonly icon: string;
@@ -41,6 +42,7 @@ export class TicketDetailsComponent implements OnInit {
   private readonly ticketsService = inject(TicketsService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly locale = inject(LOCALE_ID);
 
   protected readonly ticket = signal<TicketDto | null>(null);
   protected readonly loading = signal(true);
@@ -68,8 +70,22 @@ export class TicketDetailsComponent implements OnInit {
 
   protected downloadPng(): void {
     const t = this.ticket();
-    const dataUrl = this.qrCode?.toPngDataUrl();
-    if (!t || !dataUrl) return;
+    const qrCanvas = this.qrCode?.getCanvas();
+    if (!t || !qrCanvas) return;
+
+    const dataUrl = renderTicketPng(
+      {
+        eventTitle: t.eventTitle,
+        ticketCategoryName: t.ticketCategoryName,
+        location: t.location,
+        startsAt: formatDate(t.startsAt, 'medium', this.locale),
+        code: t.code,
+        status: t.status,
+        isValid: this.isActive()
+      },
+      qrCanvas
+    );
+    if (!dataUrl) return;
 
     const link = document.createElement('a');
     link.href = dataUrl;

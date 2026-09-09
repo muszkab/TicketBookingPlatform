@@ -2748,7 +2748,8 @@
           "EventTitle",
           "TicketQuantity"
         ],
-        "type": "string"
+        "type": "string",
+        "default": 0
       },
       "OrderStatus": {
         "enum": [
@@ -2989,7 +2990,8 @@
           "Asc",
           "Desc"
         ],
-        "type": "string"
+        "type": "string",
+        "default": 1
       },
       "TicketCategoryDto": {
         "required": [

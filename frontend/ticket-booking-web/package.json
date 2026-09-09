@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "openapi:fetch": "curl -k --fail -o openapi/v1.json https://localhost:5001/openapi/v1.json",
+    "openapi:fetch": "curl -k --fail -s -o openapi/v1.json https://localhost:5001/openapi/v1.json && curl -k --fail -o openapi/v1.json https://localhost:5001/openapi/v1.json",
     "generate:api": "openapi-generator-cli generate -i openapi/v1.json -g typescript-angular -o src/app/api --additional-properties=fileNaming=kebab-case,ngVersion=22.0.0,providedInRoot=true,withInterfaces=true,npmName=@ticket-booking/api-client",
     "refresh:api": "npm run openapi:fetch && npm run generate:api",
     "generate:pdf-fonts": "node scripts/generate-pdf-fonts.cjs"

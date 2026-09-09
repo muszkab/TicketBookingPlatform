@@ -29,7 +29,7 @@
         @if (hasOrderFilter()) {
           <mat-chip-set>
             <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
-              Filtered by order
+              {{ orderEventTitle() ? 'Filtered by order: ' + orderEventTitle() : 'Filtered by order' }}
               <button matChipRemove type="button" aria-label="Clear order filter">
                 <mat-icon>cancel</mat-icon>
               </button>

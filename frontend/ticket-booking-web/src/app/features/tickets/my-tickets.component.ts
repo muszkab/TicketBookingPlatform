@@ -87,6 +87,12 @@ export class MyTicketsComponent implements OnInit {
 
   protected readonly hasOrderFilter = computed(() => this.orderId() !== null);
 
+  protected readonly orderEventTitle = computed(() => {
+    if (!this.hasOrderFilter()) return null;
+    const titles = [...new Set(this.tickets().map((t) => t.eventTitle))];
+    return titles.length > 0 ? titles.join(', ') : null;
+  });
+
   protected readonly pdfTicket = signal<TicketDto | null>(null);
   protected readonly downloadingTicketId = signal<string | null>(null);
 

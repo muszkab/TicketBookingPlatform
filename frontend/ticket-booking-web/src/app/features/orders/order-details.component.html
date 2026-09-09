@@ -77,7 +77,7 @@
         </table>
       </mat-card-content>
 
-      @if (canPay() || canCancel()) {
+      @if (canPay() || canCancel() || canViewTickets()) {
         <mat-card-actions class="order-details__actions" align="end">
           @if (canCancel()) {
             <button mat-flat-button color="warn" type="button"
@@ -85,6 +85,13 @@
                     (click)="cancelOrder()">
               Cancel order
             </button>
+          }
+          @if (canViewTickets()) {
+            <a mat-flat-button color="primary"
+               [routerLink]="['/my-tickets']"
+               [queryParams]="{ orderId: ord.id }">
+              View tickets
+            </a>
           }
           @if (canPay()) {
             <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>

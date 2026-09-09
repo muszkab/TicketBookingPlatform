@@ -176,6 +176,10 @@ export class MyOrdersComponent implements OnInit {
     return order.status === OrderStatus.Pending;
   }
 
+  protected canViewTickets(order: OrderSummaryDto): boolean {
+    return order.status === OrderStatus.Paid;
+  }
+
   protected cancelOrder(order: OrderSummaryDto): void {
     if (!this.canCancel(order) || this.cancelling()) return;
 

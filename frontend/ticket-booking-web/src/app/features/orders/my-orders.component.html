@@ -51,6 +51,11 @@
               @if (continuePaymentLink(ord); as payLink) {
                 <a mat-button color="primary" [routerLink]="payLink">Pay</a>
               }
+              @if (canViewTickets(ord)) {
+                <a mat-button color="primary"
+                   [routerLink]="['/my-tickets']"
+                   [queryParams]="{ orderId: ord.id }">Tickets</a>
+              }
               @if (canCancel(ord)) {
                 <button mat-button color="warn" type="button"
                         [disabled]="cancelling()"

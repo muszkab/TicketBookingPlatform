@@ -68,6 +68,7 @@ export class OrderDetailsComponent implements OnInit {
 
   protected readonly canPay = computed(() => this.order()?.status === OrderStatus.Pending);
   protected readonly canCancel = computed(() => this.order()?.status === OrderStatus.Pending);
+  protected readonly canViewTickets = computed(() => this.order()?.status === OrderStatus.Paid);
 
   ngOnInit(): void {
     this.route.paramMap

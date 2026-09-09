@@ -2745,10 +2745,10 @@
           "CreatedAt",
           "TotalAmount",
           "Status",
-          "EventTitle"
+          "EventTitle",
+          "TicketQuantity"
         ],
-        "type": "string",
-        "default": 0
+        "type": "string"
       },
       "OrderStatus": {
         "enum": [
@@ -2767,6 +2767,7 @@
           "totalAmount",
           "currency",
           "itemCount",
+          "ticketQuantity",
           "createdAt"
         ],
         "type": "object",
@@ -2793,6 +2794,10 @@
             "type": "string"
           },
           "itemCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ticketQuantity": {
             "type": "integer",
             "format": "int32"
           },
@@ -2984,8 +2989,7 @@
           "Asc",
           "Desc"
         ],
-        "type": "string",
-        "default": 1
+        "type": "string"
       },
       "TicketCategoryDto": {
         "required": [

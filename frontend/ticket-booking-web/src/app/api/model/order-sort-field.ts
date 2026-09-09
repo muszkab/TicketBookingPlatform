@@ -13,7 +13,8 @@ export const OrderSortField = {
     CreatedAt: 'CreatedAt',
     TotalAmount: 'TotalAmount',
     Status: 'Status',
-    EventTitle: 'EventTitle'
+    EventTitle: 'EventTitle',
+    TicketQuantity: 'TicketQuantity'
 } as const;
 export type OrderSortField = typeof OrderSortField[keyof typeof OrderSortField];
 

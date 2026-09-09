@@ -18,6 +18,7 @@ export interface OrderSummaryDto {
     totalAmount: number;
     currency: string;
     itemCount: number;
+    ticketQuantity: number;
     createdAt: string;
 }
 export namespace OrderSummaryDto {

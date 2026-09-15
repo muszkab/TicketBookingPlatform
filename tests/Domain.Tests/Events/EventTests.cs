@@ -225,6 +225,88 @@ public class EventTests
         ev.TicketCategories.Should().BeEmpty();
     }
 
+    [Fact]
+    public void RefreshAvailability_Should_MarkSoldOut_When_AllCategoriesExhausted()
+    {
+        var ev = new EventBuilder().Build();
+        var std = ev.AddTicketCategory("Std", Price(), 5, 100);
+        var vip = ev.AddTicketCategory("VIP", Price(50), 2, 100);
+        ev.PutOnSale();
+
+        std.Reserve(5);
+        vip.Reserve(2);
+        ev.RefreshAvailability();
+
+        ev.Status.Should().Be(EventStatus.SoldOut);
+    }
+
+    [Fact]
+    public void RefreshAvailability_Should_StayOnSale_When_SomeTicketsRemain()
+    {
+        var ev = new EventBuilder().Build();
+        var std = ev.AddTicketCategory("Std", Price(), 5, 100);
+        ev.AddTicketCategory("VIP", Price(50), 2, 100);
+        ev.PutOnSale();
+
+        std.Reserve(5);
+        ev.RefreshAvailability();
+
+        ev.Status.Should().Be(EventStatus.OnSale);
+    }
+
+    [Fact]
+    public void RefreshAvailability_Should_ReturnToOnSale_When_TicketsReleased()
+    {
+        var ev = new EventBuilder().Build();
+        var std = ev.AddTicketCategory("Std", Price(), 5, 100);
+        ev.PutOnSale();
+
+        std.Reserve(5);
+        ev.RefreshAvailability();
+        ev.Status.Should().Be(EventStatus.SoldOut);
+
+        std.Release(2);
+        ev.RefreshAvailability();
+
+        ev.Status.Should().Be(EventStatus.OnSale);
+    }
+
+    [Fact]
+    public void RefreshAvailability_Should_BeIdempotent()
+    {
+        var ev = new EventBuilder().Build();
+        var std = ev.AddTicketCategory("Std", Price(), 5, 100);
+        ev.PutOnSale();
+        std.Reserve(5);
+
+        ev.RefreshAvailability();
+        Action act = () => ev.RefreshAvailability();
+
+        act.Should().NotThrow();
+        ev.Status.Should().Be(EventStatus.SoldOut);
+    }
+
+    [Fact]
+    public void RefreshAvailability_Should_NotChangeStatus_When_NoCategories()
+    {
+        var ev = MoveTo(EventStatus.OnSale);
+        ev.RefreshAvailability();
+        ev.Status.Should().Be(EventStatus.OnSale);
+    }
+
+    [Theory]
+    [InlineData(EventStatus.Draft)]
+    [InlineData(EventStatus.Cancelled)]
+    [InlineData(EventStatus.Completed)]
+    public void RefreshAvailability_Should_NotAffect_NonSellableStates(EventStatus from)
+    {
+        var ev = MoveTo(from);
+        Action act = () => ev.RefreshAvailability();
+
+        act.Should().NotThrow();
+        ev.Status.Should().Be(from);
+    }
+
     private static Event MoveTo(EventStatus status)
     {
         var ev = new EventBuilder().Build();

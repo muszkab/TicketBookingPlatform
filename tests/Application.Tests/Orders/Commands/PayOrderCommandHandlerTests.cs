@@ -77,4 +77,38 @@ public class PayOrderCommandHandlerTests
         db.Tickets.Count().Should().Be(3);
         db.Tickets.Select(t => t.OrderId).Should().OnlyContain(id => id == order.Id);
     }
+
+    [Fact]
+    public async Task Handle_Should_MarkEventSoldOut_When_LastTicketsPaid()
+    {
+        var userId = Guid.NewGuid();
+        var (handler, db) = BuildSut(userId);
+
+        var location = DomainFactory.NewLocation();
+        var ev = DomainFactory.NewOnSaleEventWithCategory(location.Id, out var category, categoryQuantity: 3);
+        var order = new Order(userId, ev.Id, "EUR");
+        order.AddItem(category, 3);
+
+        db.Locations.Add(location);
+        db.Events.Add(ev);
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        await handler.HandleAsync(new PayOrderCommand(order.Id));
+
+        ev.Status.Should().Be(EventStatus.SoldOut);
+        category.AvailableQuantity.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Handle_Should_KeepEventOnSale_When_TicketsRemain()
+    {
+        var userId = Guid.NewGuid();
+        var (handler, db) = BuildSut(userId);
+        var (order, ev) = await SeedPendingOrderAsync(db, userId, quantity: 2);
+
+        await handler.HandleAsync(new PayOrderCommand(order.Id));
+
+        ev.Status.Should().Be(EventStatus.OnSale);
+    }
 }

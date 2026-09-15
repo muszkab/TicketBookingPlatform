@@ -1,7 +1,8 @@
 ﻿# Ticket Booking Platform
 
 A demo event ticketing platform built as a portfolio project to showcase **modern .NET backend
-engineering** with Clean Architecture, plus an Angular SPA consuming the generated API client.
+engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
+**Angular SPA** through a generated OpenAPI client.
 
 ---
 
@@ -12,11 +13,11 @@ engineering** with Clean Architecture, plus an Angular SPA consuming the generat
 | Area | Technology |
 |---|---|
 | Framework | .NET 9 |
-| Language | C# 13 |
-| Web | ASP.NET Core Web API, attribute-routed controllers |
+| Web | ASP.NET Core Web API, REST endpoints |
+| Persistence | Entity Framework Core 9, code-first migrations |
+| Database | SQL Server |
 | Architecture | Clean Architecture (Domain / Application / Infrastructure / WebApi) |
 | Application layer | CQRS-style commands & queries with hand-written handlers (no MediatR) |
-| Persistence | Entity Framework Core 9, SQL Server, code-first migrations |
 | AuthN / AuthZ | JWT Bearer tokens, role-based policies (`User`, `Organizer`, `Admin`) |
 | Password hashing | ASP.NET Core Identity `PasswordHasher` |
 | API versioning | URL segment (`/api/v{version}/...`), v1 & v2 documents |
@@ -40,13 +41,13 @@ engineering** with Clean Architecture, plus an Angular SPA consuming the generat
 
 ```mermaid
 flowchart TD
-    UI[Angular SPA<br/>generated OpenAPI client] -->|HTTPS / JWT| API
+    UI[<b>Angular SPA</b><br/>generated OpenAPI client] -->|HTTPS / JWT| API
 
     subgraph Backend[".NET solution"]
-        API[WebApi<br/>controllers, contracts, transformers]
-        APP[Application<br/>commands, queries, handlers, DTOs]
-        DOM[Domain<br/>entities, value objects, business rules]
-        INF[Infrastructure<br/>EF Core, JWT, hashing]
+        API[<b>WebApi</b><br/>controllers, contracts, transformers]
+        APP[<b>Application</b><br/>commands, queries, handlers, DTOs]
+        DOM[<b>Domain</b><br/>entities, value objects, business rules]
+        INF[<b>Infrastructure</b><br/>EF Core, JWT, hashing]
 
         API --> APP
         API --> INF
@@ -55,7 +56,7 @@ flowchart TD
         INF --> DOM
     end
 
-    INF --> DB[(SQL Server)]
+    INF --> DB[(<b>SQL Server</b>)]
 ```
 
 Dependency rule: `Domain` has no project references. `Application` depends only on `Domain` and

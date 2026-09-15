@@ -1,6 +1,6 @@
 ﻿# Ticket Booking Platform
 
-A demo event ticketing platform built as a portfolio project to showcase **modern .NET backend
+A demo event ticketing platform built as a portfolio project to showcase **.NET backend
 engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
 **Angular SPA** through a generated OpenAPI client.
 
@@ -8,7 +8,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ## Tech stack
 
-### Backend – .NET
+### Backend
 
 | Area | Technology |
 |---|---|
@@ -25,7 +25,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
 | Testing | xUnit, FluentAssertions, NSubstitute, Entity Framework Core InMemory |
 
-### Frontend – Angular
+### Frontend
 
 | Area | Technology |
 |---|---|

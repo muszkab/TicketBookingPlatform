@@ -93,6 +93,20 @@ public class Event : Entity
         Status = EventStatus.SoldOut;
     }
 
+    public void RefreshAvailability()
+    {
+        bool isSoldOut = IsSoldOut();
+
+        if (Status == EventStatus.OnSale && isSoldOut)
+        {
+            Status = EventStatus.SoldOut;
+        }
+        else if (Status == EventStatus.SoldOut && !isSoldOut)
+        {
+            Status = EventStatus.OnSale;
+        }
+    }
+
     public void Cancel()
     {
         if (Status is EventStatus.Completed or EventStatus.Cancelled)
@@ -142,4 +156,8 @@ public class Event : Entity
 
         _ticketCategories.Remove(category);
     }
+
+    private bool IsSoldOut()
+        => _ticketCategories.Count > 0
+        && _ticketCategories.All(tc => tc.AvailableQuantity == 0);
 }

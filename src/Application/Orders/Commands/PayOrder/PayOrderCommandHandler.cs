@@ -6,7 +6,6 @@ using Domain.Tickets;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,19 +30,18 @@ public sealed class PayOrderCommandHandler
         Order? order = await _context.Orders
             .Include(o => o.Items)
             .ThenInclude(i => i.TicketCategory)
-            .Include(o => o.Event)
+            .Include(o => o.Event!)
+            .ThenInclude(e => e.TicketCategories)
             .FirstOrDefaultAsync(o => o.Id == command.OrderId, cancellationToken);
 
         if (order is null || order.UserId != userId)
             throw new NotFoundException(nameof(Order), command.OrderId);
 
-        EventStatus eventStatus = await _context.Events
-            .Where(e => e.Id == order.EventId)
-            .Select(e => (EventStatus?)e.Status)
-            .FirstOrDefaultAsync(cancellationToken)
+        Event targetEvent = order.Event
             ?? throw new NotFoundException(nameof(Event), order.EventId);
 
-        IReadOnlyList<Ticket> tickets = order.Pay(eventStatus);
+        IReadOnlyList<Ticket> tickets = order.Pay(targetEvent.Status);
+        targetEvent.RefreshAvailability();
 
         _context.Tickets.AddRange(tickets);
         await _context.SaveChangesAsync(cancellationToken);

@@ -8,7 +8,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ## Tech stack
 
-### Backend
+### Backend – .NET
 
 | Area | Technology |
 |---|---|
@@ -25,7 +25,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
 | Testing | xUnit, FluentAssertions, NSubstitute, Entity Framework Core InMemory |
 
-### Frontend
+### Frontend – Angular
 
 | Area | Technology |
 |---|---|

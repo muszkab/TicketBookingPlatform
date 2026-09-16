@@ -76,7 +76,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Apply pending EF Core migrations at startup.
-if (!app.Environment.IsEnvironment("Testing"))
+if (!app.Environment.IsTesting())
 {
     using IServiceScope scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;

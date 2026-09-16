@@ -12,13 +12,14 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebApi.Infrastructure;
 
 namespace WebApi.Tests.Integration.Common;
 
 /// <summary>
 /// Boots the real application pipeline against a private SQLite in-memory database.
-/// Runs under the "Testing" environment so <c>Program</c> skips the startup migration
-/// and seeding, letting each test class control its own data.
+/// Runs under <see cref="AppEnvironments.Testing"/> so <c>Program</c> skips the startup
+/// migration and seeding, letting each test class control its own data.
 /// </summary>
 public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -30,7 +31,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment(AppEnvironments.Testing);
 
         // UseSetting feeds the WebApplicationBuilder's configuration directly, so these
         // values are visible to AddInfrastructure during service registration.

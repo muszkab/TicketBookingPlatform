@@ -76,8 +76,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Apply pending EF Core migrations at startup.
-using (IServiceScope scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using IServiceScope scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
 
     try
@@ -126,3 +127,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Exposed so integration tests can bootstrap the application via WebApplicationFactory.
+public partial class Program { }

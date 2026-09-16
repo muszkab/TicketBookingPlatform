@@ -5,6 +5,7 @@ using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -43,15 +44,21 @@ builder.Services
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-// One OpenAPI document per API version.
-foreach (string version in apiVersions)
+// One OpenAPI document per API version. Exposing them is a configuration switch rather
+// than an environment check, so the documentation can be turned on in any environment.
+bool openApiEnabled = builder.Configuration.GetValue("OpenApi:Enabled", false);
+
+if (openApiEnabled)
 {
-    builder.Services.AddOpenApi(version, options =>
+    foreach (string version in apiVersions)
     {
-        options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
-        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-        options.AddSchemaTransformer<StringEnumSchemaTransformer>();
-    });
+        builder.Services.AddOpenApi(version, options =>
+        {
+            options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
+            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+            options.AddSchemaTransformer<StringEnumSchemaTransformer>();
+        });
+    }
 }
 
 builder.Services.AddApplication();
@@ -60,23 +67,32 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-// CORS for the Angular dev server (https://localhost:4200).
-const string AngularDevCorsPolicy = "AngularDev";
-builder.Services.AddCors(options =>
+// Cross-origin callers (e.g. the Angular dev server) are configured
+const string SpaCorsPolicy = "SpaCorsPolicy";
+string[] allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+if (allowedOrigins.Length > 0)
 {
-    options.AddPolicy(AngularDevCorsPolicy, policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins("https://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        options.AddPolicy(SpaCorsPolicy, policy =>
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
     });
-});
+}
 
 var app = builder.Build();
 
-// Apply pending EF Core migrations at startup.
-if (!app.Environment.IsTesting())
+bool migrateOnStartup = builder.Configuration.GetValue("Database:MigrateOnStartup", false);
+bool seedOnStartup = builder.Configuration.GetValue("Database:SeedOnStartup", false);
+
+if (!app.Environment.IsTesting() && (migrateOnStartup || seedOnStartup))
 {
     using IServiceScope scope = app.Services.CreateScope();
     var serviceProvider = scope.ServiceProvider;
@@ -84,20 +100,28 @@ if (!app.Environment.IsTesting())
     try
     {
         var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-        var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
-        await dbContext.Database.MigrateAsync();
-        await DbInitializer.SeedDataAsync(dbContext, passwordHasher, builder.Configuration);
+
+        if (migrateOnStartup)
+        {
+            await dbContext.Database.MigrateAsync();
+        }
+
+        if (seedOnStartup)
+        {
+            var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
+            await DbInitializer.SeedDataAsync(dbContext, passwordHasher, builder.Configuration);
+        }
     }
     catch (Exception ex)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while applying database migrations.");
+        logger.LogError(ex, "An error occurred while initializing the database.");
         throw;
     }
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (openApiEnabled)
 {
     app.MapOpenApi();
     app.MapScalarApiReference(options =>
@@ -114,11 +138,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
-
-if (app.Environment.IsDevelopment())
+if (builder.Configuration.GetValue("Https:RedirectEnabled", true))
 {
-    app.UseCors(AngularDevCorsPolicy);
+    app.UseHttpsRedirection();
+}
+
+if (allowedOrigins.Length > 0)
+{
+    app.UseCors(SpaCorsPolicy);
 }
 
 app.UseAuthentication();

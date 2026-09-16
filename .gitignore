@@ -481,3 +481,4 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 /frontend/README_frontend_setup.md
+/Roadmap_DockerCompose.md

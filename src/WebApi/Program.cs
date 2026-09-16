@@ -4,10 +4,11 @@ using Asp.Versioning;
 using Infrastructure;
 using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Scalar.AspNetCore;
 using System;
@@ -44,8 +45,7 @@ builder.Services
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-// One OpenAPI document per API version. Exposing them is a configuration switch rather
-// than an environment check, so the documentation can be turned on in any environment.
+// One OpenAPI document per API version.
 bool openApiEnabled = builder.Configuration.GetValue("OpenApi:Enabled", false);
 
 if (openApiEnabled)
@@ -67,7 +67,22 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-// Cross-origin callers (e.g. the Angular dev server) are configured
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: [HealthCheckTags.Ready]);
+
+bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);
+
+if (forwardedHeadersEnabled)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
+
 const string SpaCorsPolicy = "SpaCorsPolicy";
 string[] allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
@@ -89,8 +104,8 @@ if (allowedOrigins.Length > 0)
 
 var app = builder.Build();
 
-bool migrateOnStartup = builder.Configuration.GetValue("Database:MigrateOnStartup", false);
-bool seedOnStartup = builder.Configuration.GetValue("Database:SeedOnStartup", false);
+bool migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", false);
+bool seedOnStartup = app.Configuration.GetValue("Database:SeedOnStartup", false);
 
 if (!app.Environment.IsTesting() && (migrateOnStartup || seedOnStartup))
 {
@@ -109,7 +124,7 @@ if (!app.Environment.IsTesting() && (migrateOnStartup || seedOnStartup))
         if (seedOnStartup)
         {
             var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
-            await DbInitializer.SeedDataAsync(dbContext, passwordHasher, builder.Configuration);
+            await DbInitializer.SeedDataAsync(dbContext, passwordHasher, app.Configuration);
         }
     }
     catch (Exception ex)
@@ -136,9 +151,19 @@ if (openApiEnabled)
     });
 }
 
+if (forwardedHeadersEnabled)
+{
+    app.UseForwardedHeaders();
+}
+
 app.UseExceptionHandler();
 
-if (builder.Configuration.GetValue("Https:RedirectEnabled", true))
+if (app.Configuration.GetValue("Https:HstsEnabled", false))
+{
+    app.UseHsts();
+}
+
+if (app.Configuration.GetValue("Https:RedirectEnabled", true))
 {
     app.UseHttpsRedirection();
 }
@@ -152,6 +177,16 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => false
+});
+
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains(HealthCheckTags.Ready)
+});
 
 app.Run();
 

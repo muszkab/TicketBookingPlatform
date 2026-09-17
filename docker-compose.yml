@@ -1,6 +1,6 @@
 services:
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2025-latest
     container_name: tbp-sqlserver
     environment:
       ACCEPT_EULA: "Y"
@@ -8,6 +8,7 @@ services:
       MSSQL_PID: Developer
     volumes:
       - mssql-data:/var/opt/mssql
+      - ./db/backup:/var/opt/mssql/backup:ro
     networks:
       - app-net
     healthcheck:

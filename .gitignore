@@ -480,5 +480,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Local database backups restored into the SQL Server container
+/db/backup/
 /frontend/README_frontend_setup.md
 /Roadmap_DockerCompose.md

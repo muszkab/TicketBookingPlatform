@@ -2,7 +2,12 @@ import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angul
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
-import { AuthResultDto, AuthService as GeneratedAuthService, LoginRequest } from '../../api';
+import {
+  AuthResultDto,
+  AuthService as GeneratedAuthService,
+  LoginRequest,
+  RegisterUserRequest
+} from '../../api';
 import { NotificationService } from '../notifications/notification.service';
 import { USER_ROLES } from './roles';
 
@@ -124,6 +129,10 @@ export class AuthService {
 
   login(request: LoginRequest): Observable<AuthResultDto> {
     return this.api.login(request).pipe(tap((result) => this.setSession(result)));
+  }
+
+  register(request: RegisterUserRequest): Observable<unknown> {
+    return this.api.register(request);
   }
 
   logout(): void {

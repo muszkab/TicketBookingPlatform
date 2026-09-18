@@ -39,3 +39,70 @@ jobs:
           name: Test results
           path: "TestResults/*.trx"
           reporter: dotnet-trx
+
+  openapi-drift-check:
+    name: OpenAPI drift check
+    runs-on: ubuntu-latest
+    env:
+      ASPNETCORE_ENVIRONMENT: Testing
+      ASPNETCORE_URLS: http://localhost:5057
+      OpenApi__Enabled: "true"
+      Https__RedirectEnabled: "false"
+      Https__HstsEnabled: "false"
+      Database__MigrateOnStartup: "false"
+      Database__SeedOnStartup: "false"
+      ConnectionStrings__DefaultConnection: "Server=localhost;Database=TicketBookingPlatform;Trusted_Connection=True;TrustServerCertificate=True"
+      JwtSettings__Issuer: "ticket-booking-ci"
+      JwtSettings__Audience: "ticket-booking-ci-client"
+      JwtSettings__SigningKey: "ci-openapi-drift-check-signing-key-which-is-long-enough-0123456789"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore TicketBookingPlatform.slnx
+
+      - name: Build WebApi
+        run: dotnet build src/WebApi/WebApi.csproj --no-restore -c Release
+
+      - name: Start WebApi in background
+        run: |
+          nohup dotnet run --project src/WebApi/WebApi.csproj --no-build -c Release \
+            > webapi.log 2>&1 &
+          echo $! > webapi.pid
+
+      - name: Wait for WebApi to become healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail -s -o /dev/null "$ASPNETCORE_URLS/health"; then
+              echo "WebApi is up."
+              exit 0
+            fi
+            echo "Waiting for WebApi... ($i)"
+            sleep 2
+          done
+          echo "WebApi did not become healthy in time." >&2
+          cat webapi.log
+          exit 1
+
+      - name: Fetch actual OpenAPI spec
+        run: curl --fail -s "$ASPNETCORE_URLS/openapi/v1.json" -o /tmp/v1.actual.json
+
+      - name: Compare against committed spec
+        run: |
+          if ! diff -u \
+            <(jq -S . frontend/ticket-booking-web/openapi/v1.json) \
+            <(jq -S . /tmp/v1.actual.json); then
+            echo "::error::The committed OpenAPI spec (frontend/ticket-booking-web/openapi/v1.json) is out of date. Run 'npm run refresh:api' in frontend/ticket-booking-web and commit the result."
+            exit 1
+          fi
+
+      - name: Stop WebApi
+        if: always()
+        run: kill "$(cat webapi.pid)" 2>/dev/null || true

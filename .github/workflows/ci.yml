@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    name: Build & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore TicketBookingPlatform.slnx
+
+      - name: Build
+        run: dotnet build TicketBookingPlatform.slnx --no-restore -c Release
+
+      - name: Test
+        run: >
+          dotnet test TicketBookingPlatform.slnx --no-build -c Release
+          --logger "trx"
+          --results-directory TestResults
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test results
+          path: "TestResults/*.trx"
+          reporter: dotnet-trx

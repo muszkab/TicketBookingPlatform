@@ -483,5 +483,8 @@ $RECYCLE.BIN/
 
 # Local database backups restored into the SQL Server container
 /db/backup/
+
+# Individual documentation files
 /frontend/README_frontend_setup.md
 /Roadmap_DockerCompose.md
+/Roadmap_CiCd.md

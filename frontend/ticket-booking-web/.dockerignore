@@ -1,0 +1,25 @@
+# Build output
+node_modules/
+dist/
+.angular/
+
+# Dev-only certs (not needed in the container)
+ssl/
+
+# Generated OpenAPI spec (not needed to build; the generated client is committed under src/app/api)
+openapi/
+
+# IDE / tooling
+.vs/
+.vscode/
+.idea/
+
+# Source control
+.git/
+.gitignore
+.gitattributes
+
+# Docker & docs
+Dockerfile
+.dockerignore
+*.md

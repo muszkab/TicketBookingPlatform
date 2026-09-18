@@ -19,7 +19,7 @@ public sealed class ApiInfoDocumentTransformer : IOpenApiDocumentTransformer
         document.Info.Description = "Public REST API for the Ticket Booking Platform.";
         document.Info.Contact = new OpenApiContact
         {
-            Name = "Bal·zs Muszka",
+            Name = "Bal√°zs Muszka",
             Email = "m1musbal@gmail.com",
         };
         document.Info.License = new OpenApiLicense

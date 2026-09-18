@@ -73,7 +73,7 @@ jobs:
 
       - name: Start WebApi in background
         run: |
-          nohup dotnet run --project src/WebApi/WebApi.csproj --no-build -c Release \
+          nohup dotnet run --project src/WebApi/WebApi.csproj --no-build -c Release --no-launch-profile \
             > webapi.log 2>&1 &
           echo $! > webapi.pid
 

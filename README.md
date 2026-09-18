@@ -157,7 +157,8 @@ order payment/cancellation, and issued tickets with QR codes.
 ## Roadmap
 
 - [ ] Upgrade to .NET 10 (LTS)
-- [ ] Docker Compose (SQL Server + API + SPA)
+- [x] Docker Compose (SQL Server + API + SPA)
+- [ ] HTTPS via a reverse proxy service (Traefik/Caddy) terminating TLS in front of the SPA and API
 - [ ] FluentValidation for command/query input validation
 - [ ] Integration tests with `WebApplicationFactory` + Testcontainers
 - [ ] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)

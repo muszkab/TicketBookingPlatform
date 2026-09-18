@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  padding: 3rem 1rem;
+}
+
+.register {
+  display: flex;
+  justify-content: center;
+
+  &__card {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 1rem;
+  }
+
+  &__error {
+    color: var(--mat-sys-error, #b00020);
+    margin: 0;
+  }
+}

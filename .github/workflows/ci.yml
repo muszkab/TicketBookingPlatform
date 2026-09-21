@@ -124,7 +124,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 26
+          node-version: 24
           cache: npm
           cache-dependency-path: frontend/ticket-booking-web/package-lock.json
 

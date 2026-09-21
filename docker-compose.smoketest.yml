@@ -1,0 +1,27 @@
+# Compose override to smoke-test the images published to GHCR instead of
+# building them locally. Use it together with the base docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up
+#
+# Set IMAGE_TAG to the tag you want to test before running the command above
+# (the published images only get semver tags like "1.0.0", "1.0", "1" - there
+# is no "latest" tag - so IMAGE_TAG must normally be provided explicitly):
+#
+#   $env:IMAGE_TAG = "1.0.0"
+#   docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up
+#
+# Set IMAGE_OWNER if the images were published under a different (lowercase)
+# GitHub username/organization than "muszkab" (defaults to "muszkab").
+#
+# If the packages are private, log in first:
+#
+#   docker login ghcr.io -u <your-username>
+
+services:
+  api:
+    build: !reset null
+    image: ghcr.io/${IMAGE_OWNER:-muszkab}/ticket-booking-platform-api:${IMAGE_TAG:?Set IMAGE_TAG to the version you want to test, e.g. 1.0.0}
+
+  spa:
+    build: !reset null
+    image: ghcr.io/${IMAGE_OWNER:-muszkab}/ticket-booking-platform-spa:${IMAGE_TAG:?Set IMAGE_TAG to the version you want to test, e.g. 1.0.0}

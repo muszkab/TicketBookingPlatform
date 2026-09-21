@@ -205,3 +205,66 @@ jobs:
           labels: ${{ steps.meta-spa.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  smoke-test-images:
+    name: Smoke-test published images
+    runs-on: ubuntu-latest
+    needs: publish-images
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set image owner (lowercase)
+        id: owner
+        run: echo "lowercase=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine image tag
+        id: tag
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Start stack from the published images
+        env:
+          IMAGE_OWNER: ${{ steps.owner.outputs.lowercase }}
+          IMAGE_TAG: ${{ steps.tag.outputs.value }}
+          MSSQL_SA_PASSWORD: Smoke_Test_Strong#Pass1
+          MSSQL_DATABASE: TicketBookingPlatform
+          JWT_SIGNING_KEY: ci-smoke-test-signing-key-which-is-long-enough-0123456789
+          SEED_ADMIN_EMAIL: admin@example.com
+          SEED_ADMIN_PASSWORD: Smoke_Test_Admin#Pass1
+          API_PORT: 8080
+          SPA_PORT: 4200
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up -d
+
+      - name: Wait for API health check
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail -s -o /dev/null http://localhost:8080/health; then
+              echo "API is up."
+              exit 0
+            fi
+            echo "Waiting for API... ($i)"
+            sleep 5
+          done
+          echo "API did not become healthy in time." >&2
+          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml logs
+          exit 1
+
+      - name: Wait for SPA health check
+        run: |
+          for i in $(seq 1 15); do
+            if curl --fail -s -o /dev/null http://localhost:4200/; then
+              echo "SPA is up."
+              exit 0
+            fi
+            echo "Waiting for SPA... ($i)"
+            sleep 4
+          done
+          echo "SPA did not become healthy in time." >&2
+          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml logs
+          exit 1
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.smoketest.yml down -v

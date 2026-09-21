@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Scalar.AspNetCore;
 using System;
@@ -69,7 +70,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services
     .AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: [HealthCheckTags.Ready]);
+    .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: [HealthCheckTags.Ready])
+    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: [HealthCheckTags.Live]);
 
 bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);
 
@@ -178,9 +180,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHealthChecks("/health", new HealthCheckOptions
+app.MapHealthChecks("/health/live", new HealthCheckOptions
 {
-    Predicate = _ => false
+    Predicate = registration => registration.Tags.Contains(HealthCheckTags.Live)
 });
 
 app.MapHealthChecks("/health/ready", new HealthCheckOptions

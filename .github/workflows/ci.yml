@@ -83,7 +83,7 @@ jobs:
       - name: Wait for WebApi to become healthy
         run: |
           for i in $(seq 1 30); do
-            if curl --fail -s -o /dev/null "$ASPNETCORE_URLS/health"; then
+            if curl --fail -s -o /dev/null "$ASPNETCORE_URLS/health/live"; then
               echo "WebApi is up."
               exit 0
             fi
@@ -238,7 +238,7 @@ jobs:
       - name: Wait for API health check
         run: |
           for i in $(seq 1 30); do
-            if curl --fail -s -o /dev/null http://localhost:8080/health; then
+            if curl --fail -s -o /dev/null http://localhost:8080/health/ready; then
               echo "API is up."
               exit 0
             fi

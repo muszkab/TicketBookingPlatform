@@ -1,14 +1,14 @@
-# Compose override to smoke-test the images published to GHCR instead of
+# Compose override to run the images published to GHCR instead of
 # building them locally. Use it together with the base docker-compose.yml:
 #
-#   docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up
+#   docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up
 #
 # Set IMAGE_TAG to the tag you want to test before running the command above
 # (the published images only get semver tags like "1.0.0", "1.0", "1" - there
 # is no "latest" tag - so IMAGE_TAG must normally be provided explicitly):
 #
 #   $env:IMAGE_TAG = "1.0.0"
-#   docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up
+#   docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up
 #
 # Set IMAGE_OWNER if the images were published under a different (lowercase)
 # GitHub username/organization than "muszkab" (defaults to "muszkab").

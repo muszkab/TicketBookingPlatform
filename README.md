@@ -146,6 +146,13 @@ npm install
 npm start   # https://localhost:4200
 ```
 
+Or run the published images with Docker Compose instead of building locally:
+
+```powershell
+$env:IMAGE_TAG = "latest"
+docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
+```
+
 ---
 
 ## Feature overview

@@ -1,4 +1,8 @@
 {
     "dotnet.enableReferencesCodeLens": false,
-    "dotnet.codeLens.enableReferencesCodeLens": false
+    "dotnet.codeLens.enableReferencesCodeLens": false,
+    "editor.minimap.enabled": false,
+    "chat.tools.terminal.autoApprove": {
+        "git mv": true
+    }
 }

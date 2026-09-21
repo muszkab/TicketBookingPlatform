@@ -233,7 +233,7 @@ jobs:
 
       - name: Start stack from the published images
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml up -d
+          docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 
       - name: Wait for API health check
         run: |
@@ -246,7 +246,7 @@ jobs:
             sleep 5
           done
           echo "API did not become healthy in time." >&2
-          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml logs
+          docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml logs
           exit 1
 
       - name: Wait for SPA health check
@@ -260,9 +260,9 @@ jobs:
             sleep 4
           done
           echo "SPA did not become healthy in time." >&2
-          docker compose -f docker-compose.yml -f docker-compose.smoketest.yml logs
+          docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml logs
           exit 1
 
       - name: Tear down
         if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.smoketest.yml down -v
+        run: docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml down -v

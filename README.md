@@ -161,6 +161,6 @@ order payment/cancellation, and issued tickets with QR codes.
 - [ ] HTTPS via a reverse proxy service (Traefik/Caddy) terminating TLS in front of the SPA and API
 - [ ] FluentValidation for command/query input validation
 - [ ] Integration tests with `WebApplicationFactory` + Testcontainers
-- [ ] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
+- [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
 - [ ] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
 - [ ] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)

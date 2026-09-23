@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,6 +58,12 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
         }
 
         httpContext.Response.StatusCode = problem.Status ?? StatusCodes.Status500InternalServerError;
+
+        string? traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+        if (!string.IsNullOrEmpty(traceId))
+        {
+            problem.Extensions["traceId"] = traceId;
+        }
 
         return await _problemDetailsService.TryWriteAsync(new ProblemDetailsContext
         {

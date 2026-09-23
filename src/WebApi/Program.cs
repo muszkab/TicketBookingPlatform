@@ -73,6 +73,8 @@ builder.Services
     .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: [HealthCheckTags.Ready])
     .AddCheck("self", () => HealthCheckResult.Healthy(), tags: [HealthCheckTags.Live]);
 
+builder.Services.AddObservability(builder.Configuration);
+
 bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);
 
 if (forwardedHeadersEnabled)

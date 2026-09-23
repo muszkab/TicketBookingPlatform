@@ -39,6 +39,8 @@ public class ErrorHandlingTests(CustomWebApplicationFactory factory) : Integrati
         JsonElement problem = await ReadProblemAsync(response);
         problem.GetProperty("status").GetInt32().Should().Be(404);
         problem.GetProperty("title").GetString().Should().Be("Resource not found");
+        problem.TryGetProperty("traceId", out JsonElement traceId).Should().BeTrue();
+        traceId.GetString().Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]

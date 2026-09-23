@@ -2,21 +2,12 @@ using Application;
 using Application.Common.Interfaces;
 using Asp.Versioning;
 using Infrastructure;
-using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
-using Scalar.AspNetCore;
-using System;
 using System.Text.Json.Serialization;
 using WebApi.Infrastructure;
-
-string[] apiVersions = ["v1", "v2"];
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,21 +37,7 @@ builder.Services
     });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-// One OpenAPI document per API version.
-bool openApiEnabled = builder.Configuration.GetValue("OpenApi:Enabled", false);
-
-if (openApiEnabled)
-{
-    foreach (string version in apiVersions)
-    {
-        builder.Services.AddOpenApi(version, options =>
-        {
-            options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
-            options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-            options.AddSchemaTransformer<StringEnumSchemaTransformer>();
-        });
-    }
-}
+builder.Services.AddApiDocumentation(builder.Configuration);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -68,10 +45,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services
-    .AddHealthChecks()
-    .AddDbContextCheck<ApplicationDbContext>(name: "database", tags: [HealthCheckTags.Ready])
-    .AddCheck("self", () => HealthCheckResult.Healthy(), tags: [HealthCheckTags.Live]);
+builder.Services.AddApiHealthChecks();
+
+builder.Services.AddObservability(builder.Configuration);
 
 bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);
 
@@ -106,52 +82,10 @@ if (allowedOrigins.Length > 0)
 
 var app = builder.Build();
 
-bool migrateOnStartup = app.Configuration.GetValue("Database:MigrateOnStartup", false);
-bool seedOnStartup = app.Configuration.GetValue("Database:SeedOnStartup", false);
-
-if (!app.Environment.IsTesting() && (migrateOnStartup || seedOnStartup))
-{
-    using IServiceScope scope = app.Services.CreateScope();
-    var serviceProvider = scope.ServiceProvider;
-
-    try
-    {
-        var dbContext = serviceProvider.GetRequiredService<ApplicationDbContext>();
-
-        if (migrateOnStartup)
-        {
-            await dbContext.Database.MigrateAsync();
-        }
-
-        if (seedOnStartup)
-        {
-            var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
-            await DbInitializer.SeedDataAsync(dbContext, passwordHasher, app.Configuration);
-        }
-    }
-    catch (Exception ex)
-    {
-        var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while initializing the database.");
-        throw;
-    }
-}
+await app.MigrateAndSeedDatabaseAsync();
 
 // Configure the HTTP request pipeline.
-if (openApiEnabled)
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference(options =>
-    {
-        foreach (string version in apiVersions)
-        {
-            options.AddDocument(version, $"Version {version[1..]}.0");
-        }
-
-        options.WithTitle("Ticket Booking Platform API")
-               .AddPreferredSecuritySchemes("Bearer");
-    });
-}
+app.MapApiDocumentation();
 
 if (forwardedHeadersEnabled)
 {
@@ -180,15 +114,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHealthChecks("/health/live", new HealthCheckOptions
-{
-    Predicate = registration => registration.Tags.Contains(HealthCheckTags.Live)
-});
-
-app.MapHealthChecks("/health/ready", new HealthCheckOptions
-{
-    Predicate = registration => registration.Tags.Contains(HealthCheckTags.Ready)
-});
+app.MapHealthCheckEndpoints();
 
 app.Run();
 

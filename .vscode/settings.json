@@ -7,6 +7,7 @@
         "/^dotnet build src/WebApi/WebApi\\.csproj --nologo -v minimal$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "docker compose": true
     }
 }

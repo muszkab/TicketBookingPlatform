@@ -19,10 +19,16 @@ public static class DbInitializer
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         IConfiguration? configuration = null,
+        bool seedDemoData = true,
         CancellationToken cancellationToken = default)
     {
-        await SeedLocationsAsync(context, cancellationToken);
-        await SeedEventsAsync(context, cancellationToken);
+        if (seedDemoData)
+        {
+            await SeedLocationsAsync(context, cancellationToken);
+            await SeedEventsAsync(context, cancellationToken);
+        }
+
+        // The administrator account is always seeded
         await SeedAdminUserAsync(context, passwordHasher, configuration, cancellationToken);
     }
 
@@ -167,9 +173,6 @@ public static class DbInitializer
         string email = configuration?["Seed:Admin:Email"]
             ?? throw new InvalidOperationException(
                 "Seed:Admin:Email is not configured. Set it via user secrets or environment variables.");
-        string password = configuration?["Seed:Admin:Password"]
-            ?? throw new InvalidOperationException(
-                "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");
         string fullName = "System Administrator";
 
         string normalizedEmail = email.Trim().ToLowerInvariant();
@@ -178,6 +181,10 @@ public static class DbInitializer
         {
             return;
         }
+
+        string password = configuration?["Seed:Admin:Password"]
+            ?? throw new InvalidOperationException(
+                "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");
 
         var admin = new User(
             email: email,

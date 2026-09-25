@@ -18,6 +18,10 @@
 #   docker login ghcr.io -u <your-username>
 
 services:
+  migrator:
+    build: !reset null
+    image: ghcr.io/${IMAGE_OWNER:-muszkab}/ticket-booking-platform-migrator:${IMAGE_TAG:?Set IMAGE_TAG to the version you want to test, e.g. 1.0.0}
+
   api:
     build: !reset null
     image: ghcr.io/${IMAGE_OWNER:-muszkab}/ticket-booking-platform-api:${IMAGE_TAG:?Set IMAGE_TAG to the version you want to test, e.g. 1.0.0}

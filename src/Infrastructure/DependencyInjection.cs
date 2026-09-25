@@ -13,7 +13,12 @@ namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    /// <summary>
+    /// Registers only the persistence layer (DbContext, the <see cref="IApplicationDbContext"/>
+    /// abstraction and the password hasher). Shared by the API and the standalone migrator so the
+    /// migrator can apply migrations/seed without needing the JWT configuration.
+    /// </summary>
+    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -28,6 +33,13 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddPersistence(configuration);
 
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();

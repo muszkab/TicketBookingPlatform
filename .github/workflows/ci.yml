@@ -138,10 +138,128 @@ jobs:
       - name: Build
         run: npm run build
 
+  compose-smoke-test:
+    name: Docker Compose smoke test
+    runs-on: ubuntu-latest
+    needs: [backend-build-and-test, frontend-build-and-test]
+    timeout-minutes: 30
+    env:
+      MSSQL_SA_PASSWORD: Compose_Smoke_Strong#Pass1
+      MSSQL_DATABASE: TicketBookingPlatform
+      JWT_SIGNING_KEY: ci-compose-smoke-test-signing-key-which-is-long-enough-0123456789
+      SEED_ADMIN_EMAIL: admin@example.com
+      SEED_ADMIN_PASSWORD: Compose_Smoke_Admin#Pass1
+      API_PORT: 8080
+      SPA_PORT: 4200
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start stack
+        run: docker compose up -d
+
+      - name: Verify the migrator completed successfully
+        run: |
+          for i in $(seq 1 60); do
+            state="$(docker inspect -f '{{.State.Status}}:{{.State.ExitCode}}' tbp-migrator 2>/dev/null || echo 'missing:-')"
+            case "$state" in
+              exited:0)
+                echo "Migrator completed successfully."
+                exit 0
+                ;;
+              exited:*)
+                echo "::error::Migrator failed with $state" >&2
+                exit 1
+                ;;
+            esac
+            echo "Waiting for migrator... ($i) [$state]"
+            sleep 5
+          done
+          echo "::error::Migrator did not finish in time." >&2
+          exit 1
+
+      - name: Wait for API readiness
+        run: |
+          for i in $(seq 1 60); do
+            if curl --fail -s -o /dev/null http://localhost:8080/health/ready; then
+              echo "API is ready."
+              exit 0
+            fi
+            echo "Waiting for API... ($i)"
+            sleep 5
+          done
+          echo "::error::API did not become ready in time." >&2
+          exit 1
+
+      - name: Wait for SPA
+        run: |
+          for i in $(seq 1 20); do
+            if curl --fail -s -o /dev/null http://localhost:4200/; then
+              echo "SPA is up."
+              exit 0
+            fi
+            echo "Waiting for SPA... ($i)"
+            sleep 5
+          done
+          echo "::error::SPA did not become available in time." >&2
+          exit 1
+
+      - name: Check the anonymous events endpoint
+        run: curl --fail -s -o /dev/null "http://localhost:8080/api/v1/events?page=1&pageSize=1"
+
+      - name: Log in with the seeded admin user
+        run: |
+          token="$(curl --fail -s -X POST http://localhost:8080/api/v1/auth/login \
+            -H 'Content-Type: application/json' \
+            -d "{\"email\":\"$SEED_ADMIN_EMAIL\",\"password\":\"$SEED_ADMIN_PASSWORD\"}" \
+            | jq -r '.accessToken')"
+
+          if [ -z "$token" ] || [ "$token" = "null" ]; then
+            echo "::error::Login did not return an access token." >&2
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          echo "ACCESS_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Check an authenticated endpoint
+        run: |
+          status="$(curl -s -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            http://localhost:8080/api/v1/orders/mine)"
+
+          if [ "$status" != "200" ]; then
+            echo "::error::GET /api/v1/orders/mine returned $status instead of 200." >&2
+            exit 1
+          fi
+
+      - name: Check that the endpoint rejects anonymous callers
+        run: |
+          status="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/v1/orders/mine)"
+
+          if [ "$status" != "401" ]; then
+            echo "::error::GET /api/v1/orders/mine returned $status instead of 401 without a token." >&2
+            exit 1
+          fi
+
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 300
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
   publish-images:
     name: Publish images
     runs-on: ubuntu-latest
-    needs: [backend-build-and-test, frontend-build-and-test]
+    needs: [backend-build-and-test, frontend-build-and-test, compose-smoke-test]
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: read

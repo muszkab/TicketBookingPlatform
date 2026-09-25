@@ -28,9 +28,7 @@ public static class DbInitializer
             await SeedEventsAsync(context, cancellationToken);
         }
 
-        // The administrator account is always seeded: it is the only place in the application
-        // where a user with UserRole.Admin is created, so without it the location and event
-        // management endpoints are unreachable.
+        // The administrator account is always seeded
         await SeedAdminUserAsync(context, passwordHasher, configuration, cancellationToken);
     }
 
@@ -184,8 +182,6 @@ public static class DbInitializer
             return;
         }
 
-        // Read the password only once we know the account has to be created, so routine migration
-        // runs against an existing database do not need the secret to be supplied at all.
         string password = configuration?["Seed:Admin:Password"]
             ?? throw new InvalidOperationException(
                 "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");

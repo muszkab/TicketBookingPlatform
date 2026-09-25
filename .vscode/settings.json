@@ -9,6 +9,7 @@
             "matchCommandLine": true
         },
         "docker compose": true,
-        "npx --yes js-yaml": true
+        "npx --yes js-yaml": true,
+        "docker build": true
     }
 }

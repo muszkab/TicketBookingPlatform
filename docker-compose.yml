@@ -19,6 +19,24 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  migrator:
+    build:
+      context: .
+      dockerfile: src/Migrator/Dockerfile
+    container_name: tbp-migrator
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-TicketBookingPlatform};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Seed__Admin__Email: ${SEED_ADMIN_EMAIL}
+      Seed__Admin__Password: ${SEED_ADMIN_PASSWORD}
+      Database__SeedOnStartup: "true"
+      Logging__LogLevel__Default: Information
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - app-net
+    restart: "no"
+
   api:
     build:
       context: .
@@ -28,10 +46,6 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-TicketBookingPlatform};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
       JwtSettings__SigningKey: ${JWT_SIGNING_KEY}
-      Seed__Admin__Email: ${SEED_ADMIN_EMAIL}
-      Seed__Admin__Password: ${SEED_ADMIN_PASSWORD}
-      Database__MigrateOnStartup: "true"
-      Database__SeedOnStartup: "true"
       OpenApi__Enabled: "true"
       ForwardedHeaders__Enabled: "true"
       Https__RedirectEnabled: "false"
@@ -43,6 +57,8 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     networks:
       - app-net
     healthcheck:

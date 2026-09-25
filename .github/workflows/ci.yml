@@ -186,6 +186,27 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Extract metadata for migrator image
+        id: meta-migrator
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.owner.outputs.lowercase }}/ticket-booking-platform-migrator
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build and push migrator image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/Migrator/Dockerfile
+          push: true
+          tags: ${{ steps.meta-migrator.outputs.tags }}
+          labels: ${{ steps.meta-migrator.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Extract metadata for SPA image
         id: meta-spa
         uses: docker/metadata-action@v5

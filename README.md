@@ -69,6 +69,7 @@ src/
 ├── Domain/          Events, Locations, Orders, Tickets, Users + Money / TicketCode value objects
 ├── Application/     Feature-per-folder CQRS handlers, DTOs, paging helpers, exceptions
 ├── Infrastructure/  ApplicationDbContext, configurations, migrations, seeding, JWT, hashing
+├── Migrator/        Standalone migrator container (applies migrations + seeds before the API starts)
 └── WebApi/          V1 & V2 controllers, request contracts, OpenAPI transformers, Program.cs
 tests/
 ├── Domain.Tests/        Aggregate invariants & business rules
@@ -100,6 +101,10 @@ frontend/
 - **Secrets stay out of the repo.** Connection string defaults to LocalDB; JWT signing key and the
   seeded admin credentials are read from user secrets / environment variables and the app fails
   fast at startup if they are missing.
+- **Migrations are a separate deployment step.** A dedicated `migrator` container (see
+  `src/Migrator`) applies migrations and seeds reference data before the API starts, so the API can
+  run with multiple replicas without racing on the schema. In-process migration is restricted to the
+  Development environment.
 
 ---
 
@@ -120,11 +125,16 @@ dotnet user-secrets --project src/WebApi set "Seed:Admin:Email" "admin@example.c
 dotnet user-secrets --project src/WebApi set "Seed:Admin:Password" "<strong-password>"
 ```
 
-Run the API (migrations are applied and reference data is seeded automatically on startup):
+Run the API (in Development it applies migrations and seeds reference data on startup):
 
 ```powershell
 dotnet run --project src/WebApi
 ```
+
+> In containers the API no longer migrates on startup: a one-shot `migrator` container applies
+> migrations and seeds the reference data before the API replicas start. `docker compose up` wires
+> this up automatically via `depends_on: condition: service_completed_successfully`, which keeps the
+> API safe to scale out.
 
 | Endpoint | URL |
 |---|---|

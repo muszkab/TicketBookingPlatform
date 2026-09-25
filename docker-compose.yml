@@ -28,7 +28,7 @@ services:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-TicketBookingPlatform};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
       Seed__Admin__Email: ${SEED_ADMIN_EMAIL}
       Seed__Admin__Password: ${SEED_ADMIN_PASSWORD}
-      Database__SeedOnStartup: "true"
+      Migrator__SeedDemoData: "true"
       Logging__LogLevel__Default: Information
     depends_on:
       sqlserver:

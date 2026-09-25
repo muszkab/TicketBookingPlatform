@@ -19,10 +19,18 @@ public static class DbInitializer
         ApplicationDbContext context,
         IPasswordHasher passwordHasher,
         IConfiguration? configuration = null,
+        bool seedDemoData = true,
         CancellationToken cancellationToken = default)
     {
-        await SeedLocationsAsync(context, cancellationToken);
-        await SeedEventsAsync(context, cancellationToken);
+        if (seedDemoData)
+        {
+            await SeedLocationsAsync(context, cancellationToken);
+            await SeedEventsAsync(context, cancellationToken);
+        }
+
+        // The administrator account is always seeded: it is the only place in the application
+        // where a user with UserRole.Admin is created, so without it the location and event
+        // management endpoints are unreachable.
         await SeedAdminUserAsync(context, passwordHasher, configuration, cancellationToken);
     }
 
@@ -167,9 +175,6 @@ public static class DbInitializer
         string email = configuration?["Seed:Admin:Email"]
             ?? throw new InvalidOperationException(
                 "Seed:Admin:Email is not configured. Set it via user secrets or environment variables.");
-        string password = configuration?["Seed:Admin:Password"]
-            ?? throw new InvalidOperationException(
-                "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");
         string fullName = "System Administrator";
 
         string normalizedEmail = email.Trim().ToLowerInvariant();
@@ -178,6 +183,12 @@ public static class DbInitializer
         {
             return;
         }
+
+        // Read the password only once we know the account has to be created, so routine migration
+        // runs against an existing database do not need the secret to be supplied at all.
+        string password = configuration?["Seed:Admin:Password"]
+            ?? throw new InvalidOperationException(
+                "Seed:Admin:Password is not configured. Set it via user secrets or environment variables.");
 
         var admin = new User(
             email: email,

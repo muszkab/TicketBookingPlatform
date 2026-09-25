@@ -54,7 +54,7 @@ public static class DatabaseInitializationExtensions
             if (seedOnStartup)
             {
                 var passwordHasher = serviceProvider.GetRequiredService<IPasswordHasher>();
-                await DbInitializer.SeedDataAsync(dbContext, passwordHasher, app.Configuration);
+                await DbInitializer.SeedDataAsync(dbContext, passwordHasher, app.Configuration, seedDemoData: true);
             }
         }
         catch (Exception ex)

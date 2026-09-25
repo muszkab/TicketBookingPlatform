@@ -37,10 +37,10 @@ public class DbInitializerTests : IDisposable
         return new ConfigurationBuilder().AddInMemoryCollection(values).Build();
     }
 
-    private async Task SeedAsync(IConfiguration? configuration = null)
+    private async Task SeedAsync(IConfiguration? configuration = null, bool seedDemoData = true)
     {
         await using ApplicationDbContext context = _database.CreateContext();
-        await DbInitializer.SeedDataAsync(context, _passwordHasher, configuration ?? BuildConfiguration());
+        await DbInitializer.SeedDataAsync(context, _passwordHasher, configuration ?? BuildConfiguration(), seedDemoData);
     }
 
     [Fact]
@@ -117,6 +117,33 @@ public class DbInitializerTests : IDisposable
         admin.FullName.Should().Be("System Administrator");
         admin.PasswordHash.Should().NotBe(AdminPassword);
         _passwordHasher.Verify(admin.PasswordHash, AdminPassword).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SeedDataAsync_Should_Seed_AdminUser_WithoutDemoData()
+    {
+        await SeedAsync(seedDemoData: false);
+
+        await using ApplicationDbContext read = _database.CreateContext();
+
+        (await read.Locations.CountAsync()).Should().Be(0);
+        (await read.Events.CountAsync()).Should().Be(0);
+
+        User admin = await read.Users.AsNoTracking().SingleAsync();
+        admin.Role.Should().Be(UserRole.Admin);
+    }
+
+    [Fact]
+    public async Task SeedDataAsync_Should_Not_Require_AdminPassword_WhenAdminAlreadyExists()
+    {
+        await SeedAsync(seedDemoData: false);
+
+        await FluentActions
+            .Invoking(() => SeedAsync(BuildConfiguration(password: null), seedDemoData: false))
+            .Should().NotThrowAsync();
+
+        await using ApplicationDbContext read = _database.CreateContext();
+        (await read.Users.CountAsync()).Should().Be(1);
     }
 
     [Fact]

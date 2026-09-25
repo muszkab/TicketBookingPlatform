@@ -167,7 +167,7 @@ jobs:
 
       - name: Extract metadata for API image
         id: meta-api
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ steps.owner.outputs.lowercase }}/ticket-booking-platform-api
           tags: |
@@ -188,7 +188,7 @@ jobs:
 
       - name: Extract metadata for SPA image
         id: meta-spa
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ steps.owner.outputs.lowercase }}/ticket-booking-platform-spa
           tags: |

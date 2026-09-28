@@ -23,6 +23,9 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | API versioning | URL segment (`/api/v{version}/...`), v1 & v2 documents |
 | API docs | Built-in OpenAPI + Scalar UI |
 | Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
+| Health checks | ASP.NET Core health checks (`/health/live`, `/health/ready`) |
+| Observability | OpenTelemetry traces, metrics and logs exported over OTLP |
+| Configuration | Layered `appsettings.json` → user secrets → environment variables |
 | Testing | xUnit, FluentAssertions, NSubstitute, Entity Framework Core InMemory |
 
 ### Frontend
@@ -159,9 +162,82 @@ npm start   # https://localhost:4200
 Or run the published images with Docker Compose instead of building locally:
 
 ```powershell
-$env:IMAGE_TAG = "latest"
+$env:IMAGE_TAG = "1.0.0"   # any published semver tag (there is no "latest" tag)
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
+
+---
+
+## Configuration
+
+Configuration is layered: `appsettings.json` holds non-secret defaults, `appsettings.Development.json`
+overrides them for local development, and **user secrets / environment variables** provide the
+secrets. No connection string or secret is committed to the repository.
+
+In containers the environment variables use the **`__` (double underscore) separator** to address
+nested keys, e.g. `JwtSettings__SigningKey` maps to `JwtSettings:SigningKey`.
+
+| Setting | `appsettings.json` key | Environment variable | Notes |
+|---|---|---|---|
+| Connection string | `ConnectionStrings:DefaultConnection` | `ConnectionStrings__DefaultConnection` | Required. Development uses LocalDB; containers use the SQL Server service. |
+| JWT signing key | `JwtSettings:SigningKey` | `JwtSettings__SigningKey` | Required, at least 32 characters. Startup fails fast if missing. |
+| JWT issuer / audience / lifetime | `JwtSettings:Issuer`, `JwtSettings:Audience`, `JwtSettings:AccessTokenExpirationMinutes` | `JwtSettings__Issuer`, `JwtSettings__Audience`, `JwtSettings__AccessTokenExpirationMinutes` | Non-secret defaults live in `appsettings.json`. |
+| Seed administrator | `Seed:Admin:Email`, `Seed:Admin:Password` | `Seed__Admin__Email`, `Seed__Admin__Password` | Required by the migrator; the admin account is always seeded (idempotently). |
+| Demo fixtures | `Migrator:SeedDemoData` | `Migrator__SeedDemoData` | Migrator only. `false` (default) seeds just the admin; Docker Compose sets `true` to also load locations, events and ticket categories. |
+| Startup migration | `Database:MigrateOnStartup`, `Database:SeedOnStartup` | `Database__MigrateOnStartup`, `Database__SeedOnStartup` | **Development only** (single instance). Anywhere else the app fails fast — use the migrator container instead. |
+| OTLP endpoint | `OpenTelemetry:OtlpEndpoint` | `OpenTelemetry__OtlpEndpoint` | Empty = telemetry export disabled. Docker Compose binds it to `OTEL_EXPORTER_OTLP_ENDPOINT` from `.env`. |
+| CORS origins | `Cors:AllowedOrigins` | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, … | Empty array = the CORS middleware is not registered. |
+| HTTPS behaviour | `Https:RedirectEnabled`, `Https:HstsEnabled` | `Https__RedirectEnabled`, `Https__HstsEnabled` | Set to `false` in containers (TLS terminates at the proxy). |
+| Forwarded headers | `ForwardedHeaders:Enabled` | `ForwardedHeaders__Enabled` | Enable behind a reverse proxy / Container Apps so `X-Forwarded-For` and `X-Forwarded-Proto` are honoured. |
+| OpenAPI / Scalar | `OpenApi:Enabled` | `OpenApi__Enabled` | Exposes the OpenAPI documents and the Scalar UI. |
+| Log level | `Logging:LogLevel:Default` | `Logging__LogLevel__Default` | |
+
+Fail-fast validation covers the connection string, the JWT `SigningKey` and the seed administrator
+credentials, so a misconfigured deployment stops at startup instead of failing later.
+
+Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
+`MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,
+`SPA_PORT`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+## Health & observability
+
+### Health endpoints
+
+| Endpoint | Check | Purpose |
+|---|---|---|
+| `/health/live` | `self` — the process is running, no dependencies | Liveness probe; the Docker Compose healthcheck polls this. |
+| `/health/ready` | `database` — EF Core can reach SQL Server | Readiness probe; decides whether the instance should receive traffic. |
+
+Both endpoints are anonymous and currently return `Healthy` / `Unhealthy` as plain text. In local
+development they are served from the API root, e.g. `https://localhost:5001/health/live`.
+
+### OpenTelemetry
+
+The API is instrumented with OpenTelemetry and exports over OTLP when an endpoint is configured:
+
+- **Traces** — incoming ASP.NET Core requests and EF Core queries.
+- **Metrics** — ASP.NET Core/Kestrel and .NET runtime metrics (GC, thread pool).
+- **Logs** — the existing `ILogger` output, including scopes and formatted messages.
+
+Resource attributes include `service.name = TicketBookingPlatform.WebApi` and the service version.
+The `GlobalExceptionHandler` adds a `traceId` to every `ProblemDetails` response, so a reported error
+can be located in the traces.
+
+Exporting is a no-op when the endpoint is empty. To inspect telemetry locally, point the API at the
+optional Aspire Dashboard and start it with the `observability` profile:
+
+```powershell
+# .env
+OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
+```
+
+```powershell
+docker compose --profile observability up -d
+# Dashboard: http://localhost:18888
+```
+
+Outgoing `HttpClient` instrumentation is intentionally not wired up yet — the API makes no outbound
+calls. It should be added with the first external integration (e.g. a payment provider).
 
 ---
 

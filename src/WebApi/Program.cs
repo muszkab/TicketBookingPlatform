@@ -2,6 +2,7 @@ using Application;
 using Application.Common.Interfaces;
 using Asp.Versioning;
 using Infrastructure;
+using Infrastructure.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,8 @@ using System.Text.Json.Serialization;
 using WebApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddAzureKeyVault(builder.Configuration);
 
 // Add services to the container.
 

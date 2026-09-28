@@ -1,6 +1,6 @@
 using Application.Common.Interfaces;
-using Application.Common.Interfaces;
 using Infrastructure;
+using Infrastructure.Configuration;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +40,8 @@ try
     HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
     ConfigurationManager configuration = builder.Configuration;
+
+    configuration.AddAzureKeyVault(configuration);
 
     bool seedDemoData = configuration.GetValue("Migrator:SeedDemoData", false);
 

@@ -186,6 +186,8 @@ nested keys, e.g. `JwtSettings__SigningKey` maps to `JwtSettings:SigningKey`.
 | Demo fixtures | `Migrator:SeedDemoData` | `Migrator__SeedDemoData` | Migrator only. `false` (default) seeds just the admin; Docker Compose sets `true` to also load locations, events and ticket categories. |
 | Startup migration | `Database:MigrateOnStartup`, `Database:SeedOnStartup` | `Database__MigrateOnStartup`, `Database__SeedOnStartup` | **Development only** (single instance). Anywhere else the app fails fast — use the migrator container instead. |
 | OTLP endpoint | `OpenTelemetry:OtlpEndpoint` | `OpenTelemetry__OtlpEndpoint` | Empty = telemetry export disabled. Docker Compose binds it to `OTEL_EXPORTER_OTLP_ENDPOINT` from `.env`. |
+| Key Vault | `KeyVault:Uri` | `KeyVault__Uri` | Empty = Key Vault is not used (local development, Docker Compose). Set to `https://<vault>.vault.azure.net/` in Azure. |
+| Key Vault identity | `KeyVault:ManagedIdentityClientId` | `KeyVault__ManagedIdentityClientId` | Only needed for a *user-assigned* Managed Identity; leave empty for system-assigned. |
 | CORS origins | `Cors:AllowedOrigins` | `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, … | Empty array = the CORS middleware is not registered. |
 | HTTPS behaviour | `Https:RedirectEnabled`, `Https:HstsEnabled` | `Https__RedirectEnabled`, `Https__HstsEnabled` | Set to `false` in containers (TLS terminates at the proxy). |
 | Forwarded headers | `ForwardedHeaders:Enabled` | `ForwardedHeaders__Enabled` | Enable behind a reverse proxy / Container Apps so `X-Forwarded-For` and `X-Forwarded-Proto` are honoured. |
@@ -194,6 +196,23 @@ nested keys, e.g. `JwtSettings__SigningKey` maps to `JwtSettings:SigningKey`.
 
 Fail-fast validation covers the connection string, the JWT `SigningKey` and the seed administrator
 credentials, so a misconfigured deployment stops at startup instead of failing later.
+
+### Azure Key Vault
+
+When `KeyVault:Uri` is set, both the API and the migrator load an additional configuration source
+from Key Vault, authenticated with `DefaultAzureCredential` (the developer's `az login` session
+locally, a Managed Identity in Azure — no secret is needed to read the secrets). The provider is
+opt-in, so local development and Docker Compose keep using user secrets and environment variables.
+
+Key Vault secret names cannot contain `:`, so the nested keys use `--` instead:
+
+| Configuration key | Key Vault secret name |
+|---|---|
+| `ConnectionStrings:DefaultConnection` | `ConnectionStrings--DefaultConnection` |
+| `JwtSettings:SigningKey` | `JwtSettings--SigningKey` |
+| `Seed:Admin:Password` | `Seed--Admin--Password` |
+
+The identity needs the **Key Vault Secrets User** role on the vault.
 
 Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
 `MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,

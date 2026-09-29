@@ -8,15 +8,20 @@ import { timeoutInterceptor } from './core/http/timeout.interceptor';
 import { getAppConfig } from './core/config/app-config';
 import { routes } from './app.routes';
 
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
-    provideHttpClient(
-      withFetch(),
-      withInterceptors([authInterceptor, timeoutInterceptor])
-    ),
-    provideAnimationsAsync(),
-    provideApi(getAppConfig().apiBasePath)
-  ]
-};
+// NOTE: this must stay a function. As an `export const` it would be evaluated while the module is
+// imported — before `loadAppConfig()` had a chance to run — and the API client would capture the
+// compile-time default instead of the base path from config.json.
+export function createAppConfig(): ApplicationConfig {
+  return {
+    providers: [
+      provideBrowserGlobalErrorListeners(),
+      provideRouter(routes),
+      provideHttpClient(
+        withFetch(),
+        withInterceptors([authInterceptor, timeoutInterceptor])
+      ),
+      provideAnimationsAsync(),
+      provideApi(getAppConfig().apiBasePath)
+    ]
+  };
+}

@@ -401,4 +401,4 @@ order payment/cancellation, and issued tickets with QR codes.
 - [ ] Integration tests with `WebApplicationFactory` + Testcontainers
 - [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
 - [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
-- [ ] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)
+- [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)

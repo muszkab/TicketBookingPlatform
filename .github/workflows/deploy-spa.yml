@@ -1,0 +1,65 @@
+name: Deploy SPA to Azure Static Web Apps
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      api_base_path:
+        description: "API base path to bake into config.json (overrides the API_BASE_PATH variable)"
+        required: false
+        type: string
+
+concurrency:
+  group: swa-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/ticket-booking-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend/ticket-booking-web
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend/ticket-booking-web
+        run: npm run build
+
+      # The SPA and the API live on different origins in Azure, so the runtime configuration has to
+      # point at the Container App. Locally (and in Docker Compose) this stays empty, because nginx
+      # proxies /api/ on the same origin.
+      - name: Write runtime configuration
+        env:
+          API_BASE_PATH: ${{ inputs.api_base_path || vars.API_BASE_PATH }}
+        run: |
+          if [ -z "$API_BASE_PATH" ]; then
+            echo "::error::API_BASE_PATH is not set. Add it as a repository variable or pass it to the manual run." >&2
+            exit 1
+          fi
+
+          printf '{ "apiBasePath": "%s" }\n' "${API_BASE_PATH%/}" \
+            > frontend/ticket-booking-web/dist/ticket-booking-web/browser/config.json
+
+          cat frontend/ticket-booking-web/dist/ticket-booking-web/browser/config.json
+
+      - name: Deploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: frontend/ticket-booking-web/dist/ticket-booking-web/browser
+          skip_app_build: true
+          skip_api_build: true

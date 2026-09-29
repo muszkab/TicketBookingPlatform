@@ -162,9 +162,15 @@ npm start   # https://localhost:4200
 Or run the published images with Docker Compose instead of building locally:
 
 ```powershell
-$env:IMAGE_TAG = "1.0.0"   # any published semver tag (there is no "latest" tag)
+$env:IMAGE_TAG = "2.0.0"   # any published semver tag, e.g. 2.0.0, 2.0 or 2
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
+
+The `publish-images` job tags every release with the full version, the major.minor and the major
+number, plus `latest` for the highest one. Pin an explicit version for deployments — `latest` is a
+moving target and orchestrators do not re-pull it on their own. Note that the migrator image only
+exists from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API
+and the migrator must always run the same tag.
 
 ---
 

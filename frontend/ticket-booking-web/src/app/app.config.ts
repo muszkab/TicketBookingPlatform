@@ -5,7 +5,7 @@ import { provideRouter } from '@angular/router';
 import { provideApi } from './api';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { timeoutInterceptor } from './core/http/timeout.interceptor';
-import { environment } from '../environments/environment';
+import { getAppConfig } from './core/config/app-config';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -17,6 +17,6 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor, timeoutInterceptor])
     ),
     provideAnimationsAsync(),
-    provideApi(environment.apiBasePath)
+    provideApi(getAppConfig().apiBasePath)
   ]
 };

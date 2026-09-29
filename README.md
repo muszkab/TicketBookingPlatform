@@ -220,6 +220,25 @@ Key Vault secret names cannot contain `:`, so the nested keys use `--` instead:
 
 The identity needs the **Key Vault Secrets User** role on the vault.
 
+### SPA runtime configuration
+
+The SPA image is built once and reused across environments, so the API base path is **not** baked
+into the bundle. It is served as `config.json` next to `index.html` and fetched before Angular
+bootstraps:
+
+```json
+{ "apiBasePath": "" }
+```
+
+| Value | When |
+|---|---|
+| `""` (empty) | Behind a same-origin proxy — the nginx container proxies `/api/` to the API, so relative requests just work and **no CORS is involved**. This is what Docker Compose uses. |
+| `"https://<api-host>"` | SPA and API on different domains (Static Web Apps + Container Apps). The API must then allow that origin through `Cors:AllowedOrigins`. |
+
+If `config.json` is missing or malformed the compile-time default from `src/environments` is kept,
+so a broken deployment artifact cannot prevent the application from starting. nginx serves the file
+with `Cache-Control: no-store`, otherwise a redeployed environment could keep using a stale API URL.
+
 Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
 `MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,
 `SPA_PORT`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
@@ -230,7 +249,7 @@ Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSS
 
 | Endpoint | Check | Purpose |
 |---|---|---|
-| `/health/live` | `self` — the process is running, no dependencies | Liveness probe; the Docker Compose healthcheck polls this. |
+| `/health/live` | `self` — the process is running, no dependencies | Liveness probe; polled by the Docker Compose healthcheck and the Container Apps liveness/startup probes. |
 | `/health/ready` | `database` — EF Core can reach SQL Server | Readiness probe; decides whether the instance should receive traffic. |
 
 Both endpoints are anonymous and currently return `Healthy` / `Unhealthy` as plain text. In local
@@ -266,6 +285,107 @@ calls. It should be added with the first external integration (e.g. a payment pr
 
 ---
 
+## Azure deployment
+
+The API runs on Azure Container Apps against Azure SQL, with every secret in Key Vault. **No password
+exists anywhere in the system** — neither in the images, nor in the app configuration, nor in the
+vault: the connection string itself uses a Managed Identity.
+
+| Resource | Role |
+|---|---|
+| Container App (`api`) | Runs the published API image, HTTP ingress on **port 8080**. |
+| Container Apps Job (`migrator`) | Manually triggered, one-shot EF Core migration + seeding. |
+| Azure SQL Database | Application database, reached with Entra authentication. |
+| Key Vault | Connection string, JWT signing key and seed admin password. |
+| Log Analytics workspace | Console and system logs of the environment. |
+
+Both the app and the job have their own **system-assigned Managed Identity**, each granted the
+**Key Vault Secrets User** role. The database permissions are deliberately asymmetric:
+
+```sql
+-- API: reads and writes data, but cannot change the schema
+CREATE USER [<container-app-name>] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_datareader ADD MEMBER [<container-app-name>];
+ALTER ROLE db_datawriter ADD MEMBER [<container-app-name>];
+
+-- Migrator job: the only identity allowed to change the schema
+CREATE USER [<job-name>] FROM EXTERNAL PROVIDER;
+ALTER ROLE db_ddladmin   ADD MEMBER [<job-name>];
+ALTER ROLE db_datareader ADD MEMBER [<job-name>];
+ALTER ROLE db_datawriter ADD MEMBER [<job-name>];
+```
+
+The passwordless connection string stored in the vault:
+
+```
+Server=tcp:<server>.database.windows.net,1433;Initial Catalog=TicketBookingPlatform;Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;
+```
+
+Container App environment variables (the secrets come from the vault, not from here):
+`KeyVault__Uri`, `ASPNETCORE_ENVIRONMENT=Production`, `ForwardedHeaders__Enabled=true`,
+`Https__RedirectEnabled=false`, `Https__HstsEnabled=false` — TLS terminates at the ingress.
+
+### Releasing a new version
+
+1. Tag the commit (`git tag v2.2.0 && git push origin v2.2.0`); CI publishes the images.
+2. **Run the migrator job first**, before the new API revision goes live:
+   `az containerapp job start --name <job-name> --resource-group <rg>`.
+3. Create a new API revision with the new image tag. Container Apps only routes traffic once
+   `/health/ready` reports healthy, and the previous revision stays available for rollback.
+
+Note that a database migration does not roll back with the revision, so migrations should stay
+backwards compatible with the previous release.
+
+### Probes
+
+Map the health endpoints to the container probes (`/health/live` for liveness and startup,
+`/health/ready` for readiness, port `8080`). Give the startup probe a generous failure threshold:
+the app needs a few seconds to read the vault and warm up, and the first `/health/ready` call also
+pays for acquiring the Managed Identity token.
+
+### SPA and CORS
+
+The SPA is hosted on Azure Static Web Apps and calls the Container App **directly**, so the two run
+on different origins and CORS is required. Two settings have to match:
+
+1. The SPA's `config.json` — `apiBasePath` set to the Container App URL.
+2. The API — `Cors__AllowedOrigins__0` set to the Static Web Apps URL.
+
+```
+Cors__AllowedOrigins__0 = https://<spa-name>.azurestaticapps.net
+```
+
+The CORS middleware is only registered when the list is non-empty, which is why local development
+and Docker Compose (where nginx proxies `/api/` on the same origin) need no CORS configuration at
+all. Every additional origin — a custom domain or a staging slot — needs its own indexed entry
+(`Cors__AllowedOrigins__1`, ...); the policy uses `AllowCredentials`, so wildcards are not allowed.
+
+> The alternative would be the Static Web Apps *linked backend* feature, which proxies the API under
+> the SPA origin and removes the need for CORS entirely. It requires the Standard plan, so the
+> direct-call approach above was chosen instead.
+
+### Deploying the SPA
+
+`.github/workflows/deploy-spa.yml` builds the Angular application and uploads it to Static Web Apps
+on every `v*.*.*` tag (or on demand via *Run workflow*). It writes `config.json` into the build
+output from the `API_BASE_PATH` repository variable, so the same source produces the right API URL
+per environment.
+
+Prerequisites in the GitHub repository:
+
+| Kind | Name | Value |
+|---|---|---|
+| Secret | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App (*Overview → Manage deployment token*). |
+| Variable | `API_BASE_PATH` | The Container App URL, e.g. `https://<app>.<region>.azurecontainerapps.io`. |
+
+`public/staticwebapp.config.json` handles the routing: unknown paths fall back to `index.html` (the
+Angular router owns them) and `config.json` is served with `Cache-Control: no-store`.
+
+When creating the Static Web App in the portal, choose **Deployment source: Other** — the workflow
+above already does the build and upload, so Azure should not generate its own.
+
+---
+
 ## Feature overview
 
 Event & location management (admin/organizer), event publishing and cancellation, ticket categories
@@ -280,5 +400,5 @@ order payment/cancellation, and issued tickets with QR codes.
 - [ ] FluentValidation for command/query input validation
 - [ ] Integration tests with `WebApplicationFactory` + Testcontainers
 - [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
-- [ ] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
+- [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
 - [ ] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)

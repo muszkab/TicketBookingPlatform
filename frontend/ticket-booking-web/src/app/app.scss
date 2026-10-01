@@ -8,21 +8,15 @@
     display: flex;
     align-items: center;
     width: 100%;
-    max-width: var(--app-content-max-width);
+    max-width: calc(var(--app-content-max-width) + 3rem);
     margin: 0 auto;
     padding: 0 1.5rem;
     box-sizing: border-box;
   }
 
   &__menu-button {
-    margin-left: -12px;
-    margin-right: 0.25rem;
-  }
-
-  &__brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    margin-left: -8px;
+    margin-right: 1rem;
   }
 
   &__spacer {

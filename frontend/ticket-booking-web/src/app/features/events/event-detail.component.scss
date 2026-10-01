@@ -41,6 +41,10 @@
     line-height: 1.5;
   }
 
+  &__tickets-wrapper {
+    overflow-x: auto;
+  }
+
   &__tickets {
     width: 100%;
     margin-top: 0.5rem;

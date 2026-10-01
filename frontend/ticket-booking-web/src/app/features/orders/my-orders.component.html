@@ -1,6 +1,6 @@
 <section class="my-orders">
   @if (loading() || cancelling()) {
-    <mat-progress-bar mode="indeterminate" />
+  <mat-progress-bar mode="indeterminate" />
   }
 
   <mat-card class="my-orders__card">
@@ -10,16 +10,14 @@
 
     <mat-card-content>
       @if (error(); as msg) {
-        <p class="my-orders__error">{{ msg }}</p>
+      <p class="my-orders__error">{{ msg }}</p>
       } @else if (!loading() && orders().length === 0) {
-        <p class="my-orders__empty">You don't have any orders yet.</p>
+      <p class="my-orders__empty">You don't have any orders yet.</p>
       } @else {
-        <table mat-table [dataSource]="orders()" [trackBy]="trackOrder" class="my-orders__table"
-               matSort
-               [matSortActive]="activeSortColumn"
-               [matSortDirection]="activeSortDirection"
-               matSortDisableClear
-               (matSortChange)="onSortChange($event)">
+      <div class="my-orders__table-wrapper">
+        <table mat-table [dataSource]="orders()" [trackBy]="trackOrder" class="my-orders__table" matSort
+          [matSortActive]="activeSortColumn" [matSortDirection]="activeSortDirection" matSortDisableClear
+          (matSortChange)="onSortChange($event)">
           <ng-container matColumnDef="createdAt">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Placed at</th>
             <td mat-cell *matCellDef="let ord">{{ ord.createdAt | date: 'medium' }}</td>
@@ -34,18 +32,24 @@
 
           <ng-container matColumnDef="ticketQuantity">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket qty</th>
-            <td mat-cell *matCellDef="let ord" class="my-orders__qty-cell">{{ ord.ticketQuantity }}</td>
+            <td mat-cell *matCellDef="let ord" class="my-orders__qty-cell">
+              {{ ord.ticketQuantity }}
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="total">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
-            <td mat-cell *matCellDef="let ord">{{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}</td>
+            <td mat-cell *matCellDef="let ord">
+              {{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
             <td mat-cell *matCellDef="let ord">
-              <mat-chip [color]="statusColor(ord.status)" [highlighted]="true">{{ ord.status }}</mat-chip>
+              <mat-chip [color]="statusColor(ord.status)" [highlighted]="true">{{
+                ord.status
+                }}</mat-chip>
             </td>
           </ng-container>
 
@@ -54,17 +58,16 @@
             <td mat-cell *matCellDef="let ord">
               <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
               @if (continuePaymentLink(ord); as payLink) {
-                <a mat-button color="primary" [routerLink]="payLink">Pay</a>
+              <a mat-button color="primary" [routerLink]="payLink">Pay</a>
               }
               @if (canViewTickets(ord)) {
-                <a mat-button color="primary"
-                   [routerLink]="['/my-tickets']"
-                   [queryParams]="{ orderId: ord.id }">Tickets</a>
+              <a mat-button color="primary" [routerLink]="['/my-tickets']"
+                [queryParams]="{ orderId: ord.id }">Tickets</a>
               }
               @if (canCancel(ord)) {
-                <button mat-button color="warn" type="button"
-                        [disabled]="cancelling()"
-                        (click)="cancelOrder(ord)">Cancel</button>
+              <button mat-button color="warn" type="button" [disabled]="cancelling()" (click)="cancelOrder(ord)">
+                Cancel
+              </button>
               }
             </td>
           </ng-container>
@@ -72,13 +75,10 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
+      </div>
 
-        <mat-paginator
-          [length]="totalCount()"
-          [pageIndex]="page() - 1"
-          [pageSize]="pageSize()"
-          [pageSizeOptions]="pageSizeOptions"
-          (page)="onPageChange($event)" />
+      <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" />
       }
     </mat-card-content>
   </mat-card>

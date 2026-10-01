@@ -14,25 +14,19 @@
     box-sizing: border-box;
   }
 
+  &__menu-button {
+    margin-left: -12px;
+    margin-right: 0.25rem;
+  }
+
   &__brand {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    margin-left: -30px;
   }
 
   &__spacer {
     flex: 1 1 auto;
-  }
-
-  &__inner > :last-child {
-    margin-right: -16px;
-  }
-
-  &__user {
-    margin-right: 0.75rem;
-    opacity: 0.85;
-    font-size: 0.9rem;
   }
 }
 

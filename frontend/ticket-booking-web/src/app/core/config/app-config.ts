@@ -20,6 +20,13 @@ export function getAppConfig(): AppConfig {
 }
 
 export async function loadAppConfig(): Promise<AppConfig> {
+  // `ng serve` also serves `public/config.json`, whose empty `apiBasePath` is meant for the
+  // same-origin nginx proxy. There is no dev-server proxy, so during development the compile-time
+  // value (the API running on localhost) must win.
+  if (!environment.production) {
+    return runtimeConfig;
+  }
+
   try {
     const response = await fetch('config.json', { cache: 'no-cache' });
 

@@ -10,6 +10,9 @@
         },
         "docker compose": true,
         "npx --yes js-yaml": true,
-        "docker build": true
+        "docker build": true,
+        "git check-ignore": true,
+        "npm run build": true,
+        "npx ng": true
     }
 }

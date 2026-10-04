@@ -103,9 +103,10 @@
     <div class="app-footer__meta">
       <div class="app-footer__meta-line">
         <p class="app-footer__copyright" translate="no">© {{ currentYear }} Balázs Muszka — Ticket Booking Platform</p>
-        <span class="app-footer__version" [title]="versionTitle">{{ appVersion }}</span>
+        <span class="app-footer__version" [title]="versionTitle()">{{ appVersion }}</span>
       </div>
-      <span class="app-footer__powered-by">Powered by · ASP.NET Core 9 · Angular {{ angularVersion }} · Azure</span>
+      <span class="app-footer__powered-by">Powered by · {{ apiFramework() }} · Angular {{ angularVersion }} ·
+        Azure</span>
     </div>
   </div>
 </footer>

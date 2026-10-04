@@ -1,4 +1,4 @@
-import { Component, DestroyRef, VERSION, inject, signal } from '@angular/core';
+import { Component, DestroyRef, VERSION, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -8,6 +8,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { environment } from '../environments/environment';
+import { ApiInfoService } from './core/api-info/api-info.service';
 import { AuthService } from './core/auth/auth.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from './core/dialogs/confirm-dialog.component';
 
@@ -20,6 +21,9 @@ const SIGN_OUT_CONFIRMATION: ConfirmDialogData = {
 
 const CONTACT_EMAIL = 'm1musbal@gmail.com';
 const GITHUB_REPO_URL = 'https://github.com/muszkab/TicketBookingPlatform';
+
+const API_FRAMEWORK_LABEL = 'ASP.NET Core';
+const API_FRAMEWORK_FALLBACK = `${API_FRAMEWORK_LABEL} 9`;
 
 /** `2026-10-04T09:33:11.817Z` -> `2026-10-04 09:33 UTC` (locale-independent on purpose). */
 function formatBuildTime(isoDate: string): string {
@@ -69,6 +73,7 @@ export class App {
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly apiInfo = inject(ApiInfoService);
 
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly userName = this.auth.userName;
@@ -78,11 +83,22 @@ export class App {
   protected readonly githubUrl = GITHUB_REPO_URL;
   protected readonly currentYear = new Date().getFullYear();
   protected readonly appVersion = environment.appVersion;
-  protected readonly versionTitle = buildVersionTooltip();
   protected readonly angularVersion = VERSION.major;
+  protected readonly apiFramework = computed(() => {
+    const major = this.apiInfo.runtimeMajor();
+    return major === null ? API_FRAMEWORK_FALLBACK : `${API_FRAMEWORK_LABEL} ${major}`;
+  });
+  protected readonly versionTitle = computed(() => {
+    const apiVersion = this.apiInfo.version();
+    return apiVersion ? `${buildVersionTooltip()} · API ${apiVersion}` : buildVersionTooltip();
+  });
 
   // Dismissible per view only: deliberately NOT persisted, so the notice reappears on every load.
   protected readonly showDemoNotice = signal(true);
+
+  constructor() {
+    this.apiInfo.load();
+  }
 
   protected dismissDemoNotice(): void {
     this.showDemoNotice.set(false);

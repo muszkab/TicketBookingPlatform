@@ -1,4 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
+import { VERSION } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
@@ -199,6 +200,10 @@ describe('App', () => {
     expect(
       compiled.querySelector('.app-footer__copyright')?.textContent
     ).toContain(String(new Date().getFullYear()));
+
+    expect(
+      compiled.querySelector('.app-footer__powered-by')?.textContent?.trim()
+    ).toBe(`Powered by · ASP.NET Core 9 · Angular ${VERSION.major} · Azure`);
 
     const version = compiled.querySelector('.app-footer__version');
     expect(version?.textContent?.trim()).toBe(environment.appVersion);

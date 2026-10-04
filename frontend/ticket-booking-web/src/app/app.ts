@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, VERSION, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -79,6 +79,7 @@ export class App {
   protected readonly currentYear = new Date().getFullYear();
   protected readonly appVersion = environment.appVersion;
   protected readonly versionTitle = buildVersionTooltip();
+  protected readonly angularVersion = VERSION.major;
 
   // Dismissible per view only: deliberately NOT persisted, so the notice reappears on every load.
   protected readonly showDemoNotice = signal(true);

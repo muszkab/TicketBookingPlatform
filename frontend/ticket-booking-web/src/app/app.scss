@@ -134,4 +134,17 @@
   &__copyright {
     margin: 0;
   }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 1rem;
+  }
+
+  &__version {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: help;
+  }
 }

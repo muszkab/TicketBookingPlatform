@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { ConfirmDialogComponent } from './core/dialogs/confirm-dialog.component';
+import { environment } from '../environments/environment';
 
 describe('App', () => {
   let dialogOpen: ReturnType<typeof vi.fn>;
@@ -169,7 +170,7 @@ describe('App', () => {
     ).not.toBeNull();
   });
 
-  it('renders contact links, the year and a non-interactive LinkedIn placeholder in the footer', async () => {
+  it('renders contact links, the year and a non-interactive LinkedIn placeholder', async () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -198,5 +199,13 @@ describe('App', () => {
     expect(
       compiled.querySelector('.app-footer__copyright')?.textContent
     ).toContain(String(new Date().getFullYear()));
+
+    const version = compiled.querySelector('.app-footer__version');
+    expect(version?.textContent?.trim()).toBe(environment.appVersion);
+
+    // Extra build identity lives in the tooltip only.
+    const title = version?.getAttribute('title') ?? '';
+    expect(title).toContain(`commit ${environment.appCommit}`);
+    expect(title).toMatch(/built \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC/);
   });
 });

@@ -7,6 +7,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
 
+import { environment } from '../environments/environment';
 import { AuthService } from './core/auth/auth.service';
 import { ConfirmDialogComponent, ConfirmDialogData } from './core/dialogs/confirm-dialog.component';
 
@@ -19,6 +20,36 @@ const SIGN_OUT_CONFIRMATION: ConfirmDialogData = {
 
 const CONTACT_EMAIL = 'm1musbal@gmail.com';
 const GITHUB_REPO_URL = 'https://github.com/muszkab/TicketBookingPlatform';
+
+/** `2026-10-04T09:33:11.817Z` -> `2026-10-04 09:33 UTC` (locale-independent on purpose). */
+function formatBuildTime(isoDate: string): string {
+  const date = new Date(isoDate);
+
+  if (Number.isNaN(date.getTime())) {
+    return isoDate;
+  }
+
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const day = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+  const time = `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
+
+  return `${day} ${time} UTC`;
+}
+
+/** Extra build identity for the tooltip: a bare patch version says little in a bug report. */
+function buildVersionTooltip(): string {
+  const parts: string[] = [];
+
+  if (environment.appCommit) {
+    parts.push(`commit ${environment.appCommit}`);
+  }
+
+  if (environment.appBuildDate) {
+    parts.push(`built ${formatBuildTime(environment.appBuildDate)}`);
+  }
+
+  return parts.join(' · ');
+}
 
 @Component({
   selector: 'app-root',
@@ -46,6 +77,8 @@ export class App {
   protected readonly contactEmail = CONTACT_EMAIL;
   protected readonly githubUrl = GITHUB_REPO_URL;
   protected readonly currentYear = new Date().getFullYear();
+  protected readonly appVersion = environment.appVersion;
+  protected readonly versionTitle = buildVersionTooltip();
 
   // Dismissible per view only: deliberately NOT persisted, so the notice reappears on every load.
   protected readonly showDemoNotice = signal(true);

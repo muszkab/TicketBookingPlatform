@@ -1,0 +1,13 @@
+# CODEOWNERS
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# The last matching pattern wins. A code owner must have write access to the repo.
+# This file has to live on the base branch (master) for the rule to take effect.
+
+# Everything is owned by the repo owner, so every pull request targeting master
+# requires @muszkab's approval (ruleset: "Require review from Code Owners").
+* @muszkab
+
+# Guard the ownership rules themselves: only the owner can change who is a code owner.
+/.github/CODEOWNERS @muszkab

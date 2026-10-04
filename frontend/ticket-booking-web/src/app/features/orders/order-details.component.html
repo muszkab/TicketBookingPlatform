@@ -1,49 +1,48 @@
 <section class="order-details">
   @if (loading() || cancelling()) {
-    <mat-progress-bar mode="indeterminate" />
+  <mat-progress-bar mode="indeterminate" />
   }
   @if (loading()) {
-    <div class="order-details__state">
-      <mat-spinner diameter="48" />
-    </div>
+  <div class="order-details__state">
+    <mat-spinner diameter="48" />
+  </div>
   } @else if (notFound()) {
-    <mat-card class="order-details__error">
-      <mat-card-title>Order not found</mat-card-title>
-      <mat-card-content>The requested order does not exist or is not accessible.</mat-card-content>
-    </mat-card>
+  <mat-card class="order-details__error">
+    <mat-card-title>Order not found</mat-card-title>
+    <mat-card-content>The requested order does not exist or is not accessible.</mat-card-content>
+  </mat-card>
   } @else if (error(); as msg) {
-    <mat-card class="order-details__error">
-      <mat-card-content>{{ msg }}</mat-card-content>
-    </mat-card>
+  <mat-card class="order-details__error">
+    <mat-card-content>{{ msg }}</mat-card-content>
+  </mat-card>
   } @else if (order(); as ord) {
-    <mat-card class="order-details__card">
-      <mat-card-header>
-        <mat-card-title>
-          Order details
-        </mat-card-title>
-      </mat-card-header>
+  <mat-card class="order-details__card">
+    <mat-card-header>
+      <mat-card-title> Order details </mat-card-title>
+    </mat-card-header>
 
-      <mat-card-content>
-        <dl class="order-details__meta">
-          <dt>Status</dt>
-          <dd>
-            @if (statusPresentation(); as sp) {
-              <mat-chip-set>
-                <mat-chip [highlighted]="true" [color]="sp.color">{{ sp.label }}</mat-chip>
-              </mat-chip-set>
-            }
-          </dd>
+    <mat-card-content>
+      <dl class="order-details__meta">
+        <dt>Status</dt>
+        <dd>
+          @if (statusPresentation(); as sp) {
+          <mat-chip-set>
+            <mat-chip [highlighted]="true" [color]="sp.color">{{ sp.label }}</mat-chip>
+          </mat-chip-set>
+          }
+        </dd>
 
-          <dt>Event</dt>
-          <dd>
-            <a [routerLink]="['/events', ord.eventId]"><strong>{{ ord.eventTitle }}</strong></a>
-          </dd>
+        <dt>Event</dt>
+        <dd>
+          <a [routerLink]="['/events', ord.eventId]"><strong>{{ ord.eventTitle }}</strong></a>
+        </dd>
 
-          <dt>When</dt>
-          <dd>{{ ord.eventStartsAt | date: 'medium' }} → {{ ord.eventEndsAt | date: 'medium' }}</dd>
-        </dl>
+        <dt>When</dt>
+        <dd>{{ ord.eventStartsAt | date: 'medium' }} → {{ ord.eventEndsAt | date: 'medium' }}</dd>
+      </dl>
 
-        <h3>Items</h3>
+      <h3>Items</h3>
+      <div class="order-details__items-wrapper">
         <table mat-table [dataSource]="ord.items" [trackBy]="trackItem" class="order-details__items">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Category</th>
@@ -59,13 +58,17 @@
 
           <ng-container matColumnDef="unitPrice">
             <th mat-header-cell *matHeaderCellDef>Unit price</th>
-            <td mat-cell *matCellDef="let item">{{ item.unitPriceAmount | number: '1.0-0' }} {{ item.currency }}</td>
+            <td mat-cell *matCellDef="let item">
+              {{ item.unitPriceAmount | number: '1.0-0' }} {{ item.currency }}
+            </td>
             <td mat-footer-cell *matFooterCellDef></td>
           </ng-container>
 
           <ng-container matColumnDef="lineTotal">
             <th mat-header-cell *matHeaderCellDef>Total</th>
-            <td mat-cell *matCellDef="let item">{{ lineTotal(item) | number: '1.0-0' }} {{ item.currency }}</td>
+            <td mat-cell *matCellDef="let item">
+              {{ lineTotal(item) | number: '1.0-0' }} {{ item.currency }}
+            </td>
             <td mat-footer-cell *matFooterCellDef>
               <strong>{{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}</strong>
             </td>
@@ -75,30 +78,27 @@
           <tr mat-row *matRowDef="let row; columns: itemColumns"></tr>
           <tr mat-footer-row *matFooterRowDef="itemColumns" class="order-details__grand-total"></tr>
         </table>
-      </mat-card-content>
+      </div>
+    </mat-card-content>
 
-      @if (canPay() || canCancel() || canViewTickets()) {
-        <mat-card-actions class="order-details__actions" align="end">
-          @if (canCancel()) {
-            <button mat-flat-button color="warn" type="button"
-                    [disabled]="cancelling()"
-                    (click)="cancelOrder()">
-              Cancel order
-            </button>
-          }
-          @if (canViewTickets()) {
-            <a mat-flat-button color="primary"
-               [routerLink]="['/my-tickets']"
-               [queryParams]="{ orderId: ord.id }">
-              View tickets
-            </a>
-          }
-          @if (canPay()) {
-            <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
-          }
-        </mat-card-actions>
+    @if (canPay() || canCancel() || canViewTickets()) {
+    <mat-card-actions class="order-details__actions" align="end">
+      @if (canCancel()) {
+      <button mat-flat-button color="warn" type="button" [disabled]="cancelling()" (click)="cancelOrder()">
+        Cancel order
+      </button>
       }
-    </mat-card>
+      @if (canViewTickets()) {
+      <a mat-flat-button color="primary" [routerLink]="['/my-tickets']" [queryParams]="{ orderId: ord.id }">
+        View tickets
+      </a>
+      }
+      @if (canPay()) {
+      <a mat-flat-button color="primary" [routerLink]="['/orders', ord.id, 'pay']">Pay now</a>
+      }
+    </mat-card-actions>
+    }
+  </mat-card>
   }
 
   <a mat-button routerLink="/my-orders" class="order-details__back">

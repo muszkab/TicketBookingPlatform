@@ -132,6 +132,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync the package version with the release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: npm version "${GITHUB_REF_NAME}" --no-git-tag-version --allow-same-version
+
       - name: Test
         run: npm test
 
@@ -342,6 +346,9 @@ jobs:
           push: true
           tags: ${{ steps.meta-spa.outputs.tags }}
           labels: ${{ steps.meta-spa.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+            APP_COMMIT=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

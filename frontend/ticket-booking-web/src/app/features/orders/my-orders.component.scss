@@ -6,6 +6,10 @@
 }
 
 .my-orders {
+  &__table-wrapper {
+    overflow-x: auto;
+  }
+
   &__table {
     width: 100%;
 

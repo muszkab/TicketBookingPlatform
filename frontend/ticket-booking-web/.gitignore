@@ -45,3 +45,6 @@ Thumbs.db
 
 # Local SSL certificates
 /ssl
+
+# Generated build metadata (see scripts/generate-version.cjs)
+/src/environments/version.generated.ts

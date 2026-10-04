@@ -33,6 +33,14 @@ describe('LoginComponent', () => {
     fixture.detectChanges();
   });
 
+  it('offers a Register link to the register page', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const register = compiled.querySelector<HTMLAnchorElement>('.login__actions a');
+
+    expect(register?.textContent?.trim()).toBe('Register');
+    expect(register?.getAttribute('routerLink')).toBe('/register');
+  });
+
   it('does not submit when the form is invalid', () => {
     component['submit']();
 

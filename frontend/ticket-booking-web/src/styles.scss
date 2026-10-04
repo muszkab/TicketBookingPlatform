@@ -7,21 +7,29 @@
 
 html {
   height: 100%;
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$azure-palette,
+  @include mat.theme((color: (primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
       typography: Roboto,
       density: 0,
-    )
-  );
+    ));
 }
 
 :root {
   // Shared max width for page-level content containers (toolbar, list/detail views, etc.).
   --app-content-max-width: 1000px;
+}
+
+// The app shell hamburger menu is rendered in an overlay outside the component's
+// view encapsulation, so its styles must live in the global stylesheet.
+.app-menu .app-menu__user {
+  padding: 0.5rem 1rem 0.25rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  max-width: 16rem;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
 }
 
 body {
@@ -41,4 +49,5 @@ body {
   margin: 0;
   height: 100%;
 }
+
 /* You can add global styles to this file, and also import other style files */

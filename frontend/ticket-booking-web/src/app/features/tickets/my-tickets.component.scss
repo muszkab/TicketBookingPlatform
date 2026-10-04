@@ -1,6 +1,7 @@
-.my-tickets {
-  padding: 1rem;
-  max-width: 1100px;
+:host {
+  display: block;
+  padding: 1.5rem;
+  max-width: var(--app-content-max-width);
   margin: 0 auto;
 }
 
@@ -10,6 +11,10 @@
   align-items: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.my-tickets__table-wrapper {
+  overflow-x: auto;
 }
 
 .my-tickets__table {

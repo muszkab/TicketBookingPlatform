@@ -13,6 +13,14 @@
         "docker build": true,
         "git check-ignore": true,
         "npm run build": true,
-        "npx ng": true
+        "npx ng": true,
+        "git tag": true,
+        "git describe": true,
+        "git rev-parse": true,
+        "git remote": true,
+        "git config": true,
+        "docker run": true,
+        "docker image": true,
+        "npm test": true
     }
 }

@@ -1,12 +1,12 @@
 <section class="my-tickets">
   @if (loading() || downloadingTicketId() !== null) {
-    <mat-progress-bar mode="indeterminate" />
+  <mat-progress-bar mode="indeterminate" />
   }
 
   @if (pdfTicket(); as pdf) {
-    <div class="my-tickets__pdf-qr" aria-hidden="true">
-      <app-qr-code [code]="pdf.code" [size]="512" />
-    </div>
+  <div class="my-tickets__pdf-qr" aria-hidden="true">
+    <app-qr-code [code]="pdf.code" [size]="512" />
+  </div>
   }
 
   <mat-card class="my-tickets__card">
@@ -21,28 +21,31 @@
           <mat-select [ngModel]="status()" (ngModelChange)="onStatusChange($event)">
             <mat-option [value]="null">All</mat-option>
             @for (s of statusOptions; track s) {
-              <mat-option [value]="s">{{ s }}</mat-option>
+            <mat-option [value]="s">{{ s }}</mat-option>
             }
           </mat-select>
         </mat-form-field>
 
         @if (hasOrderFilter()) {
-          <mat-chip-set>
-            <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
-              {{ orderEventTitle() ? 'Filtered by order: ' + orderEventTitle() : 'Filtered by order' }}
-              <button matChipRemove type="button" aria-label="Clear order filter">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </mat-chip>
-          </mat-chip-set>
+        <mat-chip-set>
+          <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
+            {{
+            orderEventTitle() ? 'Filtered by order: ' + orderEventTitle() : 'Filtered by order'
+            }}
+            <button matChipRemove type="button" aria-label="Clear order filter">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip>
+        </mat-chip-set>
         }
       </div>
 
       @if (error(); as msg) {
-        <p class="my-tickets__error">{{ msg }}</p>
+      <p class="my-tickets__error">{{ msg }}</p>
       } @else if (!loading() && tickets().length === 0) {
-        <p class="my-tickets__empty">No tickets to display.</p>
+      <p class="my-tickets__empty">No tickets to display.</p>
       } @else {
+      <div class="my-tickets__table-wrapper">
         <table mat-table [dataSource]="tickets()" [trackBy]="trackTicket" class="my-tickets__table">
           <ng-container matColumnDef="eventTitle">
             <th mat-header-cell *matHeaderCellDef>Event</th>
@@ -58,13 +61,17 @@
 
           <ng-container matColumnDef="code">
             <th mat-header-cell *matHeaderCellDef>Code</th>
-            <td mat-cell *matCellDef="let t"><code>{{ t.code }}</code></td>
+            <td mat-cell *matCellDef="let t">
+              <code>{{ t.code }}</code>
+            </td>
           </ng-container>
 
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let t">
-              <mat-chip [color]="statusColor(t.status)" [highlighted]="true">{{ t.status }}</mat-chip>
+              <mat-chip [color]="statusColor(t.status)" [highlighted]="true">{{
+                t.status
+                }}</mat-chip>
             </td>
           </ng-container>
 
@@ -77,12 +84,7 @@
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let t">
               <a mat-button [routerLink]="['/tickets', t.id]">Details</a>
-              <button
-                mat-button
-                type="button"
-                [disabled]="downloadingTicketId() !== null"
-                (click)="download(t)"
-              >
+              <button mat-button type="button" [disabled]="downloadingTicketId() !== null" (click)="download(t)">
                 Download
               </button>
             </td>
@@ -91,13 +93,10 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
+      </div>
 
-        <mat-paginator
-          [length]="totalCount()"
-          [pageIndex]="page() - 1"
-          [pageSize]="pageSize()"
-          [pageSizeOptions]="pageSizeOptions"
-          (page)="onPageChange($event)" />
+      <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
+        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" />
       }
     </mat-card-content>
   </mat-card>

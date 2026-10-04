@@ -23,4 +23,8 @@
     color: var(--mat-sys-error, #b00020);
     margin: 0;
   }
+
+  &__actions {
+    justify-content: space-between;
+  }
 }

@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
 COPY TicketBookingPlatform.slnx ./
+COPY Directory.Build.props ./
 COPY src/Domain/Domain.csproj src/Domain/
 COPY src/Application/Application.csproj src/Application/
 COPY src/Infrastructure/Infrastructure.csproj src/Infrastructure/
@@ -9,7 +10,11 @@ COPY src/WebApi/WebApi.csproj src/WebApi/
 RUN dotnet restore src/WebApi/WebApi.csproj
 
 COPY src/ src/
-RUN dotnet publish src/WebApi/WebApi.csproj -c Release -o /app/publish --no-restore
+
+ARG APP_VERSION="0.0.0"
+ARG APP_COMMIT=""
+RUN dotnet publish src/WebApi/WebApi.csproj -c Release -o /app/publish --no-restore \
+    -p:Version="${APP_VERSION#v}" -p:SourceRevisionId="${APP_COMMIT}"
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app

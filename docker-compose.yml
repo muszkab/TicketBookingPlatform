@@ -23,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: src/Migrator/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-0.0.0}
     container_name: tbp-migrator
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=${MSSQL_DATABASE:-TicketBookingPlatform};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
@@ -41,6 +43,8 @@ services:
     build:
       context: .
       dockerfile: src/WebApi/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-0.0.0}
     container_name: tbp-api
     environment:
       ASPNETCORE_ENVIRONMENT: Production

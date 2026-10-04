@@ -60,4 +60,33 @@ describe('App', () => {
     expect(panel?.textContent).toContain('Register');
     expect(panel?.textContent).toContain('Sign in');
   });
+
+  it('should show the demo notice on load', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.demo-banner')?.textContent).toContain(
+      'This is a demo app'
+    );
+  });
+
+  it('should hide the demo notice when dismissed without persisting it', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    compiled.querySelector<HTMLButtonElement>('.demo-banner__close')?.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(compiled.querySelector('.demo-banner')).toBeNull();
+
+    // A fresh instance represents a page reload: the notice must come back.
+    const reloaded = TestBed.createComponent(App);
+    reloaded.detectChanges();
+    expect(
+      (reloaded.nativeElement as HTMLElement).querySelector('.demo-banner')
+    ).not.toBeNull();
+  });
 });

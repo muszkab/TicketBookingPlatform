@@ -1,3 +1,19 @@
+@if (showDemoNotice()) {
+<div class="demo-banner" role="status">
+  <div class="demo-banner__inner">
+    <mat-icon class="demo-banner__icon" aria-hidden="true">info</mat-icon>
+    <p class="demo-banner__text">
+      This is a demo app — feel free to try every feature. The events and payments are not real, so you don't have to
+      pay.
+    </p>
+    <button mat-icon-button type="button" class="demo-banner__close" aria-label="Dismiss demo notice"
+      (click)="dismissDemoNotice()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>
+}
+
 <mat-toolbar color="primary" class="app-toolbar">
   <div class="app-toolbar__inner">
     <button mat-icon-button type="button" class="app-toolbar__menu-button" aria-label="Open navigation menu"

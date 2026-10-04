@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -27,6 +27,13 @@ export class App {
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly userName = this.auth.userName;
   protected readonly isAdmin = this.auth.isAdmin;
+
+  // Dismissible per view only: deliberately NOT persisted, so the notice reappears on every load.
+  protected readonly showDemoNotice = signal(true);
+
+  protected dismissDemoNotice(): void {
+    this.showDemoNotice.set(false);
+  }
 
   protected logout(): void {
     this.auth.logout();

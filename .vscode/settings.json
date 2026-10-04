@@ -18,6 +18,9 @@
         "git describe": true,
         "git rev-parse": true,
         "git remote": true,
-        "git config": true
+        "git config": true,
+        "docker run": true,
+        "docker image": true,
+        "npm test": true
     }
 }

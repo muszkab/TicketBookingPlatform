@@ -72,6 +72,8 @@ services:
   spa:
     build:
       context: ./frontend/ticket-booking-web
+      args:
+        APP_VERSION: ${APP_VERSION:-}
     container_name: tbp-spa
     ports:
       - "${SPA_PORT:-4200}:80"

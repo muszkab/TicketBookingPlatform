@@ -13,6 +13,8 @@ const path = require('node:path');
  *   2. `GITHUB_REF_NAME`   - GitHub Actions sets this for tag builds, no workflow wiring needed
  *   3. `git describe --tags --always --dirty` - local development
  *   4. `package.json` "version" - last resort (e.g. building from a source archive without .git)
+ *
+ * The commit is taken from `APP_COMMIT`, then `GITHUB_SHA`, then `git rev-parse`.
  */
 
 const projectRoot = path.join(__dirname, '..');
@@ -71,7 +73,9 @@ function resolveVersion() {
 
 function resolveCommit() {
     const sha =
-        sanitize(process.env.GITHUB_SHA) || sanitize(runGit(['rev-parse', '--short', 'HEAD']));
+        sanitize(process.env.APP_COMMIT) ||
+        sanitize(process.env.GITHUB_SHA) ||
+        sanitize(runGit(['rev-parse', '--short', 'HEAD']));
 
     return sha.slice(0, 7);
 }

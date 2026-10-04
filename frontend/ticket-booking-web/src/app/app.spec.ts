@@ -168,4 +168,35 @@ describe('App', () => {
       (reloaded.nativeElement as HTMLElement).querySelector('.demo-banner')
     ).not.toBeNull();
   });
+
+  it('renders contact links, the year and a non-interactive LinkedIn placeholder in the footer', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const email = compiled.querySelector<HTMLAnchorElement>(
+      '.app-footer__link[href^="mailto:"]'
+    );
+    expect(email?.getAttribute('href')).toBe('mailto:m1musbal@gmail.com');
+
+    const github = compiled.querySelector<HTMLAnchorElement>(
+      '.app-footer__link[href*="github.com"]'
+    );
+    expect(github?.getAttribute('href')).toBe(
+      'https://github.com/muszkab/TicketBookingPlatform'
+    );
+    expect(github?.getAttribute('target')).toBe('_blank');
+    expect(github?.getAttribute('rel')).toBe('noopener noreferrer');
+
+    // LinkedIn profile is not ready: rendered as a span, not a link.
+    const linkedin = compiled.querySelector('.app-footer__link--disabled');
+    expect(linkedin?.tagName).toBe('SPAN');
+    expect(linkedin?.querySelector('a')).toBeNull();
+
+    expect(
+      compiled.querySelector('.app-footer__copyright')?.textContent
+    ).toContain(String(new Date().getFullYear()));
+  });
 });

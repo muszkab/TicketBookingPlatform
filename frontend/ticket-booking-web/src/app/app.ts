@@ -17,6 +17,9 @@ const SIGN_OUT_CONFIRMATION: ConfirmDialogData = {
   cancelLabel: 'Stay signed in'
 };
 
+const CONTACT_EMAIL = 'm1musbal@gmail.com';
+const GITHUB_REPO_URL = 'https://github.com/muszkab/TicketBookingPlatform';
+
 @Component({
   selector: 'app-root',
   imports: [
@@ -39,6 +42,10 @@ export class App {
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly userName = this.auth.userName;
   protected readonly isAdmin = this.auth.isAdmin;
+
+  protected readonly contactEmail = CONTACT_EMAIL;
+  protected readonly githubUrl = GITHUB_REPO_URL;
+  protected readonly currentYear = new Date().getFullYear();
 
   // Dismissible per view only: deliberately NOT persisted, so the notice reappears on every load.
   protected readonly showDemoNotice = signal(true);

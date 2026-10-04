@@ -161,7 +161,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build images
         run: docker compose build
@@ -310,7 +310,7 @@ jobs:
 
       - name: Extract metadata for migrator image
         id: meta-migrator
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ steps.owner.outputs.lowercase }}/ticket-booking-platform-migrator
           tags: |
@@ -319,7 +319,7 @@ jobs:
             type=semver,pattern={{major}}
 
       - name: Build and push migrator image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: src/Migrator/Dockerfile

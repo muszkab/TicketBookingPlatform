@@ -306,7 +306,7 @@ jobs:
 
       - name: Extract metadata for migrator image
         id: meta-migrator
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ steps.owner.outputs.lowercase }}/ticket-booking-platform-migrator
           tags: |

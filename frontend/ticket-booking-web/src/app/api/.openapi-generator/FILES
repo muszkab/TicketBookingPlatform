@@ -8,6 +8,8 @@ api/events.service.ts
 api/events.serviceInterface.ts
 api/locations.service.ts
 api/locations.serviceInterface.ts
+api/meta.service.ts
+api/meta.serviceInterface.ts
 api/orders.service.ts
 api/orders.serviceInterface.ts
 api/tickets.service.ts
@@ -45,6 +47,7 @@ model/ticket-dto.ts
 model/ticket-status.ts
 model/update-event-request.ts
 model/update-location-request.ts
+model/version-info-response.ts
 ng-package.json
 package.json
 param.ts

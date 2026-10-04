@@ -1614,6 +1614,36 @@
         }
       }
     },
+    "/api/v1/Meta": {
+      "get": {
+        "tags": [
+          "Meta"
+        ],
+        "operationId": "GetVersionInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionInfoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionInfoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Orders": {
       "post": {
         "tags": [
@@ -3159,6 +3189,40 @@
             "format": "int32"
           }
         }
+      },
+      "VersionInfoResponse": {
+        "required": [
+          "version",
+          "commit",
+          "runtimeVersion",
+          "runtimeMajor",
+          "buildDate",
+          "environment"
+        ],
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "commit": {
+            "type": "string"
+          },
+          "runtimeVersion": {
+            "type": "string"
+          },
+          "runtimeMajor": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "buildDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "environment": {
+            "type": "string"
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -3184,6 +3248,9 @@
     },
     {
       "name": "Locations"
+    },
+    {
+      "name": "Meta"
     },
     {
       "name": "Orders"

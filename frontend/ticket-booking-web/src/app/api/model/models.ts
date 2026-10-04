@@ -27,3 +27,4 @@ export * from './ticket-dto';
 export * from './ticket-status';
 export * from './update-event-request';
 export * from './update-location-request';
+export * from './version-info-response';

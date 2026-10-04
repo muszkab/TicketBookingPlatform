@@ -142,6 +142,7 @@ dotnet run --project src/WebApi
 | Endpoint | URL |
 |---|---|
 | API | `https://localhost:5001/api/v1/...` |
+| Build & runtime info | `https://localhost:5001/api/v1/meta` (anonymous, feeds the SPA footer) |
 | Scalar API reference | `https://localhost:5001/scalar` |
 | OpenAPI documents | `/openapi/v1.json`, `/openapi/v2.json` |
 
@@ -166,11 +167,17 @@ $env:IMAGE_TAG = "2.0.0"   # any published semver tag, e.g. 2.0.0, 2.0 or 2
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
 
-The `publish-images` job tags every release with the full version, the major.minor and the major
-number, plus `latest` for the highest one. Pin an explicit version for deployments — `latest` is a
-moving target and orchestrators do not re-pull it on their own. Note that the migrator image only
-exists from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API
-and the migrator must always run the same tag.
+The `publish-images` job runs on `v*.*.*` tags only and publishes each image with the full version,
+the major.minor and the major tag (e.g. `2.3.0`, `2.3`, `2`). There is deliberately **no `latest`
+tag**, so an explicit version has to be pinned for every deployment. The migrator image only exists
+from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API and the
+migrator must always run the same tag.
+
+The git tag is the single source of truth for the release version, and every artifact bakes it in at
+build time: the .NET images via the `APP_VERSION` build arg (`-p:Version`), the SPA via
+`scripts/generate-version.cjs`. The SPA footer shows the SPA build version, its tooltip adds the
+commit, the build date and the API version reported by `/api/v1/meta` — so a mismatch between the
+SPA and the API is visible at a glance.
 
 ---
 

@@ -3,12 +3,22 @@ import { VERSION } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { App } from './app';
 import { AuthService } from './core/auth/auth.service';
 import { ConfirmDialogComponent } from './core/dialogs/confirm-dialog.component';
 import { environment } from '../environments/environment';
+import { MetaService, VersionInfoResponse } from './api';
+
+const API_INFO: VersionInfoResponse = {
+  version: '1.2.3',
+  commit: 'abc1234',
+  runtimeVersion: '9.0.20',
+  runtimeMajor: 10,
+  buildDate: '2026-10-04T12:00:00Z',
+  environment: 'Production'
+};
 
 describe('App', () => {
   let dialogOpen: ReturnType<typeof vi.fn>;
@@ -24,6 +34,7 @@ describe('App', () => {
         provideRouter([]),
         provideHttpClient(),
         { provide: MatDialog, useValue: { open: dialogOpen } },
+        { provide: MetaService, useValue: { getVersionInfo: () => of(API_INFO) } },
       ],
     }).compileComponents();
   });
@@ -203,7 +214,7 @@ describe('App', () => {
 
     expect(
       compiled.querySelector('.app-footer__powered-by')?.textContent?.trim()
-    ).toBe(`Powered by · ASP.NET Core 9 · Angular ${VERSION.major} · Azure`);
+    ).toBe(`Powered by · ASP.NET Core ${API_INFO.runtimeMajor} · Angular ${VERSION.major} · Azure`);
 
     const version = compiled.querySelector('.app-footer__version');
     expect(version?.textContent?.trim()).toBe(environment.appVersion);
@@ -212,5 +223,22 @@ describe('App', () => {
     const title = version?.getAttribute('title') ?? '';
     expect(title).toContain(`commit ${environment.appCommit}`);
     expect(title).toMatch(/built \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC/);
+    expect(title).toContain(`API ${API_INFO.version}`);
+  });
+
+  it('falls back to the static framework label when the API info is unreachable', async () => {
+    TestBed.overrideProvider(MetaService, {
+      useValue: { getVersionInfo: () => throwError(() => new Error('offline')) },
+    });
+
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      (fixture.nativeElement as HTMLElement)
+        .querySelector('.app-footer__powered-by')
+        ?.textContent?.trim()
+    ).toBe(`Powered by · ASP.NET Core 9 · Angular ${VERSION.major} · Azure`);
   });
 });

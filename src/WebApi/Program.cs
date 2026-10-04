@@ -50,6 +50,8 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddApiHealthChecks();
 
+builder.Services.AddSingleton<VersionInfoProvider>();
+
 builder.Services.AddObservability(builder.Configuration);
 
 bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);

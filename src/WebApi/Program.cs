@@ -44,14 +44,11 @@ builder.Services.AddApiDocumentation(builder.Configuration);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-
 builder.Services.AddApiHealthChecks();
-
 builder.Services.AddSingleton<VersionInfoProvider>();
-
+builder.Services.AddHostedService<DatabaseWarmUpService>();
 builder.Services.AddObservability(builder.Configuration);
 
 bool forwardedHeadersEnabled = builder.Configuration.GetValue("ForwardedHeaders:Enabled", false);

@@ -23,6 +23,7 @@
         "docker image": true,
         "npm test": true,
         "Test-Path": true,
-        "java": true
+        "java": true,
+        "dotnet run": true
     }
 }

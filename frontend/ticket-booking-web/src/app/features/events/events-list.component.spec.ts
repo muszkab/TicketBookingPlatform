@@ -71,4 +71,36 @@ describe('EventsListComponent', () => {
   it('loads the location filter options', () => {
     expect(locationsService.getLocations).toHaveBeenCalledWith(undefined, undefined, 1, 100);
   });
+
+  it('defaults the status filter to On sale', () => {
+    expect(eventsService.getEvents).toHaveBeenCalledWith(
+      undefined,
+      EventStatus.OnSale,
+      undefined,
+      1,
+      20
+    );
+  });
+
+  it('keeps a status filter explicitly cleared in the url', () => {
+    queryParamMap$.next(convertToParamMap({ status: EventStatus.Cancelled }));
+    fixture.detectChanges();
+    expect(eventsService.getEvents).toHaveBeenLastCalledWith(
+      undefined,
+      EventStatus.Cancelled,
+      undefined,
+      1,
+      20
+    );
+
+    queryParamMap$.next(convertToParamMap({}));
+    fixture.detectChanges();
+    expect(eventsService.getEvents).toHaveBeenLastCalledWith(
+      undefined,
+      undefined,
+      undefined,
+      1,
+      20
+    );
+  });
 });

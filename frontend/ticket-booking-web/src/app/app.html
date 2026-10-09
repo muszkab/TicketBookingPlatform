@@ -27,6 +27,13 @@
     </a>
 
     <span class="app-toolbar__spacer"></span>
+
+    @if (!isAuthenticated()) {
+    <a mat-button routerLink="/login" class="app-toolbar__signin">
+      <mat-icon>login</mat-icon>
+      <span>Sign in</span>
+    </a>
+    }
   </div>
 </mat-toolbar>
 
@@ -105,8 +112,10 @@
         <p class="app-footer__copyright" translate="no">© {{ currentYear }} Balázs Muszka — Ticket Booking Platform</p>
         <span class="app-footer__version" [title]="versionTitle()">{{ appVersion }}</span>
       </div>
-      <span class="app-footer__powered-by">Powered by · {{ apiFramework() }} · Angular {{ angularVersion }} ·
-        Azure</span>
+      <span class="app-footer__powered-by">Powered by <span class="app-footer__powered-sep"
+          aria-hidden="true">·</span> {{ apiFramework() }} <span class="app-footer__powered-sep"
+          aria-hidden="true">·</span> Angular {{ angularVersion }} <span class="app-footer__powered-sep"
+          aria-hidden="true">·</span> Azure</span>
     </div>
   </div>
 </footer>

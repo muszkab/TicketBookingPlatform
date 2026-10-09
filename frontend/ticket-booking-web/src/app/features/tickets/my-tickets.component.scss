@@ -19,6 +19,11 @@
 
 .my-tickets__table {
   width: 100%;
+
+  th.mat-mdc-header-cell {
+    background-color: var(--app-table-header-background);
+    font-weight: 600;
+  }
 }
 
 .my-tickets__error {

@@ -11,7 +11,7 @@ import { RouterLink } from '@angular/router';
 
 import { ErrorCardComponent } from '../../core/error-card/error-card.component';
 
-import { LocationDto, LocationsService } from '../../api';
+import { EventStatus, LocationDto, LocationsService } from '../../api';
 import { createEventsListState } from './shared/events-list-state';
 
 @Component({
@@ -34,7 +34,10 @@ export class EventsListComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly state = createEventsListState({ includeLocation: true });
+  private readonly state = createEventsListState({
+    includeLocation: true,
+    defaultStatus: EventStatus.OnSale
+  });
 
   protected readonly events = this.state.events;
   protected readonly totalCount = this.state.totalCount;

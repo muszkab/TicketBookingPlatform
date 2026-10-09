@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,7 +26,6 @@ const COLUMN_TO_SORT_FIELD: Readonly<Record<string, OrderSortField>> = {
   eventTitle: OrderSortField.EventTitle,
   ticketQuantity: OrderSortField.TicketQuantity,
   total: OrderSortField.TotalAmount,
-  createdAt: OrderSortField.CreatedAt,
   status: OrderSortField.Status
 };
 
@@ -48,7 +47,6 @@ interface OrdersQuery {
 @Component({
   selector: 'app-my-orders',
   imports: [
-    DatePipe,
     DecimalPipe,
     MatButtonModule,
     MatCardModule,
@@ -80,7 +78,7 @@ export class MyOrdersComponent implements OnInit {
   protected readonly sortDir = signal<SortDirection>(DEFAULT_SORT_DIR);
   protected readonly cancelling = signal(false);
 
-  protected readonly displayedColumns = ['eventTitle', 'ticketQuantity', 'total', 'createdAt', 'status', 'actions'];
+  protected readonly displayedColumns = ['eventTitle', 'total', 'status', 'actions'];
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = OrderStatus;
 

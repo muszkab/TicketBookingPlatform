@@ -54,10 +54,17 @@
   &__menu-button {
     margin-left: -8px;
     margin-right: 1rem;
+    --mat-icon-button-state-layer-color: var(--mat-sys-primary);
+    --mat-icon-button-ripple-color: color-mix(in srgb, var(--mat-sys-primary) calc(var(--mat-sys-pressed-state-layer-opacity) * 100%),
+        transparent);
   }
 
   &__spacer {
     flex: 1 1 auto;
+  }
+
+  &__signin {
+    flex: 0 0 auto;
   }
 }
 
@@ -140,19 +147,22 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
-    margin-left: auto;
   }
 
   &__meta-line {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.25rem 1rem;
+    gap: 0.25rem 0.5rem;
   }
 
   &__version {
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
     cursor: help;
+  }
+
+  &__powered-sep {
+    margin: 0 0.35rem;
   }
 }

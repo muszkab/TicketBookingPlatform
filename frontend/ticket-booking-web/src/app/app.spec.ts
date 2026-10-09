@@ -1,5 +1,5 @@
 import { provideHttpClient } from '@angular/common/http';
-import { VERSION } from '@angular/core';
+import { VERSION, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, provideRouter } from '@angular/router';
@@ -55,7 +55,7 @@ describe('App', () => {
     );
   });
 
-  it('should render a hamburger menu trigger instead of inline action buttons', () => {
+  it('should render a hamburger menu trigger and a dedicated sign-in button', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
@@ -68,10 +68,35 @@ describe('App', () => {
     expect(trigger?.textContent).toContain('menu');
     expect(
       compiled.querySelectorAll('.app-toolbar__inner a[mat-button]')
-    ).toHaveLength(1);
+    ).toHaveLength(2);
     expect(
       compiled.querySelector('.app-toolbar__inner button[mat-button]')
     ).toBeNull();
+
+    const signin = compiled.querySelector<HTMLAnchorElement>(
+      '.app-toolbar__signin'
+    );
+    expect(signin?.getAttribute('href')).toBe('/login');
+    expect(signin?.textContent).toContain('Sign in');
+    expect(signin?.classList).toContain('mat-mdc-button');
+    expect(signin?.classList).not.toContain('mat-mdc-outlined-button');
+  });
+
+  it('should hide the dedicated sign-in button for authenticated users', () => {
+    TestBed.overrideProvider(AuthService, {
+      useValue: {
+        isAuthenticated: signal(true),
+        userName: computed(() => 'user@example.com'),
+        isAdmin: computed(() => false),
+        logout: () => undefined
+      }
+    });
+
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.app-toolbar__signin')).toBeNull();
   });
 
   it('should list sign-in above register in the menu for anonymous users', async () => {

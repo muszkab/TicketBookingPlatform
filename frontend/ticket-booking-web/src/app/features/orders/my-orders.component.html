@@ -18,22 +18,10 @@
         <table mat-table [dataSource]="orders()" [trackBy]="trackOrder" class="my-orders__table" matSort
           [matSortActive]="activeSortColumn" [matSortDirection]="activeSortDirection" matSortDisableClear
           (matSortChange)="onSortChange($event)">
-          <ng-container matColumnDef="createdAt">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Placed at</th>
-            <td mat-cell *matCellDef="let ord">{{ ord.createdAt | date: 'medium' }}</td>
-          </ng-container>
-
           <ng-container matColumnDef="eventTitle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Event</th>
             <td mat-cell *matCellDef="let ord">
               <a [routerLink]="['/events', ord.eventId]">{{ ord.eventTitle }}</a>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="ticketQuantity">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket qty</th>
-            <td mat-cell *matCellDef="let ord" class="my-orders__qty-cell">
-              {{ ord.ticketQuantity }}
             </td>
           </ng-container>
 

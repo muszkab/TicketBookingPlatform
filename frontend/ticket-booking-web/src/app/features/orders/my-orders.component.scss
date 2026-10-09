@@ -14,13 +14,9 @@
     width: 100%;
 
     th.mat-mdc-header-cell {
-      background-color: rgba(0, 0, 0, 0.06);
+      background-color: var(--app-table-header-background);
       font-weight: 600;
     }
-  }
-
-  &__qty-cell {
-    text-align: center;
   }
 
   &__empty,

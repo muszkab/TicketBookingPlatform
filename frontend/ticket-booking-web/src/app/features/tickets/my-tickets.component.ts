@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -43,7 +42,6 @@ interface TicketsQuery {
 @Component({
   selector: 'app-my-tickets',
   imports: [
-    DatePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -76,7 +74,7 @@ export class MyTicketsComponent implements OnInit {
   protected readonly status = signal<TicketStatus | null>(null);
   protected readonly orderId = signal<string | null>(null);
 
-  protected readonly displayedColumns = ['eventTitle', 'category', 'code', 'status', 'createdAt', 'actions'];
+  protected readonly displayedColumns = ['eventTitle', 'category', 'code', 'actions'];
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = TicketStatus;
   protected readonly statusOptions: readonly TicketStatus[] = [
@@ -158,17 +156,6 @@ export class MyTicketsComponent implements OnInit {
       queryParams: { orderId: null, page: 1 },
       queryParamsHandling: 'merge'
     });
-  }
-
-  protected statusColor(status: TicketStatus): 'primary' | 'accent' | 'warn' | undefined {
-    switch (status) {
-      case TicketStatus.Valid:
-        return 'primary';
-      case TicketStatus.Cancelled:
-        return 'warn';
-      default:
-        return undefined;
-    }
   }
 
   protected trackTicket = (_: number, t: TicketDto): string => t.id;

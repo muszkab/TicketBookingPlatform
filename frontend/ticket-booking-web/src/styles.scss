@@ -18,6 +18,7 @@ html {
 :root {
   // Shared max width for page-level content containers (toolbar, list/detail views, etc.).
   --app-content-max-width: 1000px;
+  --app-table-header-background: rgba(168, 209, 233, 0.4);
 }
 
 // The app shell hamburger menu is rendered in an overlay outside the component's

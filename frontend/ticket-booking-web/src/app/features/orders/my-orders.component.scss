@@ -17,15 +17,6 @@
       background-color: var(--app-table-header-background);
       font-weight: 600;
     }
-
-    .mat-column-ticketQuantity {
-      width: 1%;
-      white-space: nowrap;
-    }
-  }
-
-  &__qty-cell {
-    text-align: center;
   }
 
   &__empty,

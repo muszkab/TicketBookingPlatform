@@ -25,13 +25,6 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="ticketQuantity">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Qty</th>
-            <td mat-cell *matCellDef="let ord" class="my-orders__qty-cell">
-              {{ ord.ticketQuantity }}
-            </td>
-          </ng-container>
-
           <ng-container matColumnDef="total">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
             <td mat-cell *matCellDef="let ord">

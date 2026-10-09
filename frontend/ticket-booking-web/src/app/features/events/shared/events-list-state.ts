@@ -35,6 +35,8 @@ interface EventsQuery {
 export interface EventsListStateOptions {
   /** When true, the locationId filter is parsed from route params and sent to the API. */
   includeLocation?: boolean;
+  /** Status filter used when the first navigation does not specify one. */
+  defaultStatus?: EventStatus;
   /** Prefix used when logging load errors to the console. */
   errorLogPrefix?: string;
   /** User-facing message shown when loading fails. */
@@ -48,6 +50,7 @@ export interface EventsListStateOptions {
 export function createEventsListState(options: EventsListStateOptions = {}) {
   const {
     includeLocation = false,
+    defaultStatus,
     errorLogPrefix = 'Failed to load events',
     errorMessage = 'Failed to load events.'
   } = options;
@@ -135,6 +138,8 @@ export function createEventsListState(options: EventsListStateOptions = {}) {
   };
 
   const initFromRoute = (): void => {
+    let isFirstSync = true;
+
     route.queryParamMap.pipe(takeUntilDestroyed(destroyRef)).subscribe((params) => {
       const rawCategory = params.get('category');
       const rawStatus = params.get('status');
@@ -142,7 +147,8 @@ export function createEventsListState(options: EventsListStateOptions = {}) {
       const rawPageSize = Number(params.get('pageSize'));
 
       category.set(isEventCategory(rawCategory) ? rawCategory : null);
-      status.set(isEventStatus(rawStatus) ? rawStatus : null);
+      status.set(isEventStatus(rawStatus) ? rawStatus : (isFirstSync ? (defaultStatus ?? null) : null));
+      isFirstSync = false;
 
       if (includeLocation) {
         const rawLocation = params.get('locationId');

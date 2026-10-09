@@ -17,6 +17,11 @@
       background-color: rgba(0, 0, 0, 0.06);
       font-weight: 600;
     }
+
+    .mat-column-ticketQuantity {
+      width: 1%;
+      white-space: nowrap;
+    }
   }
 
   &__qty-cell {

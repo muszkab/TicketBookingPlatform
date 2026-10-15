@@ -62,6 +62,8 @@ export class EventsListComponent implements OnInit {
   protected readonly onLocationChange = this.state.onLocationChange;
   protected readonly onPageChange = this.state.onPageChange;
 
+  protected readonly EventStatus = EventStatus;
+
   protected readonly locations = signal<LocationDto[]>([]);
 
   private readonly locationsById = computed(

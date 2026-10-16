@@ -3,8 +3,6 @@
   padding: 1.5rem;
   max-width: var(--app-content-max-width);
   margin: 0 auto;
-
-  --events-list-card-border-color: rgb(210, 150, 200);
 }
 
 .events-list {
@@ -75,7 +73,7 @@
     flex-direction: column;
     height: 100%;
     cursor: pointer;
-    border: 2px solid var(--events-list-card-border-color);
+    border: 2px solid var(--app-card-border-color);
 
     mat-card-content {
       flex: 1 1 auto;

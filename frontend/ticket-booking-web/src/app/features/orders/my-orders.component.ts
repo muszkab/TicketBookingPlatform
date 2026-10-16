@@ -1,14 +1,14 @@
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatSortModule, Sort, SortDirection as MatSortDirection } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
+import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -22,20 +22,13 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25];
 const DEFAULT_SORT_BY: OrderSortField = OrderSortField.CreatedAt;
 const DEFAULT_SORT_DIR: SortDirection = SortDirection.Desc;
 
-const COLUMN_TO_SORT_FIELD: Readonly<Record<string, OrderSortField>> = {
-  eventTitle: OrderSortField.EventTitle,
-  ticketQuantity: OrderSortField.TicketQuantity,
-  total: OrderSortField.TotalAmount,
-  status: OrderSortField.Status
-};
-
-const SORT_FIELD_TO_COLUMN: Readonly<Record<OrderSortField, string>> = {
-  [OrderSortField.EventTitle]: 'eventTitle',
-  [OrderSortField.TicketQuantity]: 'ticketQuantity',
-  [OrderSortField.TotalAmount]: 'total',
-  [OrderSortField.CreatedAt]: 'createdAt',
-  [OrderSortField.Status]: 'status'
-};
+const SORT_OPTIONS: readonly { readonly value: OrderSortField; readonly label: string }[] = [
+  { value: OrderSortField.CreatedAt, label: 'Date' },
+  { value: OrderSortField.TotalAmount, label: 'Total' },
+  { value: OrderSortField.EventTitle, label: 'Event' },
+  { value: OrderSortField.TicketQuantity, label: 'Tickets' },
+  { value: OrderSortField.Status, label: 'Status' }
+];
 
 interface OrdersQuery {
   readonly page: number;
@@ -47,15 +40,16 @@ interface OrdersQuery {
 @Component({
   selector: 'app-my-orders',
   imports: [
+    DatePipe,
     DecimalPipe,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,
+    MatFormFieldModule,
     MatIconModule,
     MatPaginatorModule,
     MatProgressBarModule,
-    MatSortModule,
-    MatTableModule,
+    MatSelectModule,
     RouterLink
   ],
   templateUrl: './my-orders.component.html',
@@ -78,7 +72,8 @@ export class MyOrdersComponent implements OnInit {
   protected readonly sortDir = signal<SortDirection>(DEFAULT_SORT_DIR);
   protected readonly cancelling = signal(false);
 
-  protected readonly displayedColumns = ['eventTitle', 'total', 'status', 'actions'];
+  protected readonly sortOptions = SORT_OPTIONS;
+  protected readonly sortDirections = SortDirection;
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = OrderStatus;
 
@@ -126,23 +121,20 @@ export class MyOrdersComponent implements OnInit {
     });
   }
 
-  protected onSortChange(sort: Sort): void {
-    const sortBy = sort.direction ? COLUMN_TO_SORT_FIELD[sort.active] ?? DEFAULT_SORT_BY : DEFAULT_SORT_BY;
-    const sortDir: SortDirection = sort.direction === 'asc' ? SortDirection.Asc : SortDirection.Desc;
+  protected onSortByChange(sortBy: OrderSortField): void {
+    this.navigateSort(sortBy, this.sortDir());
+  }
 
+  protected toggleSortDir(): void {
+    this.navigateSort(this.sortBy(), this.sortDir() === SortDirection.Asc ? SortDirection.Desc : SortDirection.Asc);
+  }
+
+  private navigateSort(sortBy: OrderSortField, sortDir: SortDirection): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { page: 1, sortBy, sortDir },
       queryParamsHandling: 'merge'
     });
-  }
-
-  protected get activeSortColumn(): string {
-    return SORT_FIELD_TO_COLUMN[this.sortBy()];
-  }
-
-  protected get activeSortDirection(): MatSortDirection {
-    return this.sortDir() === SortDirection.Asc ? 'asc' : 'desc';
   }
 
   private parseSortBy(value: string | null): OrderSortField {
@@ -188,8 +180,6 @@ export class MyOrdersComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.triggerLoad());
   }
-
-  protected trackOrder = (_: number, order: OrderSummaryDto): string => order.id;
 
   private triggerLoad(): void {
     this.loading.set(true);

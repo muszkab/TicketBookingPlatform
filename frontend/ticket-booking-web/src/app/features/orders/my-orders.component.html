@@ -3,71 +3,77 @@
   <mat-progress-bar mode="indeterminate" />
   }
 
-  <mat-card class="my-orders__card">
-    <mat-card-header>
-      <mat-card-title>My orders</mat-card-title>
-    </mat-card-header>
+  <header class="my-orders__header">
+    <h1>My orders</h1>
+  </header>
 
-    <mat-card-content>
-      @if (error(); as msg) {
-      <p class="my-orders__error">{{ msg }}</p>
-      } @else if (!loading() && orders().length === 0) {
-      <p class="my-orders__empty">You don't have any orders yet.</p>
-      } @else {
-      <div class="my-orders__table-wrapper">
-        <table mat-table [dataSource]="orders()" [trackBy]="trackOrder" class="my-orders__table" matSort
-          [matSortActive]="activeSortColumn" [matSortDirection]="activeSortDirection" matSortDisableClear
-          (matSortChange)="onSortChange($event)">
-          <ng-container matColumnDef="eventTitle">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Event</th>
-            <td mat-cell *matCellDef="let ord">
-              <a [routerLink]="['/events', ord.eventId]">{{ ord.eventTitle }}</a>
-            </td>
-          </ng-container>
+  <form class="my-orders__filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Sort by</mat-label>
+      <mat-select [value]="sortBy()" (selectionChange)="onSortByChange($event.value)">
+        @for (opt of sortOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <button mat-icon-button type="button" (click)="toggleSortDir()"
+      [attr.aria-label]="sortDir() === sortDirections.Asc ? 'Ascending' : 'Descending'"
+      [title]="sortDir() === sortDirections.Asc ? 'Ascending' : 'Descending'">
+      <mat-icon>{{ sortDir() === sortDirections.Asc ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+    </button>
+  </form>
 
-          <ng-container matColumnDef="total">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Total</th>
-            <td mat-cell *matCellDef="let ord">
-              {{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}
-            </td>
-          </ng-container>
+  @if (error(); as msg) {
+  <p class="my-orders__error">{{ msg }}</p>
+  } @else if (!loading() && orders().length === 0) {
+  <p class="my-orders__empty">You don't have any orders yet.</p>
+  } @else {
+  <div class="my-orders__grid">
+    @for (ord of orders(); track ord.id) {
+    <mat-card class="my-orders__card" appearance="outlined">
+      <mat-card-header class="my-orders__card-header">
+        <mat-card-title class="my-orders__card-title">
+          <a [routerLink]="['/events', ord.eventId]">{{ ord.eventTitle }}</a>
+        </mat-card-title>
+        <mat-chip [color]="statusColor(ord.status)" [highlighted]="true">{{ ord.status }}</mat-chip>
+      </mat-card-header>
 
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-            <td mat-cell *matCellDef="let ord">
-              <mat-chip [color]="statusColor(ord.status)" [highlighted]="true">{{
-                ord.status
-                }}</mat-chip>
-            </td>
-          </ng-container>
+      <mat-card-content>
+        <dl class="my-orders__details">
+          <div>
+            <dt>Total</dt>
+            <dd>{{ ord.totalAmount | number: '1.0-0' }} {{ ord.currency }}</dd>
+          </div>
+          <div>
+            <dt>Tickets</dt>
+            <dd>{{ ord.ticketQuantity }}</dd>
+          </div>
+          <div>
+            <dt>Issued at</dt>
+            <dd>{{ ord.createdAt | date: 'y, MMM d, HH:mm' }}</dd>
+          </div>
+        </dl>
+      </mat-card-content>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let ord">
-              <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
-              @if (continuePaymentLink(ord); as payLink) {
-              <a mat-button color="primary" [routerLink]="payLink">Pay</a>
-              }
-              @if (canViewTickets(ord)) {
-              <a mat-button color="primary" [routerLink]="['/my-tickets']"
-                [queryParams]="{ orderId: ord.id }">Tickets</a>
-              }
-              @if (canCancel(ord)) {
-              <button mat-button color="warn" type="button" [disabled]="cancelling()" (click)="cancelOrder(ord)">
-                Cancel
-              </button>
-              }
-            </td>
-          </ng-container>
+      <mat-card-actions class="my-orders__actions">
+        <a mat-button [routerLink]="['/orders', ord.id]">Details</a>
+        @if (continuePaymentLink(ord); as payLink) {
+        <a mat-button color="primary" [routerLink]="payLink">Pay</a>
+        }
+        @if (canViewTickets(ord)) {
+        <a mat-button color="primary" [routerLink]="['/my-tickets']" [queryParams]="{ orderId: ord.id }">Tickets</a>
+        }
+        @if (canCancel(ord)) {
+        <button mat-button color="warn" type="button" [disabled]="cancelling()" (click)="cancelOrder(ord)">
+          Cancel
+        </button>
+        }
+      </mat-card-actions>
+    </mat-card>
+    }
+  </div>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-        </table>
-      </div>
-
-      <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
-        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" />
-      }
-    </mat-card-content>
-  </mat-card>
+  <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons />
+  }
 </section>

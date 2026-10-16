@@ -374,13 +374,14 @@ az role assignment create --assignee $appId --role Contributor \
   --scope /subscriptions/<subscription-id>/resourceGroups/rg-ticketbooking
 ```
 
-Prerequisites in the GitHub repository (create the `production` environment first):
+Prerequisites in the GitHub repository (create the `production` environment first; all three are
+**environment secrets** of `production`, like the Static Web Apps token below):
 
 | Kind | Name | Value |
 |---|---|---|
-| Secret | `AZURE_CLIENT_ID` | The `appId` of the app registration above. |
-| Secret | `AZURE_TENANT_ID` | The Entra tenant id. |
-| Secret | `AZURE_SUBSCRIPTION_ID` | The subscription that holds `rg-ticketbooking`. |
+| Environment secret | `AZURE_CLIENT_ID` | The `appId` of the app registration above. |
+| Environment secret | `AZURE_TENANT_ID` | The Entra tenant id. |
+| Environment secret | `AZURE_SUBSCRIPTION_ID` | The subscription that holds `rg-ticketbooking`. |
 
 The resource names (`rg-ticketbooking`, `containerapp-ticketbooking-api`,
 `job-ticketbooking-migrator`) are set in the workflow's `env` block. The images are public on GHCR,
@@ -426,8 +427,8 @@ Prerequisites in the GitHub repository:
 
 | Kind | Name | Value |
 |---|---|---|
-| Secret | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App (*Overview → Manage deployment token*). |
-| Variable | `API_BASE_PATH` | The Container App URL, e.g. `https://<app>.<region>.azurecontainerapps.io`. |
+| Environment secret (`production`) | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App (*Overview → Manage deployment token*). |
+| Environment variable (`production`) | `API_BASE_PATH` | The Container App URL, e.g. `https://<app>.<region>.azurecontainerapps.io`. |
 
 `public/staticwebapp.config.json` handles the routing: unknown paths fall back to `index.html` (the
 Angular router owns them) and `config.json` is served with `Cache-Control: no-store`.

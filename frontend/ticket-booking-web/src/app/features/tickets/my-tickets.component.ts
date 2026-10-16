@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import {
   Component,
   DestroyRef,
@@ -17,7 +18,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
-import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -42,6 +42,7 @@ interface TicketsQuery {
 @Component({
   selector: 'app-my-tickets',
   imports: [
+    DatePipe,
     FormsModule,
     MatButtonModule,
     MatCardModule,
@@ -51,7 +52,6 @@ interface TicketsQuery {
     MatPaginatorModule,
     MatProgressBarModule,
     MatSelectModule,
-    MatTableModule,
     QrCodeComponent,
     RouterLink
   ],
@@ -74,7 +74,6 @@ export class MyTicketsComponent implements OnInit {
   protected readonly status = signal<TicketStatus | null>(null);
   protected readonly orderId = signal<string | null>(null);
 
-  protected readonly displayedColumns = ['eventTitle', 'category', 'code', 'actions'];
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly statuses = TicketStatus;
   protected readonly statusOptions: readonly TicketStatus[] = [
@@ -158,7 +157,16 @@ export class MyTicketsComponent implements OnInit {
     });
   }
 
-  protected trackTicket = (_: number, t: TicketDto): string => t.id;
+  protected statusColor(status: TicketStatus): 'primary' | 'warn' | undefined {
+    switch (status) {
+      case TicketStatus.Valid:
+        return 'primary';
+      case TicketStatus.Cancelled:
+        return 'warn';
+      default:
+        return undefined;
+    }
+  }
 
   protected async download(ticket: TicketDto): Promise<void> {
     if (this.downloadingTicketId() !== null) return;

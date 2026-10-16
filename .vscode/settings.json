@@ -25,6 +25,7 @@
         "Test-Path": true,
         "java": true,
         "dotnet run": true,
-        "Move-Item": true
+        "Move-Item": true,
+        "Out-Null": true
     }
 }

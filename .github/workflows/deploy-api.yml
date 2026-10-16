@@ -1,0 +1,143 @@
+name: Deploy API to Azure Container Apps
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Release version, with or without the leading v (e.g. v2.3.0)"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, with or without the leading v (e.g. v2.3.0)"
+        required: true
+        type: string
+
+concurrency:
+  group: api-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  RESOURCE_GROUP: rg-ticketbooking
+  CONTAINER_APP: containerapp-ticketbooking-api
+  MIGRATOR_JOB: job-ticketbooking-migrator
+
+jobs:
+  deploy:
+    name: Migrate & deploy
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 40
+
+    steps:
+      - name: Resolve the version and image names
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          version="${INPUT_VERSION#v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$INPUT_VERSION' is not a valid semantic version." >&2
+            exit 1
+          fi
+
+          owner="${GITHUB_REPOSITORY_OWNER,,}"
+          {
+            echo "VERSION=$version"
+            echo "API_IMAGE=ghcr.io/$owner/ticket-booking-platform-api:$version"
+            echo "MIGRATOR_IMAGE=ghcr.io/$owner/ticket-booking-platform-migrator:$version"
+          } >> "$GITHUB_ENV"
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install the Container Apps CLI extension
+        run: az extension add --name containerapp --upgrade --only-show-errors
+
+      - name: Point the migrator job at the new image
+        run: |
+          az containerapp job update \
+            --name "$MIGRATOR_JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$MIGRATOR_IMAGE" \
+            --output none
+
+      - name: Run the migrator job
+        run: |
+          execution="$(az containerapp job start \
+            --name "$MIGRATOR_JOB" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query name --output tsv)"
+          echo "Started job execution $execution"
+
+          for i in $(seq 1 120); do
+            status="$(az containerapp job execution show \
+              --name "$MIGRATOR_JOB" \
+              --resource-group "$RESOURCE_GROUP" \
+              --job-execution-name "$execution" \
+              --query properties.status --output tsv)"
+            echo "Migrator status: $status ($i)"
+
+            case "$status" in
+              Succeeded)
+                exit 0
+                ;;
+              Failed|Stopped|Degraded)
+                echo "::error::Migrator execution $execution ended with status $status." >&2
+                exit 1
+                ;;
+            esac
+            sleep 10
+          done
+
+          echo "::error::Migrator execution $execution did not finish in time." >&2
+          exit 1
+
+      - name: Deploy the new API revision
+        run: |
+          az containerapp update \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$API_IMAGE" \
+            --output none
+
+      - name: Verify the deployed version
+        run: |
+          fqdn="$(az containerapp show \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query properties.configuration.ingress.fqdn --output tsv)"
+
+          for i in $(seq 1 60); do
+            deployed="$(curl -s "https://$fqdn/api/v1/meta" | jq -r '.version // empty' 2>/dev/null || true)"
+            echo "Deployed version: ${deployed:-<unavailable>} (expected $VERSION) ($i)"
+
+            if [ "$deployed" = "$VERSION" ] && curl --fail -s -o /dev/null "https://$fqdn/health/ready"; then
+              echo "API $VERSION is live and ready."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "::error::API $VERSION did not become live and ready in time." >&2
+          exit 1
+
+      - name: Show revisions and logs on failure
+        if: failure()
+        run: |
+          az containerapp revision list \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --output table || true
+          az containerapp logs show \
+            --name "$CONTAINER_APP" \
+            --resource-group "$RESOURCE_GROUP" \
+            --tail 100 --format text || true

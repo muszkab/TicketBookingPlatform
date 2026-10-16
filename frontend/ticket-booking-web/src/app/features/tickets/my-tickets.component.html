@@ -24,18 +24,15 @@
       </mat-select>
     </mat-form-field>
 
-    @if (hasOrderFilter()) {
-    <mat-chip-set class="my-tickets__order-filter">
-      <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
-        {{
-        orderEventTitle() ? 'Filtered by order: ' + orderEventTitle() : 'Filtered by order'
-        }}
-        <button matChipRemove type="button" aria-label="Clear order filter">
-          <mat-icon>cancel</mat-icon>
-        </button>
-      </mat-chip>
-    </mat-chip-set>
-    }
+    <mat-form-field appearance="outline">
+      <mat-label>Order</mat-label>
+      <mat-select [ngModel]="orderId()" (ngModelChange)="onOrderChange($event)" name="order">
+        <mat-option [value]="null">All</mat-option>
+        @for (o of orderOptions(); track o.id) {
+        <mat-option [value]="o.id">{{ o.eventTitle }} — {{ o.createdAt | date: 'y, MMM d, HH:mm' }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </form>
 
   @if (error(); as msg) {

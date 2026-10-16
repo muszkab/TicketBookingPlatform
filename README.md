@@ -366,13 +366,18 @@ az ad sp create --id $appId
 az ad app federated-credential create --id $appId --parameters '{
   "name": "github-production",
   "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:<owner>/<repo>:environment:production",
+  "subject": "repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production",
   "audiences": ["api://AzureADTokenExchange"]
 }'
 
 az role assignment create --assignee $appId --role Contributor \
   --scope /subscriptions/<subscription-id>/resourceGroups/rg-ticketbooking
 ```
+
+The subject must match what GitHub actually presents. For this repository GitHub sends the **ID-based**
+form (`repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production`, the numeric ids come from
+`https://api.github.com/repos/<owner>/<repo>`), not the plain `repo:<owner>/<repo>:...` one. If the login
+fails with `AADSTS700213`, copy the *subject claim* printed by the `azure/login` step into the credential.
 
 Prerequisites in the GitHub repository (create the `production` environment first; all three are
 **environment secrets** of `production`, like the Static Web Apps token below):

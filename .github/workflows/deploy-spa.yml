@@ -1,8 +1,7 @@
 name: Deploy SPA to Azure Static Web Apps
 
 on:
-  push:
-    tags: ["v*.*.*"]
+  workflow_call:
   workflow_dispatch:
     inputs:
       api_base_path:

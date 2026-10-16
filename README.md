@@ -334,14 +334,57 @@ Container App environment variables (the secrets come from the vault, not from h
 
 ### Releasing a new version
 
-1. Tag the commit (`git tag v2.2.0 && git push origin v2.2.0`); CI publishes the images.
-2. **Run the migrator job first**, before the new API revision goes live:
-   `az containerapp job start --name <job-name> --resource-group <rg>`.
-3. Create a new API revision with the new image tag. Container Apps only routes traffic once
-   `/health/ready` reports healthy, and the previous revision stays available for rollback.
+Tag the commit (`git tag v2.2.0 && git push origin v2.2.0`). From there the pipeline is automatic:
 
-Note that a database migration does not roll back with the revision, so migrations should stay
-backwards compatible with the previous release.
+1. CI builds and tests, publishes the images and smoke-tests them.
+2. `deploy-api.yml` points the migrator job at the new image, **runs it to completion**, and only then
+   creates the new API revision. Container Apps routes traffic once `/health/ready` reports healthy
+   and the previous revision stays active if the new one never does. The workflow finishes when
+   `GET /api/v1/meta` reports the released version and `/health/ready` answers 200.
+3. `deploy-spa.yml` uploads the SPA — only after the API is live.
+
+A failed migration stops the pipeline before the API or the SPA change. A database migration does
+not roll back with the revision, and the old API briefly runs against the new schema, so migrations
+must stay backwards compatible with the previous release (expand first, contract in a later release).
+
+Both deploy workflows can also be started by hand (*Run workflow*); `deploy-api.yml` asks for the
+version to deploy, which makes a redeploy or a rollback to an older release a single click.
+
+### Deploying the API
+
+`.github/workflows/deploy-api.yml` signs in to Azure with **OIDC** (a federated credential), so no
+client secret is stored in GitHub. The job runs in the `production` GitHub Environment, which is also
+what the federated credential trusts. Add *required reviewers* to that environment if you ever want a
+manual approval step before a deploy.
+
+One-time Azure setup:
+
+```bash
+appId=$(az ad app create --display-name github-ticketbooking-deploy --query appId -o tsv)
+az ad sp create --id $appId
+
+az ad app federated-credential create --id $appId --parameters '{
+  "name": "github-production",
+  "issuer": "https://token.actions.githubusercontent.com",
+  "subject": "repo:<owner>/<repo>:environment:production",
+  "audiences": ["api://AzureADTokenExchange"]
+}'
+
+az role assignment create --assignee $appId --role Contributor \
+  --scope /subscriptions/<subscription-id>/resourceGroups/rg-ticketbooking
+```
+
+Prerequisites in the GitHub repository (create the `production` environment first):
+
+| Kind | Name | Value |
+|---|---|---|
+| Secret | `AZURE_CLIENT_ID` | The `appId` of the app registration above. |
+| Secret | `AZURE_TENANT_ID` | The Entra tenant id. |
+| Secret | `AZURE_SUBSCRIPTION_ID` | The subscription that holds `rg-ticketbooking`. |
+
+The resource names (`rg-ticketbooking`, `containerapp-ticketbooking-api`,
+`job-ticketbooking-migrator`) are set in the workflow's `env` block. The images are public on GHCR,
+so the Container App needs no registry credentials.
 
 ### Probes
 
@@ -373,8 +416,9 @@ all. Every additional origin — a custom domain or a staging slot — needs its
 
 ### Deploying the SPA
 
-`.github/workflows/deploy-spa.yml` builds the Angular application and uploads it to Static Web Apps
-on every `v*.*.*` tag (or on demand via *Run workflow*). It writes `config.json` into the build
+`.github/workflows/deploy-spa.yml` builds the Angular application and uploads it to Static Web Apps.
+On a `v*.*.*` tag it is called from `ci.yml` once the API deploy has succeeded; it can also be run on
+demand via *Run workflow*. It writes `config.json` into the build
 output from the `API_BASE_PATH` repository variable, so the same source produces the right API URL
 per environment.
 

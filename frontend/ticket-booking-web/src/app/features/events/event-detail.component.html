@@ -29,7 +29,7 @@
     <mat-card-content>
       <dl class="event-detail__meta">
         <dt>When</dt>
-        <dd>{{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'medium' }}</dd>
+        <dd>{{ evt.startsAt | dateRange: evt.endsAt }}</dd>
 
         <dt>Location</dt>
         <dd>

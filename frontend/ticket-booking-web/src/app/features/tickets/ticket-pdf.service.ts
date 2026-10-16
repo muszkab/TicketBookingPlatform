@@ -2,6 +2,7 @@ import { formatDate } from '@angular/common';
 import { Injectable, LOCALE_ID, inject } from '@angular/core';
 
 import { TicketDto, TicketStatus } from '../../api';
+import { DATE_TIME_FORMAT } from '../../core/formatting/date-range.pipe';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -25,7 +26,7 @@ export class TicketPdfService {
           eventTitle: ticket.eventTitle,
           ticketCategoryName: ticket.ticketCategoryName,
           location: ticket.location,
-          startsAt: formatDate(ticket.startsAt, 'medium', this.locale),
+          startsAt: formatDate(ticket.startsAt, DATE_TIME_FORMAT, this.locale),
           code: ticket.code,
           status: ticket.status,
           isValid: ticket.status === TicketStatus.Valid

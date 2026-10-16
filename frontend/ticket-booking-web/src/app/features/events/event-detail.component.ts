@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +25,7 @@ import {
 } from '../../api';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartItem, CartService, MAX_TICKETS_PER_ORDER } from '../../core/cart/cart.service';
+import { DateRangePipe } from '../../core/formatting/date-range.pipe';
 import { ConfirmDialogComponent, ConfirmDialogData } from '../../core/dialogs/confirm-dialog.component';
 import { eventCategoryLabel, eventStatusLabel } from './shared/event-labels';
 
@@ -37,7 +38,7 @@ interface SelectedTicket {
 @Component({
   selector: 'app-event-detail',
   imports: [
-    DatePipe,
+    DateRangePipe,
     DecimalPipe,
     FormsModule,
     MatButtonModule,
@@ -205,18 +206,18 @@ export class EventDetailComponent implements OnInit {
 
     const proceed$ = this.cart.hasDifferentEvent(evt.id)
       ? from(
-          this.dialog
-            .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
-              data: {
-                title: 'Replace cart?',
-                message:
-                  'Your cart already contains tickets for a different event. Continuing will replace them with your new selection.',
-                confirmLabel: 'Replace',
-                confirmColor: 'warn'
-              }
-            })
-            .afterClosed()
-        ).pipe(map((result) => result === true))
+        this.dialog
+          .open<ConfirmDialogComponent, ConfirmDialogData, boolean>(ConfirmDialogComponent, {
+            data: {
+              title: 'Replace cart?',
+              message:
+                'Your cart already contains tickets for a different event. Continuing will replace them with your new selection.',
+              confirmLabel: 'Replace',
+              confirmColor: 'warn'
+            }
+          })
+          .afterClosed()
+      ).pipe(map((result) => result === true))
       : of(true);
 
     proceed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ok) => {

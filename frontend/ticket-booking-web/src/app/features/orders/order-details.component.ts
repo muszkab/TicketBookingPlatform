@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,6 +13,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EMPTY, catchError, switchMap } from 'rxjs';
 
 import { OrderDto, OrderItemDto, OrderStatus, OrdersService } from '../../api';
+import { DateRangePipe } from '../../core/formatting/date-range.pipe';
 import { OrderCancelService } from '../../core/orders/order-cancel.service';
 
 interface StatusPresentation {
@@ -24,7 +25,7 @@ interface StatusPresentation {
 @Component({
   selector: 'app-order-details',
   imports: [
-    DatePipe,
+    DateRangePipe,
     DecimalPipe,
     MatButtonModule,
     MatCardModule,

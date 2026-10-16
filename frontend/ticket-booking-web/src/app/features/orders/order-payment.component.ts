@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,6 +19,7 @@ import {
   OrderStatus,
   OrdersService
 } from '../../api';
+import { DateRangePipe } from '../../core/formatting/date-range.pipe';
 import { withActionLock } from '../../core/http/action-lock';
 import { mapProblemDetails } from '../../core/http/map-error';
 import { NotificationService } from '../../core/notifications/notification.service';
@@ -26,7 +27,7 @@ import { NotificationService } from '../../core/notifications/notification.servi
 @Component({
   selector: 'app-order-payment',
   imports: [
-    DatePipe,
+    DateRangePipe,
     DecimalPipe,
     MatButtonModule,
     MatCardModule,

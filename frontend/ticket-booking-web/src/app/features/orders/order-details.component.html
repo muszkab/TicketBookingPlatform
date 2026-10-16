@@ -38,7 +38,7 @@
         </dd>
 
         <dt>When</dt>
-        <dd>{{ ord.eventStartsAt | date: 'medium' }} → {{ ord.eventEndsAt | date: 'medium' }}</dd>
+        <dd>{{ ord.eventStartsAt | dateRange: ord.eventEndsAt }}</dd>
       </dl>
 
       <h3>Items</h3>

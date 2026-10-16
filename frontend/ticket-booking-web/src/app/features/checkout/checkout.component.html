@@ -14,7 +14,7 @@
       @if (event(); as evt) {
       <p class="checkout__when">
         <mat-icon>event</mat-icon>
-        {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'medium' }}
+        {{ evt.startsAt | dateRange: evt.endsAt }}
       </p>
       }
 

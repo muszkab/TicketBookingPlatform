@@ -9,7 +9,7 @@
       <mat-select [value]="category()" (selectionChange)="onCategoryChange($event.value)">
         <mat-option [value]="null">All</mat-option>
         @for (c of categoryOptions; track c.value) {
-          <mat-option [value]="c.value">{{ c.label }}</mat-option>
+        <mat-option [value]="c.value">{{ c.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -19,7 +19,7 @@
       <mat-select [value]="status()" (selectionChange)="onStatusChange($event.value)">
         <mat-option [value]="null">All</mat-option>
         @for (s of statusOptions; track s.value) {
-          <mat-option [value]="s.value">{{ s.label }}</mat-option>
+        <mat-option [value]="s.value">{{ s.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -29,7 +29,7 @@
       <mat-select [value]="locationId()" (selectionChange)="onLocationChange($event.value)">
         <mat-option [value]="null">All</mat-option>
         @for (loc of locations(); track loc.id) {
-          <mat-option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</mat-option>
+        <mat-option [value]="loc.id">{{ loc.name }} — {{ loc.city }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
@@ -37,48 +37,47 @@
 
   <div class="events-list__content">
     @if (error(); as msg) {
-      <app-error-card [message]="msg" (retry)="reload()" />
+    <app-error-card [message]="msg" (retry)="reload()" />
     } @else if (!loading() && events().length === 0) {
-      <p class="events-list__empty">No events found.</p>
+    <p class="events-list__empty">No events found.</p>
     } @else {
-      <div class="events-list__grid">
-        @for (evt of events(); track evt.id) {
-          <a class="events-list__card-link" [routerLink]="['/events', evt.id]">
-            <mat-card class="events-list__card" appearance="outlined" tabindex="-1">
-              <mat-card-header>
-                <mat-card-title>{{ evt.title }}</mat-card-title>
-                <mat-card-subtitle>{{ categoryLabel(evt.category) }} · {{ statusLabel(evt.status) }}</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <p class="events-list__when">
-                  {{ evt.startsAt | date: 'medium' }} → {{ evt.endsAt | date: 'shortTime' }}
-                </p>
-                @if (locationLabel(evt.locationId); as loc) {
-                  <p class="events-list__location">{{ loc }}</p>
-                }
-                @if (evt.description) {
-                  <p class="events-list__description">{{ evt.description }}</p>
-                }
-              </mat-card-content>
-            </mat-card>
-          </a>
-        }
-      </div>
+    <div class="events-list__grid">
+      @for (evt of events(); track evt.id) {
+      <a class="events-list__card-link" [routerLink]="['/events', evt.id]">
+        <mat-card class="events-list__card" appearance="outlined" tabindex="-1">
+          @if (evt.status === EventStatus.SoldOut) {
+          <span class="events-list__sold-out">Sold out</span>
+          } @else if (evt.status === EventStatus.Cancelled) {
+          <span class="events-list__sold-out">Cancelled</span>
+          }
+          <mat-card-header>
+            <mat-card-title>{{ evt.title }}</mat-card-title>
+            <mat-card-subtitle>{{ categoryLabel(evt.category) }} · {{ statusLabel(evt.status) }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="events-list__when">
+              {{ evt.startsAt | dateRange: evt.endsAt }}
+            </p>
+            @if (locationLabel(evt.locationId); as loc) {
+            <p class="events-list__location">{{ loc }}</p>
+            }
+            @if (evt.description) {
+            <p class="events-list__description">{{ evt.description }}</p>
+            }
+          </mat-card-content>
+        </mat-card>
+      </a>
+      }
+    </div>
     }
 
     @if (loading()) {
-      <div class="events-list__overlay">
-        <mat-spinner diameter="48" />
-      </div>
+    <div class="events-list__overlay">
+      <mat-spinner diameter="48" />
+    </div>
     }
   </div>
 
-  <mat-paginator
-    [length]="totalCount()"
-    [pageIndex]="page() - 1"
-    [pageSize]="pageSize()"
-    [pageSizeOptions]="pageSizeOptions"
-    (page)="onPageChange($event)"
-    showFirstLastButtons
-  />
+  <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons />
 </section>

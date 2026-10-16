@@ -9,81 +9,77 @@
   </div>
   }
 
-  <mat-card class="my-tickets__card">
-    <mat-card-header>
-      <mat-card-title>My tickets</mat-card-title>
-    </mat-card-header>
+  <header class="my-tickets__header">
+    <h1>My tickets</h1>
+  </header>
 
-    <mat-card-content>
-      <div class="my-tickets__filters">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Status</mat-label>
-          <mat-select [ngModel]="status()" (ngModelChange)="onStatusChange($event)">
-            <mat-option [value]="null">All</mat-option>
-            @for (s of statusOptions; track s) {
-            <mat-option [value]="s">{{ s }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        @if (hasOrderFilter()) {
-        <mat-chip-set>
-          <mat-chip [highlighted]="true" (removed)="clearOrderFilter()">
-            {{
-            orderEventTitle() ? 'Filtered by order: ' + orderEventTitle() : 'Filtered by order'
-            }}
-            <button matChipRemove type="button" aria-label="Clear order filter">
-              <mat-icon>cancel</mat-icon>
-            </button>
-          </mat-chip>
-        </mat-chip-set>
+  <form class="my-tickets__filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [ngModel]="status()" (ngModelChange)="onStatusChange($event)" name="status">
+        <mat-option [value]="null">All</mat-option>
+        @for (s of statusOptions; track s) {
+        <mat-option [value]="s">{{ s }}</mat-option>
         }
-      </div>
+      </mat-select>
+    </mat-form-field>
 
-      @if (error(); as msg) {
-      <p class="my-tickets__error">{{ msg }}</p>
-      } @else if (!loading() && tickets().length === 0) {
-      <p class="my-tickets__empty">No tickets to display.</p>
-      } @else {
-      <div class="my-tickets__table-wrapper">
-        <table mat-table [dataSource]="tickets()" [trackBy]="trackTicket" class="my-tickets__table">
-          <ng-container matColumnDef="eventTitle">
-            <th mat-header-cell *matHeaderCellDef>Event</th>
-            <td mat-cell *matCellDef="let t">
-              <a [routerLink]="['/events', t.eventId]">{{ t.eventTitle }}</a>
-            </td>
-          </ng-container>
+    <mat-form-field appearance="outline">
+      <mat-label>Order</mat-label>
+      <mat-select [ngModel]="orderId()" (ngModelChange)="onOrderChange($event)" name="order">
+        <mat-option [value]="null">All</mat-option>
+        @for (o of orderOptions(); track o.id) {
+        <mat-option [value]="o.id">{{ o.eventTitle }} — {{ o.createdAt | date: 'y, MMM d, HH:mm' }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
 
-          <ng-container matColumnDef="category">
-            <th mat-header-cell *matHeaderCellDef>Category</th>
-            <td mat-cell *matCellDef="let t">{{ t.ticketCategoryName }}</td>
-          </ng-container>
+  @if (error(); as msg) {
+  <p class="my-tickets__error">{{ msg }}</p>
+  } @else if (!loading() && tickets().length === 0) {
+  <p class="my-tickets__empty">No tickets to display.</p>
+  } @else {
+  <div class="my-tickets__grid">
+    @for (t of tickets(); track t.id) {
+    <mat-card class="my-tickets__card" appearance="outlined">
+      <mat-card-header class="my-tickets__card-header">
+        <mat-card-title class="my-tickets__card-title">
+          <a [routerLink]="['/events', t.eventId]">{{ t.eventTitle }}</a>
+        </mat-card-title>
+        <mat-chip [color]="statusColor(t.status)" [highlighted]="true">{{ t.status }}</mat-chip>
+      </mat-card-header>
 
-          <ng-container matColumnDef="code">
-            <th mat-header-cell *matHeaderCellDef>Code</th>
-            <td mat-cell *matCellDef="let t">
+      <mat-card-content>
+        <dl class="my-tickets__details">
+          <div>
+            <dt>Date</dt>
+            <dd>{{ t.startsAt | date: 'y, MMM d, HH:mm' }}</dd>
+          </div>
+          <div>
+            <dt>Category</dt>
+            <dd>{{ t.ticketCategoryName }}</dd>
+          </div>
+          <div>
+            <dt>Code</dt>
+            <dd>
               <code>{{ t.code }}</code>
-            </td>
-          </ng-container>
+            </dd>
+          </div>
+        </dl>
+      </mat-card-content>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let t">
-              <a mat-button [routerLink]="['/tickets', t.id]">Details</a>
-              <button mat-button type="button" [disabled]="downloadingTicketId() !== null" (click)="download(t)">
-                Download
-              </button>
-            </td>
-          </ng-container>
+      <mat-card-actions class="my-tickets__actions">
+        <a mat-button [routerLink]="['/tickets', t.id]">Details</a>
+        <button mat-button type="button" [disabled]="downloadingTicketId() !== null" (click)="download(t)">
+          Download
+        </button>
+      </mat-card-actions>
+    </mat-card>
+    }
+  </div>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-        </table>
-      </div>
-
-      <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
-        [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" />
-      }
-    </mat-card-content>
-  </mat-card>
+  <mat-paginator [length]="totalCount()" [pageIndex]="page() - 1" [pageSize]="pageSize()"
+    [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons />
+  }
 </section>

@@ -1,4 +1,4 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -16,13 +16,14 @@ import { EventDto, EventsService } from '../../api';
 import { AuthService } from '../../core/auth/auth.service';
 import { CartItem, CartService } from '../../core/cart/cart.service';
 import { CheckoutError, CheckoutService } from '../../core/cart/checkout.service';
+import { DateRangePipe } from '../../core/formatting/date-range.pipe';
 import { withActionLock } from '../../core/http/action-lock';
 import { NotificationService } from '../../core/notifications/notification.service';
 
 @Component({
   selector: 'app-checkout',
   imports: [
-    DatePipe,
+    DateRangePipe,
     DecimalPipe,
     FormsModule,
     MatButtonModule,

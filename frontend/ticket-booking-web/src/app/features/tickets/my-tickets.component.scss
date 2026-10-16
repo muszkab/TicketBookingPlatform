@@ -5,25 +5,94 @@
   margin: 0 auto;
 }
 
+.my-tickets__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
 .my-tickets__filters {
   display: flex;
-  gap: 1rem;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  mat-form-field {
+    min-width: 200px;
+  }
+}
+
+.my-tickets__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
-.my-tickets__table-wrapper {
-  overflow-x: auto;
+.my-tickets__card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 2px solid var(--app-card-border-color);
+
+  mat-card-content {
+    flex: 1 1 auto;
+  }
 }
 
-.my-tickets__table {
-  width: 100%;
+.my-tickets__card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 
-  th.mat-mdc-header-cell {
-    background-color: var(--app-table-header-background);
-    font-weight: 600;
+.my-tickets__card-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+
+  a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+      text-decoration: underline;
+    }
   }
+}
+
+.my-tickets__details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+
+  >div {
+    display: contents;
+  }
+
+  dt {
+    color: rgba(0, 0, 0, 0.6);
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.my-tickets__actions {
+  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .my-tickets__error {

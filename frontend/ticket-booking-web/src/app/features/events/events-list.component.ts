@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
 
 import { ErrorCardComponent } from '../../core/error-card/error-card.component';
+import { DateRangePipe } from '../../core/formatting/date-range.pipe';
 
 import { EventStatus, LocationDto, LocationsService } from '../../api';
 import { createEventsListState } from './shared/events-list-state';
@@ -17,7 +17,7 @@ import { createEventsListState } from './shared/events-list-state';
 @Component({
   selector: 'app-events-list',
   imports: [
-    DatePipe,
+    DateRangePipe,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
@@ -61,6 +61,8 @@ export class EventsListComponent implements OnInit {
   protected readonly onStatusChange = this.state.onStatusChange;
   protected readonly onLocationChange = this.state.onLocationChange;
   protected readonly onPageChange = this.state.onPageChange;
+
+  protected readonly EventStatus = EventStatus;
 
   protected readonly locations = signal<LocationDto[]>([]);
 

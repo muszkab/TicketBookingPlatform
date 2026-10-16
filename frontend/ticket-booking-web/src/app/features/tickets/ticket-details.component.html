@@ -1,81 +1,75 @@
 <section class="ticket-details">
   @if (loading() || downloading()) {
-    <mat-progress-bar mode="indeterminate" />
+  <mat-progress-bar mode="indeterminate" />
   }
 
   @if (loading()) {
-    <div class="ticket-details__state">
-      <mat-spinner diameter="48" />
-    </div>
+  <div class="ticket-details__state">
+    <mat-spinner diameter="48" />
+  </div>
   } @else if (notFound()) {
-    <mat-card class="ticket-details__error">
-      <mat-card-title>Ticket not found</mat-card-title>
-      <mat-card-content>The requested ticket does not exist or is not accessible.</mat-card-content>
-    </mat-card>
+  <mat-card class="ticket-details__error">
+    <mat-card-title>Ticket not found</mat-card-title>
+    <mat-card-content>The requested ticket does not exist or is not accessible.</mat-card-content>
+  </mat-card>
   } @else if (error(); as msg) {
-    <mat-card class="ticket-details__error">
-      <mat-card-content>{{ msg }}</mat-card-content>
-    </mat-card>
+  <mat-card class="ticket-details__error">
+    <mat-card-content>{{ msg }}</mat-card-content>
+  </mat-card>
   } @else if (ticket(); as t) {
-    <mat-card class="ticket-details__card">
-      <mat-card-header>
-        <mat-card-title>{{ t.eventTitle }}</mat-card-title>
-        <mat-card-subtitle>{{ t.ticketCategoryName }}</mat-card-subtitle>
-      </mat-card-header>
+  <mat-card class="ticket-details__card">
+    <mat-card-header>
+      <mat-card-title>{{ t.eventTitle }}</mat-card-title>
+      <mat-card-subtitle>{{ t.ticketCategoryName }}</mat-card-subtitle>
+    </mat-card-header>
 
-      <mat-card-content>
-        <div class="ticket-details__qr" [class.ticket-details__qr--inactive]="!isActive()">
-          <app-qr-code [code]="t.code" [size]="256" />
-        </div>
+    <mat-card-content>
+      <div class="ticket-details__qr" [class.ticket-details__qr--inactive]="!isActive()">
+        <app-qr-code [code]="t.code" [size]="256" />
+      </div>
 
-        <dl class="ticket-details__meta">
-          <dt>Status</dt>
-          <dd>
-            @if (statusPresentation(); as sp) {
-              <mat-chip-set>
-                <mat-chip [highlighted]="true" [color]="sp.color">
-                  <mat-icon matChipAvatar>{{ sp.icon }}</mat-icon>
-                  {{ sp.label }}
-                </mat-chip>
-              </mat-chip-set>
-            }
-          </dd>
-
-          <dt>Venue</dt>
-          <dd>{{ t.location }}</dd>
-
-          <dt>Starts at</dt>
-          <dd>{{ t.startsAt | date: 'medium' }}</dd>
-
-          <dt>Code</dt>
-          <dd><code>{{ t.code }}</code></dd>
-
-          @if (t.usedAt) {
-            <dt>Used at</dt>
-            <dd>{{ t.usedAt | date: 'medium' }}</dd>
+      <dl class="ticket-details__meta">
+        <dt>Status</dt>
+        <dd>
+          @if (statusPresentation(); as sp) {
+          <mat-chip-set>
+            <mat-chip [highlighted]="true" [color]="sp.color">
+              <mat-icon matChipAvatar>{{ sp.icon }}</mat-icon>
+              {{ sp.label }}
+            </mat-chip>
+          </mat-chip-set>
           }
-        </dl>
+        </dd>
 
-        @if (!isActive()) {
-          <p class="ticket-details__inactive-hint">
-            This ticket is no longer valid.
-          </p>
+        <dt>Venue</dt>
+        <dd>{{ t.location }}</dd>
+
+        <dt>Starts at</dt>
+        <dd>{{ t.startsAt | date: 'y, MMM d, HH:mm' }}</dd>
+
+        <dt>Code</dt>
+        <dd><code>{{ t.code }}</code></dd>
+
+        @if (t.usedAt) {
+        <dt>Used at</dt>
+        <dd>{{ t.usedAt | date: 'y, MMM d, HH:mm' }}</dd>
         }
-      </mat-card-content>
+      </dl>
 
-      <mat-card-actions class="ticket-details__actions">
-        <button
-          mat-flat-button
-          color="primary"
-          type="button"
-          [disabled]="downloading()"
-          (click)="download()"
-        >
-          <mat-icon>download</mat-icon>
-          Download
-        </button>
-      </mat-card-actions>
-    </mat-card>
+      @if (!isActive()) {
+      <p class="ticket-details__inactive-hint">
+        This ticket is no longer valid.
+      </p>
+      }
+    </mat-card-content>
+
+    <mat-card-actions class="ticket-details__actions">
+      <button mat-flat-button color="primary" type="button" [disabled]="downloading()" (click)="download()">
+        <mat-icon>download</mat-icon>
+        Download
+      </button>
+    </mat-card-actions>
+  </mat-card>
   }
 
   <div class="ticket-details__back">

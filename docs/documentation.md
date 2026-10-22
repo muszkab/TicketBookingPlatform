@@ -44,6 +44,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 ## Architecture
 
 ```mermaid
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
 flowchart TD
     UI[<b>Angular SPA</b><br/>generated OpenAPI client] -->|HTTPS / JWT| API
 
@@ -70,11 +71,11 @@ points inward while the flow of dependencies is inverted at the boundaries.
 
 ```
 src/
-├── Domain/          Events, Locations, Orders, Tickets, Users + Money / TicketCode value objects
+├── Domain/          Events, Locations, Orders, Tickets, Users + Money value object, TicketCode generator
 ├── Application/     Feature-per-folder CQRS handlers, DTOs, paging helpers, exceptions
-├── Infrastructure/  ApplicationDbContext, configurations, migrations, seeding, JWT, hashing
+├── Infrastructure/  ApplicationDbContext, configurations, migrations, seeding, JWT, hashing, Key Vault
 ├── Migrator/        Standalone migrator container (applies migrations + seeds before the API starts)
-└── WebApi/          V1 & V2 controllers, request contracts, OpenAPI transformers, Program.cs
+└── WebApi/          V1 & V2 controllers, request contracts, OpenAPI transformers, health checks, Program.cs
 tests/
 ├── Domain.Tests/          Aggregate invariants & business rules
 ├── Application.Tests/     Handler behaviour against EF Core InMemory + NSubstitute doubles

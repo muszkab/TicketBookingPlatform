@@ -239,7 +239,7 @@ describe('App', () => {
 
     expect(
       compiled.querySelector('.app-footer__powered-by')?.textContent?.trim()
-    ).toBe(`Powered by · ASP.NET Core ${API_INFO.runtimeMajor} · Angular ${VERSION.major} · Azure`);
+    ).toBe(`Powered by · .NET ${API_INFO.runtimeMajor} · Angular ${VERSION.major} · Azure`);
 
     const version = compiled.querySelector('.app-footer__version');
     expect(version?.textContent?.trim()).toBe(environment.appVersion);
@@ -264,6 +264,6 @@ describe('App', () => {
       (fixture.nativeElement as HTMLElement)
         .querySelector('.app-footer__powered-by')
         ?.textContent?.trim()
-    ).toBe(`Powered by · ASP.NET Core 9 · Angular ${VERSION.major} · Azure`);
+    ).toBe(`Powered by · .NET 9 · Angular ${VERSION.major} · Azure`);
   });
 });

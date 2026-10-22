@@ -6,6 +6,10 @@
 }
 
 .checkout {
+  &__card {
+    border: var(--app-card-border);
+  }
+
   &__when {
     display: flex;
     align-items: center;

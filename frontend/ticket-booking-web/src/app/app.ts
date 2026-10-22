@@ -22,7 +22,7 @@ const SIGN_OUT_CONFIRMATION: ConfirmDialogData = {
 const CONTACT_EMAIL = 'm1musbal@gmail.com';
 const GITHUB_REPO_URL = 'https://github.com/muszkab/TicketBookingPlatform';
 
-const API_FRAMEWORK_LABEL = 'ASP.NET Core';
+const API_FRAMEWORK_LABEL = '.NET';
 const API_FRAMEWORK_FALLBACK = `${API_FRAMEWORK_LABEL} 9`;
 
 /** `2026-10-04T09:33:11.817Z` -> `2026-10-04 09:33 UTC` (locale-independent on purpose). */

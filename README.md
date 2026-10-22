@@ -2,7 +2,9 @@
 
 A demo event ticketing platform built as a portfolio project to showcase **.NET backend
 engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
-**Angular SPA**.
+**Angular SPA**, deployed to the **Azure cloud**.
+
+**Live demo:** [ticketbooking.muszkab.com](https://ticketbooking.muszkab.com)
 
 ## Tech stack
 
@@ -47,7 +49,8 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 - [x] Docker Compose (SQL Server + API + SPA)
 - [ ] FluentValidation for command/query input validation
 - [ ] Testcontainers (real SQL Server) for the integration tests
-- [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
+- [x] CI/CD pipeline (build & test, Docker Compose smoke test, GHCR image publish, automated Azure deploy)
+- [ ] Re-enable the OpenAPI drift check
 - [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
 - [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)
 

@@ -26,7 +26,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | Health checks | ASP.NET Core health checks (`/health/live`, `/health/ready`) |
 | Observability | OpenTelemetry traces, metrics and logs exported over OTLP |
 | Configuration | Layered `appsettings.json` → user secrets → environment variables |
-| Testing | xUnit, FluentAssertions, NSubstitute, Entity Framework Core InMemory |
+| Testing | xUnit, FluentAssertions, NSubstitute, EF Core InMemory & SQLite, `WebApplicationFactory` integration tests |
 
 ### Frontend
 
@@ -37,6 +37,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | Language / styling | TypeScript, SCSS |
 | API client | Generated from OpenAPI via `openapi-generator-cli` |
 | Cross-cutting | HTTP interceptors (auth token, timeout), route guards (`authGuard`, `roleGuard`) |
+| Testing | Vitest (via `ng test`) |
 
 ---
 
@@ -75,8 +76,10 @@ src/
 ├── Migrator/        Standalone migrator container (applies migrations + seeds before the API starts)
 └── WebApi/          V1 & V2 controllers, request contracts, OpenAPI transformers, Program.cs
 tests/
-├── Domain.Tests/        Aggregate invariants & business rules
-└── Application.Tests/   Handler behaviour against EF Core InMemory + NSubstitute doubles
+├── Domain.Tests/          Aggregate invariants & business rules
+├── Application.Tests/     Handler behaviour against EF Core InMemory + NSubstitute doubles
+├── Infrastructure.Tests/  Persistence (EF Core on SQLite), seeding, JWT and password hashing
+└── WebApi.Tests/          Unit tests + WebApplicationFactory integration tests (auth, versioning, errors, health)
 frontend/
 └── ticket-booking-web/  Angular SPA
 ```
@@ -113,7 +116,10 @@ frontend/
 
 ## Getting started
 
-**Prerequisites:** .NET SDK 9.0+, SQL Server LocalDB (or any SQL Server instance), Node.js 24 + Angular CLI 22 for the frontend.
+**Prerequisites:** .NET SDK 9.0+, SQL Server LocalDB (or any SQL Server instance), Node.js 24 for the
+frontend (the Angular CLI comes with the project, no global install needed). Optional: Docker for the
+containerised stack, and Java 11+ only to regenerate the API client (`npm run generate:api` uses
+`openapi-generator-cli`).
 
 ```powershell
 git clone https://github.com/muszkab/TicketBookingPlatform.git
@@ -160,10 +166,28 @@ npm install
 npm start   # https://localhost:4200
 ```
 
-Or run the published images with Docker Compose instead of building locally:
+Or run the whole stack (SQL Server, migrator, API, SPA) with Docker Compose:
 
 ```powershell
-$env:IMAGE_TAG = "2.0.0"   # any published semver tag, e.g. 2.0.0, 2.0 or 2
+Copy-Item .env.example .env   # then replace the placeholder secrets
+docker compose up -d --build
+```
+
+Keep `--build`: without it Compose silently reuses an existing local image, even after code changes.
+
+| Service | URL |
+|---|---|
+| SPA | `http://localhost:4200` (`SPA_PORT`) |
+| API | `http://localhost:8080/api/v1/...` (`API_PORT`) |
+| Scalar API reference | `http://localhost:8080/scalar` |
+
+SQL Server publishes no host port. `db/backup` is mounted read-only into the container at
+`/var/opt/mssql/backup`, so an existing `.bak` can be restored from there.
+
+To run the published images instead of building locally:
+
+```powershell
+$env:IMAGE_TAG = "2.4.0"   # any published semver tag, e.g. 2.4.0, 2.4 or 2
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
 
@@ -242,6 +266,8 @@ bootstraps:
 | `""` (empty) | Behind a same-origin proxy — the nginx container proxies `/api/` to the API, so relative requests just work and **no CORS is involved**. This is what Docker Compose uses. |
 | `"https://<api-host>"` | SPA and API on different domains (Static Web Apps + Container Apps). The API must then allow that origin through `Cors:AllowedOrigins`. |
 
+In Azure the SPA calls the API directly, see [SPA and CORS](#spa-and-cors).
+
 If `config.json` is missing or malformed the compile-time default from `src/environments` is kept,
 so a broken deployment artifact cannot prevent the application from starting. nginx serves the file
 with `Cache-Control: no-store`, otherwise a redeployed environment could keep using a stale API URL.
@@ -249,6 +275,8 @@ with `Cache-Control: no-store`, otherwise a redeployed environment could keep us
 Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
 `MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,
 `SPA_PORT`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
+
+---
 
 ## Health & observability
 
@@ -292,6 +320,27 @@ calls. It should be added with the first external integration (e.g. a payment pr
 
 ---
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request to `master`, and on `v*.*.*` tags:
+
+| Job | Runs on | What it does |
+|---|---|---|
+| Backend build & test | every run | Restore, build and `dotnet test`, with a published test report. |
+| Frontend build & test | every run | `npm ci`, `npm test` (Vitest) and `npm run build`; on tags it first sets the `package.json` version from the tag. |
+| Docker Compose smoke test | every run | Builds the images, starts the full stack, checks the migrator exit code, API readiness, the SPA, and an anonymous + an authenticated endpoint. |
+| OpenAPI drift check | disabled | Compares the live OpenAPI document with the committed `openapi/v1.json`; switched off (`if: false`) until it is stabilised. |
+| Publish images | tags only | Pushes the `api`, `migrator` and `spa` images to GHCR. |
+| Smoke-test published images | tags only | Starts the just-published images with `docker-compose.publishedimage.yml`. |
+| Deploy API, Deploy SPA | tags only | See [Releasing a new version](#releasing-a-new-version). |
+
+Dependabot (`.github/dependabot.yml`) opens weekly, grouped pull requests for NuGet, npm, Docker base
+images, Compose images and GitHub Actions. Major upgrades of .NET, Angular, TypeScript, Node and
+FluentAssertions (v8+ is commercially licensed) are ignored on purpose and done by hand (TFM change,
+`ng update`).
+
+---
+
 ## Azure deployment
 
 The API runs on Azure Container Apps against Azure SQL, with every secret in Key Vault. **No password
@@ -301,9 +350,10 @@ vault: the connection string itself uses a Managed Identity.
 | Resource | Role |
 |---|---|
 | Container App (`api`) | Runs the published API image, HTTP ingress on **port 8080**. |
-| Container Apps Job (`migrator`) | Manually triggered, one-shot EF Core migration + seeding. |
+| Container Apps Job (`migrator`) | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time (replica timeout 600 s, 1 retry). |
 | Azure SQL Database | Application database, reached with Entra authentication. |
 | Key Vault | Connection string, JWT signing key and seed admin password. |
+| Static Web App | Hosts the SPA (Free tier) and calls the API directly, with CORS. |
 | Log Analytics workspace | Console and system logs of the environment. |
 
 Both the app and the job have their own **system-assigned Managed Identity**, each granted the
@@ -395,9 +445,10 @@ so the Container App needs no registry credentials.
 ### Probes
 
 Map the health endpoints to the container probes (`/health/live` for liveness and startup,
-`/health/ready` for readiness, port `8080`). Give the startup probe a generous failure threshold:
-the app needs a few seconds to read the vault and warm up, and the first `/health/ready` call also
-pays for acquiring the Managed Identity token.
+`/health/ready` for readiness, port `8080`). Give the startup probe a generous window (an initial
+delay of about 10 s and a failure threshold of about 30 work well): the app needs a few seconds to
+read the vault and warm up, and the first `/health/ready` call also pays for acquiring the Managed
+Identity token. "Probe of StartUp failed" entries before that are just noise.
 
 ### SPA and CORS
 
@@ -425,8 +476,9 @@ all. Every additional origin — a custom domain or a staging slot — needs its
 `.github/workflows/deploy-spa.yml` builds the Angular application and uploads it to Static Web Apps.
 On a `v*.*.*` tag it is called from `ci.yml` once the API deploy has succeeded; it can also be run on
 demand via *Run workflow*. It writes `config.json` into the build
-output from the `API_BASE_PATH` repository variable, so the same source produces the right API URL
-per environment.
+output from the `API_BASE_PATH` variable, so the same source produces the right API URL
+per environment. A manual run can override it with the `api_base_path` input; if neither is set, the
+workflow fails instead of shipping an SPA without an API URL.
 
 Prerequisites in the GitHub repository:
 
@@ -449,13 +501,26 @@ Event & location management (admin/organizer), event publishing and cancellation
 with capacity limits, catalogue browsing with paging and filtering, JWT login, cart and checkout,
 order payment/cancellation, and issued tickets with QR codes.
 
+## Known limitations
+
+- **Data Protection keys are not persisted.** They live in the container file system, separately per
+  replica. This is harmless today (the JWT uses its own symmetric key and the API is stateless), but
+  they must move to Blob Storage + Key Vault (`PersistKeysToAzureBlobStorage`,
+  `ProtectKeysWithAzureKeyVault`) before cookies, antiforgery tokens or `IDataProtector` are used.
+- **Docker Compose connects as `sa`.** Azure already uses least-privilege identities; locally a
+  dedicated app login (`db_datareader` / `db_datawriter`) and a migrator login (`db_ddladmin`) are
+  still to do.
+- **Health responses are plain text**, and the database check has no explicit timeout.
+- **`OpenTelemetry.Instrumentation.EntityFrameworkCore` is a beta package**; it should be updated
+  once a stable version is released.
+- **No admin order management in the SPA yet** (order list, manual status change, refunds).
+
 ## Roadmap
 
 - [ ] Upgrade to .NET 10 (LTS)
 - [x] Docker Compose (SQL Server + API + SPA)
-- [ ] HTTPS via a reverse proxy service (Traefik/Caddy) terminating TLS in front of the SPA and API
 - [ ] FluentValidation for command/query input validation
-- [ ] Integration tests with `WebApplicationFactory` + Testcontainers
+- [ ] Testcontainers (real SQL Server) for the integration tests
 - [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
 - [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
 - [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)

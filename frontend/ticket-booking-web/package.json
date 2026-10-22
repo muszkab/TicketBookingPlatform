@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@angular/build": "^22.1.4",
-    "@angular/cli": "^22.1.4",
+    "@angular/cli": "^22.2.3",
     "@angular/compiler-cli": "^22.1.0",
     "@expo-google-fonts/roboto": "^0.4.3",
     "@openapitools/openapi-generator-cli": "^2.40.1",

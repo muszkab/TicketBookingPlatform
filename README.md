@@ -11,11 +11,11 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | Area | Technology |
 |---|---|
 | Framework | .NET 9 |
-| Web | ASP.NET Core Web API, REST endpoints |
-| Persistence | Entity Framework Core 9, code-first migrations |
+| Web | ASP.NET Core Web API|
+| Persistence | Entity Framework Core|
 | Database | SQL Server |
-| Architecture | Clean Architecture (Domain / Application / Infrastructure / WebApi) |
-| API | Versioned REST (v1, v2), OpenAPI + Scalar UI |
+| Architecture | Clean Architecture|
+| API | REST API, OpenAPI + Scalar UI |
 
 ### Frontend
 
@@ -25,6 +25,45 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 | UI | Angular Material |
 | Language / styling | TypeScript, SCSS |
 | API client | Generated from OpenAPI |
+
+### Cloud & DevOps
+
+| Area | Technology |
+|---|---|
+| API hosting | Azure Container Apps |
+| SPA hosting | Azure Static Web Apps |
+| Database | Azure SQL |
+| Migration | Azure Container Apps Job (dedicated migrator) |
+| Secrets | Azure Key Vault |
+| CI | GitHub Actions, images published to GHCR |
+| CD | Automated deployment to Azure on release tag |
+| Containers | Docker, Docker Compose |
+
+---
+
+## Roadmap
+
+- [ ] Upgrade to .NET 10 (LTS)
+- [x] Docker Compose (SQL Server + API + SPA)
+- [ ] FluentValidation for command/query input validation
+- [ ] Testcontainers (real SQL Server) for the integration tests
+- [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
+- [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
+- [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)
+
+---
+
+## Documentation
+
+The full documentation lives in [docs/documentation.md](docs/documentation.md):
+
+- [Configuration](docs/documentation.md#configuration): settings, environment variables, Key Vault, SPA runtime config
+- [Health & observability](docs/documentation.md#health--observability): health endpoints, OpenTelemetry, Aspire Dashboard
+- [Continuous integration](docs/documentation.md#continuous-integration): CI jobs, Dependabot
+- [Azure deployment](docs/documentation.md#azure-deployment): resources, release flow, OIDC, probes, CORS
+- [Getting started](docs/documentation.md#getting-started): also covers the published images and versioning
+- [Key technical decisions](docs/documentation.md#key-technical-decisions)
+- [Known limitations](docs/documentation.md#known-limitations)
 
 ---
 
@@ -50,11 +89,6 @@ flowchart TD
     INF --> DB[(<b>SQL Server</b>)]
 ```
 
-Dependency rule: `Domain` has no project references. `Application` depends only on `Domain` and
-defines its own abstractions (`IApplicationDbContext`, `IJwtTokenGenerator`, `IPasswordHasher`,
-`ICurrentUserService`), which `Infrastructure` and `WebApi` implement — so the flow of control
-points inward while the flow of dependencies is inverted at the boundaries.
-
 ```
 src/
 ├── Domain/          Events, Locations, Orders, Tickets, Users + Money / TicketCode value objects
@@ -70,39 +104,3 @@ tests/
 frontend/
 └── ticket-booking-web/  Angular SPA
 ```
-
----
-
-## Azure deployment
-
-The live system runs on **Azure Container Apps** (API) + **Azure SQL** + **Azure Static Web Apps**
-(SPA), with every secret in **Key Vault**. No password exists anywhere: the API and the migrator job
-authenticate with their own Managed Identities, and only the migrator may change the schema. Pushing
-a `v*.*.*` tag builds, tests and publishes the images, runs the migrator job, then rolls out the new
-API revision and the SPA.
-
----
-
-## Documentation
-
-The full documentation lives in [docs/documentation.md](docs/documentation.md):
-
-- [Configuration](docs/documentation.md#configuration): settings, environment variables, Key Vault, SPA runtime config
-- [Health & observability](docs/documentation.md#health--observability): health endpoints, OpenTelemetry, Aspire Dashboard
-- [Continuous integration](docs/documentation.md#continuous-integration): CI jobs, Dependabot
-- [Azure deployment](docs/documentation.md#azure-deployment): resources, release flow, OIDC, probes, CORS
-- [Getting started](docs/documentation.md#getting-started): also covers the published images and versioning
-- [Key technical decisions](docs/documentation.md#key-technical-decisions)
-- [Known limitations](docs/documentation.md#known-limitations)
-
----
-
-## Roadmap
-
-- [ ] Upgrade to .NET 10 (LTS)
-- [x] Docker Compose (SQL Server + API + SPA)
-- [ ] FluentValidation for command/query input validation
-- [ ] Testcontainers (real SQL Server) for the integration tests
-- [x] CI/CD pipeline (build, test, OpenAPI drift check, container image publish)
-- [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
-- [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)

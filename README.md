@@ -2,15 +2,7 @@
 
 A demo event ticketing platform built as a portfolio project to showcase **.NET backend
 engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
-**Angular SPA** through a generated OpenAPI client.
-
-## Feature overview
-
-Event & location management (admin/organizer), event publishing and cancellation, ticket categories
-with capacity limits, catalogue browsing with paging and filtering, JWT login, cart and checkout,
-order payment/cancellation, and issued tickets with QR codes.
-
----
+**Angular SPA**.
 
 ## Tech stack
 
@@ -23,16 +15,7 @@ order payment/cancellation, and issued tickets with QR codes.
 | Persistence | Entity Framework Core 9, code-first migrations |
 | Database | SQL Server |
 | Architecture | Clean Architecture (Domain / Application / Infrastructure / WebApi) |
-| Application layer | CQRS-style commands & queries with hand-written handlers (no MediatR) |
-| AuthN / AuthZ | JWT Bearer tokens, role-based policies (`User`, `Organizer`, `Admin`) |
-| Password hashing | ASP.NET Core Identity `PasswordHasher` |
-| API versioning | URL segment (`/api/v{version}/...`), v1 & v2 documents |
-| API docs | Built-in OpenAPI + Scalar UI |
-| Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
-| Health checks | ASP.NET Core health checks (`/health/live`, `/health/ready`) |
-| Observability | OpenTelemetry traces, metrics and logs exported over OTLP |
-| Configuration | Layered `appsettings.json` → user secrets → environment variables |
-| Testing | xUnit, FluentAssertions, NSubstitute, EF Core InMemory & SQLite, `WebApplicationFactory` integration tests |
+| API | Versioned REST (v1, v2), OpenAPI + Scalar UI |
 
 ### Frontend
 
@@ -41,9 +24,7 @@ order payment/cancellation, and issued tickets with QR codes.
 | Framework | Angular 22 |
 | UI | Angular Material |
 | Language / styling | TypeScript, SCSS |
-| API client | Generated from OpenAPI via `openapi-generator-cli` |
-| Cross-cutting | HTTP interceptors (auth token, timeout), route guards (`authGuard`, `roleGuard`) |
-| Testing | Vitest (via `ng test`) |
+| API client | Generated from OpenAPI |
 
 ---
 

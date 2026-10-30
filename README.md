@@ -60,10 +60,17 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 The full documentation lives in [docs/](docs/README.md):
 
-- [Configuration](docs/configuration.md): settings, environment variables, Key Vault, SPA runtime config
-- [Health & observability](docs/observability.md): health endpoints, OpenTelemetry, Aspire Dashboard
-- [CI/CD](docs/ci-cd.md): CI jobs, Dependabot, versioning and image tags, release flow
-- [Azure deployment](docs/azure-deployment.md): resources, identities, OIDC, probes, CORS
-- [Getting started](docs/getting-started.md): local setup, Docker Compose, running the published images
-- [Architecture](docs/architecture.md): detailed tech stack, layers, project structure, key technical decisions
-- [Known limitations](docs/known-limitations.md)
+- [Getting started](docs/getting-started.md): prerequisites, running locally or with Docker Compose,
+  published images, common tasks, troubleshooting
+- [Architecture](docs/architecture.md): detailed tech stack, layers and dependencies, project structure, key
+  technical decisions, feature overview
+- [Configuration](docs/configuration.md): configuration sources, all settings with defaults, Docker Compose
+  `.env`, Azure Key Vault, SPA runtime configuration
+- [Health & observability](docs/observability.md): health endpoints, OpenTelemetry, error correlation,
+  Aspire Dashboard
+- [CI/CD](docs/ci-cd.md): pipeline overview, CI jobs, Dependabot, versioning and image tags, releasing a
+  new version
+- [Azure deployment](docs/azure-deployment.md): resources, identities and database permissions,
+  configuration, deploying the API (OIDC) and the SPA, probes, CORS
+- [Known limitations](docs/known-limitations.md): deliberate shortcuts and open items (security,
+  operations, features)

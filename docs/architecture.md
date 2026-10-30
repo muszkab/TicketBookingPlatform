@@ -1,40 +1,5 @@
 # Architecture
 
-## Tech stack
-
-### Backend
-
-| Area | Technology |
-|---|---|
-| Framework | .NET 9 |
-| Web | ASP.NET Core Web API, REST endpoints |
-| Persistence | Entity Framework Core 9, code-first migrations |
-| Database | SQL Server |
-| Architecture | Clean Architecture (Domain / Application / Infrastructure / WebApi) |
-| Application layer | CQRS-style commands & queries with hand-written handlers (no MediatR) |
-| AuthN / AuthZ | JWT Bearer tokens, role-based authorization (`Customer`, `Organizer`, `Admin`) |
-| Password hashing | ASP.NET Core Identity `PasswordHasher` |
-| API versioning | URL segment (`/api/v{version}/...`), v1 & v2 documents |
-| API docs | Built-in OpenAPI + Scalar UI |
-| Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
-| Health checks | ASP.NET Core health checks (`/health/live`, `/health/ready`) |
-| Observability | OpenTelemetry traces, metrics and logs exported over OTLP |
-| Configuration | Layered `appsettings.json` → user secrets → environment variables → Azure Key Vault (opt-in) |
-| Testing | xUnit, FluentAssertions, NSubstitute, EF Core InMemory & SQLite, `WebApplicationFactory` integration tests |
-
-### Frontend
-
-| Area | Technology |
-|---|---|
-| Framework | Angular 22 |
-| UI | Angular Material |
-| Language / styling | TypeScript, SCSS |
-| API client | Generated from OpenAPI via `openapi-generator-cli` |
-| Cross-cutting | HTTP interceptors (auth token, timeout), route guards (`authGuard`, `roleGuard`) |
-| Runtime configuration | `config.json` fetched before bootstrap, so one image serves every environment |
-| Tickets | QR codes (`angularx-qrcode`), PDF export (`jsPDF`, lazy-loaded) |
-| Testing | Vitest (via `ng test`) |
-
 ## Layers and dependencies
 
 ```mermaid
@@ -84,6 +49,41 @@ tests/
 frontend/
 └── ticket-booking-web/  Angular SPA
 ```
+
+## Tech stack
+
+### Backend
+
+| Area | Technology |
+|---|---|
+| Framework | .NET 9 |
+| Web | ASP.NET Core Web API, REST endpoints |
+| Persistence | Entity Framework Core 9, code-first migrations |
+| Database | SQL Server |
+| Architecture | Clean Architecture (Domain / Application / Infrastructure / WebApi) |
+| Application layer | CQRS-style commands & queries with hand-written handlers (no MediatR) |
+| AuthN / AuthZ | JWT Bearer tokens, role-based authorization (`Customer`, `Organizer`, `Admin`) |
+| Password hashing | ASP.NET Core Identity `PasswordHasher` |
+| API versioning | URL segment (`/api/v{version}/...`), v1 & v2 documents |
+| API docs | Built-in OpenAPI + Scalar UI |
+| Error handling | `IExceptionHandler` + RFC 7807 `ProblemDetails` |
+| Health checks | ASP.NET Core health checks (`/health/live`, `/health/ready`) |
+| Observability | OpenTelemetry traces, metrics and logs exported over OTLP |
+| Configuration | Layered `appsettings.json` → user secrets → environment variables → Azure Key Vault (opt-in) |
+| Testing | xUnit, FluentAssertions, NSubstitute, EF Core InMemory & SQLite, `WebApplicationFactory` integration tests |
+
+### Frontend
+
+| Area | Technology |
+|---|---|
+| Framework | Angular 22 |
+| UI | Angular Material |
+| Language / styling | TypeScript, SCSS |
+| API client | Generated from OpenAPI via `openapi-generator-cli` |
+| Cross-cutting | HTTP interceptors (auth token, timeout), route guards (`authGuard`, `roleGuard`) |
+| Runtime configuration | `config.json` fetched before bootstrap, so one image serves every environment |
+| Tickets | QR codes (`angularx-qrcode`), PDF export (`jsPDF`, lazy-loaded) |
+| Testing | Vitest (via `ng test`) |
 
 ## Key technical decisions
 

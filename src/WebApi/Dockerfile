@@ -3,6 +3,7 @@ WORKDIR /source
 
 COPY TicketBookingPlatform.slnx ./
 COPY Directory.Build.props ./
+COPY Directory.Packages.props ./
 COPY src/Domain/Domain.csproj src/Domain/
 COPY src/Application/Application.csproj src/Application/
 COPY src/Infrastructure/Infrastructure.csproj src/Infrastructure/

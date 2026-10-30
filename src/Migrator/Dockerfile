@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /source
 
 COPY Directory.Build.props ./
+COPY Directory.Packages.props ./
 COPY src/Domain/Domain.csproj src/Domain/
 COPY src/Application/Application.csproj src/Application/
 COPY src/Infrastructure/Infrastructure.csproj src/Infrastructure/

@@ -12,7 +12,5 @@
   new version
 - [Azure deployment](azure-deployment.md): resources, identities and database permissions,
   configuration, deploying the API (OIDC) and the SPA, probes, CORS
-
-Not split out yet, still in [documentation.md](documentation.md):
-
-- [Known limitations](documentation.md#known-limitations)
+- [Known limitations](known-limitations.md): deliberate shortcuts and open items (security,
+  operations, features)

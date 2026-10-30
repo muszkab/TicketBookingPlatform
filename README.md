@@ -66,4 +66,4 @@ The full documentation lives in [docs/](docs/README.md):
 - [Azure deployment](docs/azure-deployment.md): resources, identities, OIDC, probes, CORS
 - [Getting started](docs/getting-started.md): local setup, Docker Compose, running the published images
 - [Architecture](docs/architecture.md): detailed tech stack, layers, project structure, key technical decisions
-- [Known limitations](docs/documentation.md#known-limitations)
+- [Known limitations](docs/known-limitations.md)

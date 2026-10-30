@@ -89,4 +89,4 @@ local use only.
   provider).
 - **The migrator.** It writes console logs only; its result is the exit code of the container or job.
 - The health responses are plain text and the database check has no explicit timeout, see
-  [Known limitations](documentation.md#known-limitations).
+  [Known limitations](known-limitations.md#operations).

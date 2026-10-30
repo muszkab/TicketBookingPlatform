@@ -52,7 +52,7 @@ dotnet user-secrets --project src/WebApi set "Seed:Admin:Password" "<strong-pass
 ```
 
 The API refuses to start without these. Every other setting has a working default for local
-development, see [Configuration](documentation.md#configuration).
+development, see [Configuration](configuration.md).
 
 ### 4. Run the API
 

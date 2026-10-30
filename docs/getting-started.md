@@ -135,7 +135,7 @@ SQL Server publishes no host port. `db/backup` is mounted read-only into the con
 `SEED_ADMIN_EMAIL` to an administrator that already exists in it, otherwise a second one is created.
 
 To collect traces, metrics and logs locally, start the optional Aspire Dashboard as well, see
-[OpenTelemetry](documentation.md#opentelemetry).
+[Viewing telemetry locally](observability.md#viewing-telemetry-locally).
 
 Stop the stack with `docker compose down` (add `-v` to delete the database volume too).
 

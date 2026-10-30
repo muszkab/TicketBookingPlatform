@@ -6,48 +6,6 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ---
 
-## Health & observability
-
-### Health endpoints
-
-| Endpoint | Check | Purpose |
-|---|---|---|
-| `/health/live` | `self` — the process is running, no dependencies | Liveness probe; polled by the Docker Compose healthcheck and the Container Apps liveness/startup probes. |
-| `/health/ready` | `database` — EF Core can reach SQL Server | Readiness probe; decides whether the instance should receive traffic. |
-
-Both endpoints are anonymous and currently return `Healthy` / `Unhealthy` as plain text. In local
-development they are served from the API root, e.g. `https://localhost:5001/health/live`.
-
-### OpenTelemetry
-
-The API is instrumented with OpenTelemetry and exports over OTLP when an endpoint is configured:
-
-- **Traces** — incoming ASP.NET Core requests and EF Core queries.
-- **Metrics** — ASP.NET Core/Kestrel and .NET runtime metrics (GC, thread pool).
-- **Logs** — the existing `ILogger` output, including scopes and formatted messages.
-
-Resource attributes include `service.name = TicketBookingPlatform.WebApi` and the service version.
-The `GlobalExceptionHandler` adds a `traceId` to every `ProblemDetails` response, so a reported error
-can be located in the traces.
-
-Exporting is a no-op when the endpoint is empty. To inspect telemetry locally, point the API at the
-optional Aspire Dashboard and start it with the `observability` profile:
-
-```powershell
-# .env
-OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889
-```
-
-```powershell
-docker compose --profile observability up -d
-# Dashboard: http://localhost:18888
-```
-
-Outgoing `HttpClient` instrumentation is intentionally not wired up yet — the API makes no outbound
-calls. It should be added with the first external integration (e.g. a payment provider).
-
----
-
 ## Continuous integration
 
 `.github/workflows/ci.yml` runs on every push and pull request to `master`, and on `v*.*.*` tags:

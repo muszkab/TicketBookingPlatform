@@ -192,17 +192,7 @@ $env:IMAGE_TAG = "2.4.0"   # any published semver tag, e.g. 2.4.0, 2.4 or 2
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
 
-The `publish-images` job runs on `v*.*.*` tags only and publishes each image with the full version,
-the major.minor and the major tag (e.g. `2.3.0`, `2.3`, `2`). There is deliberately **no `latest`
-tag**, so an explicit version has to be pinned for every deployment. The migrator image only exists
-from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API and the
-migrator must always run the same tag.
-
-The git tag is the single source of truth for the release version, and every artifact bakes it in at
-build time: the .NET images via the `APP_VERSION` build arg (`-p:Version`), the SPA via
-`scripts/generate-version.cjs`. The SPA footer shows the SPA build version, its tooltip adds the
-commit, the build date and the API version reported by `/api/v1/meta` — so a mismatch between the
-SPA and the API is visible at a glance.
+See [Versioning and image tags](#versioning-and-image-tags) for the available tags.
 
 ---
 
@@ -214,6 +204,10 @@ secrets. No connection string or secret is committed to the repository.
 
 In containers the environment variables use the **`__` (double underscore) separator** to address
 nested keys, e.g. `JwtSettings__SigningKey` maps to `JwtSettings:SigningKey`.
+
+Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
+`MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,
+`SPA_PORT`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 | Setting | `appsettings.json` key | Environment variable | Notes |
 |---|---|---|---|
@@ -272,10 +266,6 @@ In Azure the SPA calls the API directly, see [SPA and CORS](#spa-and-cors).
 If `config.json` is missing or malformed the compile-time default from `src/environments` is kept,
 so a broken deployment artifact cannot prevent the application from starting. nginx serves the file
 with `Cache-Control: no-store`, otherwise a redeployed environment could keep using a stale API URL.
-
-Docker Compose reads its variables from a `.env` file (see `.env.example`): `MSSQL_SA_PASSWORD`,
-`MSSQL_DATABASE`, `JWT_SIGNING_KEY`, `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `API_PORT`,
-`SPA_PORT`, `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 ---
 
@@ -339,6 +329,20 @@ Dependabot (`.github/dependabot.yml`) opens weekly, grouped pull requests for Nu
 images, Compose images and GitHub Actions. Major upgrades of .NET, Angular, TypeScript, Node and
 FluentAssertions (v8+ is commercially licensed) are ignored on purpose and done by hand (TFM change,
 `ng update`).
+
+### Versioning and image tags
+
+The `publish-images` job runs on `v*.*.*` tags only and publishes each image with the full version,
+the major.minor and the major tag (e.g. `2.3.0`, `2.3`, `2`). There is deliberately **no `latest`
+tag**, so an explicit version has to be pinned for every deployment. The migrator image only exists
+from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API and the
+migrator must always run the same tag.
+
+The git tag is the single source of truth for the release version, and every artifact bakes it in at
+build time: the .NET images via the `APP_VERSION` build arg (`-p:Version`), the SPA via
+`scripts/generate-version.cjs`. The SPA footer shows the SPA build version, its tooltip adds the
+commit, the build date and the API version reported by `/api/v1/meta` — so a mismatch between the
+SPA and the API is visible at a glance.
 
 ---
 

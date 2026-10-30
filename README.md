@@ -1,10 +1,10 @@
 ﻿# Ticket Booking Platform
 
+**Live demo:** [ticketbooking.muszkab.com](https://ticketbooking.muszkab.com)
+
 A demo event ticketing platform built as a portfolio project to showcase **.NET backend
 engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
 **Angular SPA**, deployed to the **Azure cloud**.
-
-**Live demo:** [ticketbooking.muszkab.com](https://ticketbooking.muszkab.com)
 
 ## Tech stack
 

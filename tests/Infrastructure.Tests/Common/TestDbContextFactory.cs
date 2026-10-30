@@ -1,7 +1,6 @@
 using Infrastructure.Persistence;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 
 namespace Infrastructure.Tests.Common;
@@ -46,16 +45,6 @@ internal sealed class SqliteTestDatabase : IDisposable
 
 internal static class TestDbContextFactory
 {
-    public static ApplicationDbContext CreateInMemory()
-    {
-        DbContextOptions<ApplicationDbContext> options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase($"InfraTests-{Guid.NewGuid()}")
-            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
-            .Options;
-
-        return new ApplicationDbContext(options);
-    }
-
     /// <summary>
     /// A context that is never connected to a provider-specific database but whose
     /// model is fully built, useful for pure mapping/metadata assertions.

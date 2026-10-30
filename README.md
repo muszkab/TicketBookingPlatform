@@ -1,10 +1,10 @@
 ﻿# Ticket Booking Platform
 
+**Live demo:** [ticketbooking.muszkab.com](https://ticketbooking.muszkab.com)
+
 A demo event ticketing platform built as a portfolio project to showcase **.NET backend
 engineering with Clean Architecture**, exposing a versioned **REST API** consumed by an
 **Angular SPA**, deployed to the **Azure cloud**.
-
-**Live demo:** [ticketbooking.muszkab.com](https://ticketbooking.muszkab.com)
 
 ## Tech stack
 
@@ -58,53 +58,19 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ## Documentation
 
-The full documentation lives in [docs/documentation.md](docs/documentation.md):
+The full documentation lives in [docs/](docs/README.md):
 
-- [Configuration](docs/documentation.md#configuration): settings, environment variables, Key Vault, SPA runtime config
-- [Health & observability](docs/documentation.md#health--observability): health endpoints, OpenTelemetry, Aspire Dashboard
-- [Continuous integration](docs/documentation.md#continuous-integration): CI jobs, Dependabot
-- [Azure deployment](docs/documentation.md#azure-deployment): resources, release flow, OIDC, probes, CORS
-- [Getting started](docs/documentation.md#getting-started): also covers the published images and versioning
-- [Key technical decisions](docs/documentation.md#key-technical-decisions)
-- [Known limitations](docs/documentation.md#known-limitations)
-
----
-
-## Architecture
-
-```mermaid
-%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
-flowchart TD
-    UI[<b>Angular SPA</b><br/>generated OpenAPI client] -->|HTTPS / JWT| API
-
-    subgraph Backend[".NET solution"]
-        API[<b>WebApi</b><br/>controllers, contracts, transformers]
-        APP[<b>Application</b><br/>commands, queries, handlers, DTOs]
-        DOM[<b>Domain</b><br/>entities, value objects, business rules]
-        INF[<b>Infrastructure</b><br/>EF Core, JWT, hashing]
-
-        API --> APP
-        API --> INF
-        APP --> DOM
-        INF --> APP
-        INF --> DOM
-    end
-
-    INF --> DB[(<b>SQL Server</b>)]
-```
-
-```
-src/
-├── Domain/          Events, Locations, Orders, Tickets, Users + Money value object, TicketCode generator
-├── Application/     Feature-per-folder CQRS handlers, DTOs, paging helpers, exceptions
-├── Infrastructure/  ApplicationDbContext, configurations, migrations, seeding, JWT, hashing, Key Vault
-├── Migrator/        Standalone migrator container (applies migrations + seeds before the API starts)
-└── WebApi/          V1 & V2 controllers, request contracts, OpenAPI transformers, health checks, Program.cs
-tests/
-├── Domain.Tests/          Aggregate invariants & business rules
-├── Application.Tests/     Handler behaviour against EF Core InMemory + NSubstitute doubles
-├── Infrastructure.Tests/  Persistence (EF Core on SQLite), seeding, JWT and password hashing
-└── WebApi.Tests/          Unit tests + WebApplicationFactory integration tests (auth, versioning, errors, health)
-frontend/
-└── ticket-booking-web/  Angular SPA
-```
+- [Getting started](docs/getting-started.md): prerequisites, running locally or with Docker Compose,
+  published images, common tasks, troubleshooting
+- [Architecture](docs/architecture.md): detailed tech stack, layers and dependencies, project structure, key
+  technical decisions, feature overview
+- [Configuration](docs/configuration.md): configuration sources, all settings with defaults, Docker Compose
+  `.env`, Azure Key Vault, SPA runtime configuration
+- [Health & observability](docs/observability.md): health endpoints, OpenTelemetry, error correlation,
+  Aspire Dashboard
+- [CI/CD](docs/ci-cd.md): pipeline overview, CI jobs, Dependabot, versioning and image tags, releasing a
+  new version
+- [Azure deployment](docs/azure-deployment.md): resources, identities and database permissions,
+  configuration, deploying the API (OIDC) and the SPA, probes, CORS
+- [Known limitations](docs/known-limitations.md): deliberate shortcuts and open items (security,
+  operations, features)

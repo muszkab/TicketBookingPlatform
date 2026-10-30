@@ -58,13 +58,13 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ## Documentation
 
-The full documentation lives in [docs/documentation.md](docs/documentation.md):
+The full documentation lives in [docs/](docs/README.md):
 
 - [Configuration](docs/documentation.md#configuration): settings, environment variables, Key Vault, SPA runtime config
 - [Health & observability](docs/documentation.md#health--observability): health endpoints, OpenTelemetry, Aspire Dashboard
 - [Continuous integration](docs/documentation.md#continuous-integration): CI jobs, Dependabot, versioning and image tags
 - [Azure deployment](docs/documentation.md#azure-deployment): resources, release flow, OIDC, probes, CORS
-- [Getting started](docs/documentation.md#getting-started): local setup, Docker Compose, running the published images
+- [Getting started](docs/getting-started.md): local setup, Docker Compose, running the published images
 - [Key technical decisions](docs/documentation.md#key-technical-decisions)
 - [Known limitations](docs/documentation.md#known-limitations)
 

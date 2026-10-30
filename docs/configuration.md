@@ -60,7 +60,7 @@ Missing required settings stop the process at startup instead of failing later:
 | `API_PORT`, `SPA_PORT` | Host ports of the API and the SPA | `8080`, `4200` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `OpenTelemetry:OtlpEndpoint` | empty |
 | `ASPIRE_DASHBOARD_PORT`, `ASPIRE_DASHBOARD_OTLP_PORT` | Host ports of the optional Aspire Dashboard | `18888`, `18889` |
-| `APP_VERSION` | Version baked into the images at build time, see [Versioning and image tags](documentation.md#versioning-and-image-tags) | `0.0.0` for the API and the migrator, empty for the SPA |
+| `APP_VERSION` | Version baked into the images at build time, see [Versioning and image tags](ci-cd.md#versioning-and-image-tags) | `0.0.0` for the API and the migrator, empty for the SPA |
 | `IMAGE_TAG`, `IMAGE_OWNER` | Only for `docker-compose.publishedimage.yml`: which published images to run | –, `muszkab` |
 
 Everything else is fixed in `docker-compose.yml`: the API runs as `Production` with forwarded headers

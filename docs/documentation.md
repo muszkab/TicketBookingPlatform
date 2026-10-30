@@ -6,41 +6,6 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ---
 
-## Continuous integration
-
-`.github/workflows/ci.yml` runs on every push and pull request to `master`, and on `v*.*.*` tags:
-
-| Job | Runs on | What it does |
-|---|---|---|
-| Backend build & test | every run | Restore, build and `dotnet test`, with a published test report. |
-| Frontend build & test | every run | `npm ci`, `npm test` (Vitest) and `npm run build`; on tags it first sets the `package.json` version from the tag. |
-| Docker Compose smoke test | every run | Builds the images, starts the full stack, checks the migrator exit code, API readiness, the SPA, and an anonymous + an authenticated endpoint. |
-| OpenAPI drift check | disabled | Compares the live OpenAPI document with the committed `openapi/v1.json`; switched off (`if: false`) until it is stabilised. |
-| Publish images | tags only | Pushes the `api`, `migrator` and `spa` images to GHCR. |
-| Smoke-test published images | tags only | Starts the just-published images with `docker-compose.publishedimage.yml`. |
-| Deploy API, Deploy SPA | tags only | See [Releasing a new version](#releasing-a-new-version). |
-
-Dependabot (`.github/dependabot.yml`) opens weekly, grouped pull requests for NuGet, npm, Docker base
-images, Compose images and GitHub Actions. Major upgrades of .NET, Angular, TypeScript, Node and
-FluentAssertions (v8+ is commercially licensed) are ignored on purpose and done by hand (TFM change,
-`ng update`).
-
-### Versioning and image tags
-
-The `publish-images` job runs on `v*.*.*` tags only and publishes each image with the full version,
-the major.minor and the major tag (e.g. `2.3.0`, `2.3`, `2`). There is deliberately **no `latest`
-tag**, so an explicit version has to be pinned for every deployment. The migrator image only exists
-from `2.0.0` onwards (it was introduced together with the standalone migrator), so the API and the
-migrator must always run the same tag.
-
-The git tag is the single source of truth for the release version, and every artifact bakes it in at
-build time: the .NET images via the `APP_VERSION` build arg (`-p:Version`), the SPA via
-`scripts/generate-version.cjs`. The SPA footer shows the SPA build version, its tooltip adds the
-commit, the build date and the API version reported by `/api/v1/meta` — so a mismatch between the
-SPA and the API is visible at a glance.
-
----
-
 ## Azure deployment
 
 The API runs on Azure Container Apps against Azure SQL, with every secret in Key Vault. **No password
@@ -82,23 +47,8 @@ Container App environment variables (the secrets come from the vault, not from h
 `KeyVault__Uri`, `ASPNETCORE_ENVIRONMENT=Production`, `ForwardedHeaders__Enabled=true`,
 `Https__RedirectEnabled=false`, `Https__HstsEnabled=false` — TLS terminates at the ingress.
 
-### Releasing a new version
-
-Tag the commit (`git tag v2.2.0 && git push origin v2.2.0`). From there the pipeline is automatic:
-
-1. CI builds and tests, publishes the images and smoke-tests them.
-2. `deploy-api.yml` points the migrator job at the new image, **runs it to completion**, and only then
-   creates the new API revision. Container Apps routes traffic once `/health/ready` reports healthy
-   and the previous revision stays active if the new one never does. The workflow finishes when
-   `GET /api/v1/meta` reports the released version and `/health/ready` answers 200.
-3. `deploy-spa.yml` uploads the SPA — only after the API is live.
-
-A failed migration stops the pipeline before the API or the SPA change. A database migration does
-not roll back with the revision, and the old API briefly runs against the new schema, so migrations
-must stay backwards compatible with the previous release (expand first, contract in a later release).
-
-Both deploy workflows can also be started by hand (*Run workflow*); `deploy-api.yml` asks for the
-version to deploy, which makes a redeploy or a rollback to an older release a single click.
+Releases are deployed automatically from a git tag, see
+[Releasing a new version](ci-cd.md#releasing-a-new-version).
 
 ### Deploying the API
 

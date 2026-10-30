@@ -62,8 +62,8 @@ The full documentation lives in [docs/](docs/README.md):
 
 - [Configuration](docs/configuration.md): settings, environment variables, Key Vault, SPA runtime config
 - [Health & observability](docs/observability.md): health endpoints, OpenTelemetry, Aspire Dashboard
-- [Continuous integration](docs/documentation.md#continuous-integration): CI jobs, Dependabot, versioning and image tags
-- [Azure deployment](docs/documentation.md#azure-deployment): resources, release flow, OIDC, probes, CORS
+- [CI/CD](docs/ci-cd.md): CI jobs, Dependabot, versioning and image tags, release flow
+- [Azure deployment](docs/documentation.md#azure-deployment): resources, OIDC, probes, CORS
 - [Getting started](docs/getting-started.md): local setup, Docker Compose, running the published images
 - [Architecture](docs/architecture.md): detailed tech stack, layers, project structure, key technical decisions
 - [Known limitations](docs/documentation.md#known-limitations)

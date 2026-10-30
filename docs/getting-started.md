@@ -148,7 +148,7 @@ $env:IMAGE_TAG = "2.4.0"   # any published semver tag, e.g. 2.4.0, 2.4 or 2
 docker compose -f docker-compose.yml -f docker-compose.publishedimage.yml up -d
 ```
 
-See [Versioning and image tags](documentation.md#versioning-and-image-tags) for the available tags.
+See [Versioning and image tags](ci-cd.md#versioning-and-image-tags) for the available tags.
 
 ## Common tasks
 

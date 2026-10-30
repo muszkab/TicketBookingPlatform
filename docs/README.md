@@ -8,9 +8,10 @@
   `.env`, Azure Key Vault, SPA runtime configuration
 - [Health & observability](observability.md): health endpoints, OpenTelemetry, error correlation,
   Aspire Dashboard
+- [CI/CD](ci-cd.md): pipeline overview, CI jobs, Dependabot, versioning and image tags, releasing a
+  new version
 
 Not split out yet, still in [documentation.md](documentation.md):
 
-- [Continuous integration](documentation.md#continuous-integration)
 - [Azure deployment](documentation.md#azure-deployment)
 - [Known limitations](documentation.md#known-limitations)

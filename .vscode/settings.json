@@ -26,6 +26,8 @@
         "java": true,
         "dotnet run": true,
         "Move-Item": true,
-        "Out-Null": true
+        "Out-Null": true,
+        "dotnet restore": true,
+        "dotnet list": true
     }
 }

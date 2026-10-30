@@ -14,7 +14,7 @@ the API root, not under `/api/`:
 |---|---|---|
 | Local (`dotnet run`) | `https://localhost:5001/health/live`, `/health/ready` | – |
 | Docker Compose | `http://localhost:8080/health/live`, `/health/ready` (`API_PORT`) | The `api` container healthcheck (`/health/live`); the SPA container only starts once it is healthy. |
-| Azure Container Apps | `https://<app>/health/live`, `/health/ready` | The liveness, startup and readiness probes, see [Probes](documentation.md#probes). |
+| Azure Container Apps | `https://<app>/health/live`, `/health/ready` | The liveness, startup and readiness probes, see [Probes](azure-deployment.md#probes). |
 
 The CI smoke tests and the deploy workflow also wait for `/health/ready` before they continue.
 

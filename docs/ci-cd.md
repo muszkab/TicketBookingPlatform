@@ -87,4 +87,4 @@ version to deploy, which makes a redeploy or a rollback to an older release a si
 of the same kind are queued, never run in parallel and never cancelled halfway.
 
 The one-time Azure and GitHub setup the deploy workflows need is described in
-[Azure deployment](documentation.md#azure-deployment).
+[Azure deployment](azure-deployment.md).

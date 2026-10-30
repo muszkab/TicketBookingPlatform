@@ -103,7 +103,7 @@ bootstraps:
 | `""` (empty) | Behind a same-origin proxy — the nginx container proxies `/api/` to the API, so relative requests just work and **no CORS is involved**. This is what Docker Compose uses. |
 | `"https://<api-host>"` | SPA and API on different domains (Static Web Apps + Container Apps). The API must then allow that origin through `Cors:AllowedOrigins`. |
 
-In Azure the SPA calls the API directly, see [SPA and CORS](documentation.md#spa-and-cors).
+In Azure the SPA calls the API directly, see [SPA and CORS](azure-deployment.md#spa-and-cors).
 
 If `config.json` is missing or malformed the compile-time default from `src/environments` is kept,
 so a broken deployment artifact cannot prevent the application from starting. Both nginx and Static

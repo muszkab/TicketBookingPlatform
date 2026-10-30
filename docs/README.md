@@ -10,8 +10,9 @@
   Aspire Dashboard
 - [CI/CD](ci-cd.md): pipeline overview, CI jobs, Dependabot, versioning and image tags, releasing a
   new version
+- [Azure deployment](azure-deployment.md): resources, identities and database permissions,
+  configuration, deploying the API (OIDC) and the SPA, probes, CORS
 
 Not split out yet, still in [documentation.md](documentation.md):
 
-- [Azure deployment](documentation.md#azure-deployment)
 - [Known limitations](documentation.md#known-limitations)

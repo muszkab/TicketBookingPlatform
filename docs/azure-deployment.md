@@ -127,7 +127,8 @@ all. Every additional origin — a custom domain or a staging slot — needs its
 > Two alternatives would avoid CORS entirely, both rejected for now:
 >
 > - The Static Web Apps *linked backend* feature, which proxies the API under the SPA origin. It
->   requires the Standard plan.
+>   requires the paid **Standard** hosting plan of Static Web Apps, while the SPA runs on the
+>   **Free** plan.
 > - Running the existing SPA image (nginx with the `/api/` proxy) as a second Container App. The API
 >   ingress could then even be internal, but the SPA would lose the global CDN of Static Web Apps and
 >   gain a cold start, which is not worth it for static content.
@@ -147,13 +148,5 @@ Prerequisites in the GitHub repository:
 
 | Kind | Name | Value |
 |---|---|---|
-| Environment secret (`production`) | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App (*Overview → Manage deployment token*). |
+| Environment secret (`production`) | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App. |
 | Environment variable (`production`) | `API_BASE_PATH` | The Container App URL, e.g. `https://<app>.<region>.azurecontainerapps.io`. |
-
-`public/staticwebapp.config.json` handles the routing: unknown paths fall back to `index.html` (the
-Angular router owns them) and `config.json` is served with `Cache-Control: no-store`. It also adds
-basic security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) to every
-response.
-
-When creating the Static Web App in the portal, choose **Deployment source: Other** — the workflow
-above already does the build and upload, so Azure should not generate its own.

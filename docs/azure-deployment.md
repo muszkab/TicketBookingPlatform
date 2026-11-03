@@ -37,40 +37,16 @@ calls the API directly, see [SPA and CORS](#spa-and-cors).
 
 | Resource | Role |
 |---|---|
-| Container App | Runs the published API image, HTTP ingress on **port 8080** (`ASPNETCORE_HTTP_PORTS` of the image). |
+| Container App | Runs the published API image, HTTP ingress on **port 8080**. |
 | Container Apps Job | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time. |
 | Container Apps environment | Consumption plan, shared by the app and the job. |
 | Azure SQL Database | Application database, reached with Entra authentication. |
-| Key Vault | Connection string, JWT signing key and seed admin password. Uses **Azure RBAC** authorization, which the *Key Vault Secrets User* role assignments below require. |
+| Key Vault | Connection string, JWT signing key and seed admin password. |
 | Static Web App | Hosts the SPA (Free tier) and calls the API directly, with CORS. |
 | Log Analytics workspace | Console and system logs of the environment. |
 
 All of them live in the `rg-ticketbooking` resource group. The images come from GHCR, where they are
 public, so the Container App and the job need no registry credentials.
-
-## Identities and database permissions
-
-Both the app and the job have their own **system-assigned Managed Identity**, each granted the
-**Key Vault Secrets User** role on the vault. The database permissions are deliberately asymmetric:
-
-```sql
--- API: reads and writes data, but cannot change the schema
-CREATE USER [<container-app-name>] FROM EXTERNAL PROVIDER;
-ALTER ROLE db_datareader ADD MEMBER [<container-app-name>];
-ALTER ROLE db_datawriter ADD MEMBER [<container-app-name>];
-
--- Migrator job: the only identity allowed to change the schema
-CREATE USER [<job-name>] FROM EXTERNAL PROVIDER;
-ALTER ROLE db_ddladmin   ADD MEMBER [<job-name>];
-ALTER ROLE db_datareader ADD MEMBER [<job-name>];
-ALTER ROLE db_datawriter ADD MEMBER [<job-name>];
-```
-
-Run these statements in the application database, signed in as the **Microsoft Entra admin** of the
-SQL server (*SQL server → Microsoft Entra ID → Set admin*): `FROM EXTERNAL PROVIDER` users can only
-be created by an Entra identity. Once everything works, the server can be switched to
-**Microsoft Entra-only authentication**, which removes the SQL admin login as well — do it only
-afterwards, because from then on there is no SQL login to fall back to.
 
 ## Configuration
 

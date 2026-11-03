@@ -28,7 +28,7 @@ is `JwtSettings__SigningKey` as an environment variable and `JwtSettings--Signin
 | OTLP endpoint | `OpenTelemetry:OtlpEndpoint` | API | empty | Empty = telemetry export is disabled. |
 | Key Vault | `KeyVault:Uri` | API, migrator | empty | Empty = Key Vault is not used. In Azure: `https://<vault>.vault.azure.net/`. |
 | Key Vault identity | `KeyVault:ManagedIdentityClientId` | API, migrator | empty | Only for a *user-assigned* Managed Identity; leave empty for system-assigned. |
-| CORS origins | `Cors:AllowedOrigins` | API | empty (`https://localhost:4200` in Development) | An array, so the environment variables are indexed: `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, … Empty = the CORS middleware is not registered. |
+| CORS origins | `Cors:AllowedOrigins` | API | empty (`http://localhost:4200` in Development) | An array, so the environment variables are indexed: `Cors__AllowedOrigins__0`, `Cors__AllowedOrigins__1`, … Empty = the CORS middleware is not registered. |
 | HTTPS redirect | `Https:RedirectEnabled` | API | `true` | Set to `false` where TLS terminates at a proxy or ingress (containers). |
 | HSTS | `Https:HstsEnabled` | API | `true` (`false` in Development) | Same as above. |
 | Forwarded headers | `ForwardedHeaders:Enabled` | API | `false` | Honours `X-Forwarded-For` and `X-Forwarded-Proto` from **any** proxy, so enable it only when the API is reachable through a proxy alone (nginx, Container Apps ingress). |

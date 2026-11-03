@@ -14,7 +14,6 @@ There are two ways to run the platform:
 | .NET SDK 9.0+ | API, tests | |
 | SQL Server LocalDB | API (locally) | Windows only. Any other SQL Server works too, see [Using another SQL Server](#using-another-sql-server). |
 | Node.js 24 | SPA | The Angular CLI comes with the project, no global install needed. |
-| [mkcert](https://github.com/FiloSottile/mkcert) | SPA dev server | Creates the locally trusted HTTPS certificate, see [step 2](#2-trust-the-https-certificates). |
 | Docker | Docker Compose | Optional. |
 | Java 11+ | `npm run generate:api` | Optional, only to regenerate the API client (`openapi-generator-cli`). |
 
@@ -27,21 +26,16 @@ git clone https://github.com/muszkab/TicketBookingPlatform.git
 cd TicketBookingPlatform
 ```
 
-### 2. Trust the HTTPS certificates
+### 2. Trust the HTTPS development certificate
 
-Both the API (`https://localhost:5001`) and the SPA dev server (`https://localhost:4200`) run on HTTPS.
+The API runs on `https://localhost:5001` with the ASP.NET Core development certificate. Trust it once,
+otherwise the browser blocks the calls of the SPA:
 
 ```powershell
 dotnet dev-certs https --trust
-
-cd frontend/ticket-booking-web
-mkcert -install
-mkdir ssl
-mkcert -cert-file ssl/localhost+2.pem -key-file ssl/localhost+2-key.pem localhost 127.0.0.1 ::1
-cd ../..
 ```
 
-The `ssl/` folder is git-ignored; `angular.json` expects exactly these two file names.
+The SPA dev server itself runs on plain `http://localhost:4200`, which needs no certificate.
 
 ### 3. Configure the secrets
 
@@ -82,7 +76,7 @@ npm ci
 npm start
 ```
 
-Open `https://localhost:4200`. The dev server calls the API at `https://localhost:5001` directly; the
+Open `http://localhost:4200`. The dev server calls the API at `https://localhost:5001` directly; the
 API already allows this origin (`Cors:AllowedOrigins` in `appsettings.Development.json`).
 
 ### 6. Sign in
@@ -170,8 +164,7 @@ dotnet ef migrations add <Name> --project src/Infrastructure --startup-project s
 
 | Symptom | Fix |
 |---|---|
-| `npm start` fails with `ENOENT ... ssl/localhost+2.pem` | The SPA certificate is missing, see [step 2](#2-trust-the-https-certificates). |
-| The SPA loads, but every API call fails | The API is not running, or its certificate is not trusted: run `dotnet dev-certs https --trust` and open `https://localhost:5001/health/live` once in the browser. |
+| The SPA loads, but every API call fails | The API is not running, or its certificate is not trusted: run `dotnet dev-certs https --trust` (see [step 2](#2-trust-the-https-development-certificate)) and open `https://localhost:5001/health/live` once in the browser. |
 | The API stops at startup with a configuration error | A required secret is missing, see [step 3](#3-configure-the-secrets). |
 | A Compose service is `unhealthy` or runs old code | Rebuild with `docker compose up -d --build`. |
 | `docker compose up` fails with a port conflict | Change `API_PORT` / `SPA_PORT` in `.env`. |

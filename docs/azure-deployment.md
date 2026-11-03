@@ -10,11 +10,11 @@ and the one-time setup the deploy workflows rely on.
 
 ```mermaid
 flowchart LR
-    USER[Browser] -->|HTTPS| SWA[<b>Static Web App</b><br/>SPA]
-    USER -->|HTTPS, JWT, CORS| API[<b>Container App</b><br/>API]
+    USER[Browser] -->|static files| SWA[<b>Static Web App</b><br/>SPA]
+    USER -->|API calls<br/>HTTPS, JWT, CORS| API
 
-    subgraph ENV[Container Apps environment]
-        API
+    subgraph ENV[Container Apps environment, Consumption plan]
+        API[<b>Container App</b><br/>API]
         JOB[<b>Container Apps Job</b><br/>migrator]
     end
 
@@ -22,17 +22,24 @@ flowchart LR
     JOB -->|Managed Identity| SQL
     API -->|Managed Identity| KV[<b>Key Vault</b>]
     JOB -->|Managed Identity| KV
+    ENV -->|console and system logs| LA[<b>Log Analytics</b>]
 
-    GH[GitHub Actions] -->|OIDC| ENV
-    GH -->|deployment token| SWA
+    GH[<b>GitHub Actions</b>] -->|push images| GHCR[<b>GHCR</b><br/>public images]
+    GHCR -->|pull| ENV
+    GH -->|OIDC: update and start the job,<br/>update the app| ENV
+    GH -->|deployment token:<br/>upload the SPA| SWA
 ```
+
+The Static Web App only serves the SPA's static files: once loaded, the SPA runs in the browser and
+calls the API directly, see [SPA and CORS](#spa-and-cors).
 
 ## Resources
 
 | Resource | Role |
 |---|---|
-| Container App (`containerapp-ticketbooking-api`) | Runs the published API image, HTTP ingress on **port 8080**. |
-| Container Apps Job (`job-ticketbooking-migrator`) | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time (replica timeout 600 s, 1 retry). |
+| Container App | Runs the published API image, HTTP ingress on **port 8080**. |
+| Container Apps Job | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time. |
+| Container Apps environment | Consumption plan, shared by the app and the job. |
 | Azure SQL Database | Application database, reached with Entra authentication. |
 | Key Vault | Connection string, JWT signing key and seed admin password. |
 | Static Web App | Hosts the SPA (Free tier) and calls the API directly, with CORS. |
@@ -41,27 +48,6 @@ flowchart LR
 All of them live in the `rg-ticketbooking` resource group. The images come from GHCR, where they are
 public, so the Container App and the job need no registry credentials.
 
-## Identities and database permissions
-
-Both the app and the job have their own **system-assigned Managed Identity**, each granted the
-**Key Vault Secrets User** role on the vault. The database permissions are deliberately asymmetric:
-
-```sql
--- API: reads and writes data, but cannot change the schema
-CREATE USER [<container-app-name>] FROM EXTERNAL PROVIDER;
-ALTER ROLE db_datareader ADD MEMBER [<container-app-name>];
-ALTER ROLE db_datawriter ADD MEMBER [<container-app-name>];
-
--- Migrator job: the only identity allowed to change the schema
-CREATE USER [<job-name>] FROM EXTERNAL PROVIDER;
-ALTER ROLE db_ddladmin   ADD MEMBER [<job-name>];
-ALTER ROLE db_datareader ADD MEMBER [<job-name>];
-ALTER ROLE db_datawriter ADD MEMBER [<job-name>];
-```
-
-Run these statements in the application database, signed in as the **Microsoft Entra admin** of the
-SQL server: `FROM EXTERNAL PROVIDER` users can only be created by an Entra identity.
-
 ## Configuration
 
 The passwordless connection string stored in the vault (`ConnectionStrings--DefaultConnection`):
@@ -69,6 +55,14 @@ The passwordless connection string stored in the vault (`ConnectionStrings--Defa
 ```
 Server=tcp:<server>.database.windows.net,1433;Initial Catalog=TicketBookingPlatform;Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;
 ```
+
+With a system-assigned identity no `User Id` is needed; each container connects as its own identity,
+which is how the API and the migrator get different database permissions from the same connection
+string. No code change is involved: the managed identity authentication is a connection string option
+of `Microsoft.Data.SqlClient`.
+
+The app reloads the vault every 30 minutes. After changing a secret, restart the revision (or create a
+new one) to apply it immediately.
 
 The secrets come from the vault, so the environment variables only hold non-secret settings:
 
@@ -82,43 +76,21 @@ See [Configuration](configuration.md) for every setting and
 
 ## Deploying the API
 
-`.github/workflows/deploy-api.yml` signs in to Azure with **OIDC** (a federated credential), so no
-client secret is stored in GitHub. The job runs in the `production` GitHub Environment, which is also
+The **API deploy workflow** (`.github/workflows/deploy-api.yml`) signs in to Azure with **OIDC** (a
+federated credential), so no client secret is stored in GitHub. The job runs in the `production` GitHub Environment, which is also
 what the federated credential trusts. Add *required reviewers* to that environment if you ever want a
 manual approval step before a deploy.
-
-One-time Azure setup:
-
-```bash
-appId=$(az ad app create --display-name github-ticketbooking-deploy --query appId -o tsv)
-az ad sp create --id $appId
-
-az ad app federated-credential create --id $appId --parameters '{
-  "name": "github-production",
-  "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production",
-  "audiences": ["api://AzureADTokenExchange"]
-}'
-
-az role assignment create --assignee $appId --role Contributor \
-  --scope /subscriptions/<subscription-id>/resourceGroups/rg-ticketbooking
-```
-
-The subject must match what GitHub actually presents. For this repository GitHub sends the **ID-based**
-form (`repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production`, the numeric ids come from
-`https://api.github.com/repos/<owner>/<repo>`), not the plain `repo:<owner>/<repo>:...` one. If the login
-fails with `AADSTS700213`, copy the *subject claim* printed by the `azure/login` step into the credential.
 
 `Contributor` on the resource group covers everything the workflow does: it updates the job image
 (`Microsoft.App/jobs/write`), starts the job **without** container overrides
 (`Microsoft.App/jobs/start/action`) and updates the Container App.
 
-Prerequisites in the GitHub repository (create the `production` environment first; all three are
+Prerequisites in the GitHub repository (all three are
 **environment secrets** of `production`, like the Static Web Apps token below):
 
 | Kind | Name | Value |
 |---|---|---|
-| Environment secret | `AZURE_CLIENT_ID` | The `appId` of the app registration above. |
+| Environment secret | `AZURE_CLIENT_ID` | The `appId` of the app registration used for the OIDC login. |
 | Environment secret | `AZURE_TENANT_ID` | The Entra tenant id. |
 | Environment secret | `AZURE_SUBSCRIPTION_ID` | The subscription that holds `rg-ticketbooking`. |
 
@@ -152,14 +124,19 @@ and Docker Compose (where nginx proxies `/api/` on the same origin) need no CORS
 all. Every additional origin — a custom domain or a staging slot — needs its own indexed entry
 (`Cors__AllowedOrigins__1`, ...); the policy uses `AllowCredentials`, so wildcards are not allowed.
 
-> The alternative would be the Static Web Apps *linked backend* feature, which proxies the API under
-> the SPA origin and removes the need for CORS entirely. It requires the Standard plan, so the
-> direct-call approach above was chosen instead.
+> Two alternatives would avoid CORS entirely, both rejected for now:
+>
+> - The Static Web Apps *linked backend* feature, which proxies the API under the SPA origin. It
+>   requires the paid **Standard** hosting plan of Static Web Apps, while the SPA runs on the
+>   **Free** plan.
+> - Running the existing SPA image (nginx with the `/api/` proxy) as a second Container App. The API
+>   ingress could then even be internal, but the SPA would lose the global CDN of Static Web Apps and
+>   gain a cold start, which is not worth it for static content.
 
 ## Deploying the SPA
 
-`.github/workflows/deploy-spa.yml` builds the Angular application from source and uploads it to Static
-Web Apps; the SPA image from GHCR is not used in Azure. On a `v*.*.*` tag it is called from `ci.yml`
+The **SPA deploy workflow** (`.github/workflows/deploy-spa.yml`) builds the Angular application from
+source and uploads it to Static Web Apps; the SPA image from GHCR is not used in Azure. On a `v*.*.*` tag it is called from `ci.yml`
 once the API deploy has succeeded; it can also be run on demand via *Run workflow*.
 
 The workflow writes `config.json` into the build output from the `API_BASE_PATH` variable (a trailing
@@ -171,13 +148,5 @@ Prerequisites in the GitHub repository:
 
 | Kind | Name | Value |
 |---|---|---|
-| Environment secret (`production`) | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App (*Overview → Manage deployment token*). |
+| Environment secret (`production`) | `AZURE_STATIC_WEB_APPS_API_TOKEN` | The deployment token from the Static Web App. |
 | Environment variable (`production`) | `API_BASE_PATH` | The Container App URL, e.g. `https://<app>.<region>.azurecontainerapps.io`. |
-
-`public/staticwebapp.config.json` handles the routing: unknown paths fall back to `index.html` (the
-Angular router owns them) and `config.json` is served with `Cache-Control: no-store`. It also adds
-basic security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) to every
-response.
-
-When creating the Static Web App in the portal, choose **Deployment source: Other** — the workflow
-above already does the build and upload, so Azure should not generate its own.

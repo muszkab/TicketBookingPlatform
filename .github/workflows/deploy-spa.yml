@@ -46,7 +46,7 @@ jobs:
           API_BASE_PATH: ${{ inputs.api_base_path || vars.API_BASE_PATH }}
         run: |
           if [ -z "$API_BASE_PATH" ]; then
-            echo "::error::API_BASE_PATH is not set. Add it as a repository variable or pass it to the manual run." >&2
+            echo "::error::API_BASE_PATH is not set. Add it as a variable of the production environment or pass it to the manual run." >&2
             exit 1
           fi
 

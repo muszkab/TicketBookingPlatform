@@ -76,43 +76,21 @@ See [Configuration](configuration.md) for every setting and
 
 ## Deploying the API
 
-`.github/workflows/deploy-api.yml` signs in to Azure with **OIDC** (a federated credential), so no
-client secret is stored in GitHub. The job runs in the `production` GitHub Environment, which is also
+The **API deploy workflow** (`.github/workflows/deploy-api.yml`) signs in to Azure with **OIDC** (a
+federated credential), so no client secret is stored in GitHub. The job runs in the `production` GitHub Environment, which is also
 what the federated credential trusts. Add *required reviewers* to that environment if you ever want a
 manual approval step before a deploy.
-
-One-time Azure setup:
-
-```bash
-appId=$(az ad app create --display-name github-ticketbooking-deploy --query appId -o tsv)
-az ad sp create --id $appId
-
-az ad app federated-credential create --id $appId --parameters '{
-  "name": "github-production",
-  "issuer": "https://token.actions.githubusercontent.com",
-  "subject": "repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production",
-  "audiences": ["api://AzureADTokenExchange"]
-}'
-
-az role assignment create --assignee $appId --role Contributor \
-  --scope /subscriptions/<subscription-id>/resourceGroups/rg-ticketbooking
-```
-
-The subject must match what GitHub actually presents. For this repository GitHub sends the **ID-based**
-form (`repo:<owner>@<owner-id>/<repo>@<repo-id>:environment:production`, the numeric ids come from
-`https://api.github.com/repos/<owner>/<repo>`), not the plain `repo:<owner>/<repo>:...` one. If the login
-fails with `AADSTS700213`, copy the *subject claim* printed by the `azure/login` step into the credential.
 
 `Contributor` on the resource group covers everything the workflow does: it updates the job image
 (`Microsoft.App/jobs/write`), starts the job **without** container overrides
 (`Microsoft.App/jobs/start/action`) and updates the Container App.
 
-Prerequisites in the GitHub repository (create the `production` environment first; all three are
+Prerequisites in the GitHub repository (all three are
 **environment secrets** of `production`, like the Static Web Apps token below):
 
 | Kind | Name | Value |
 |---|---|---|
-| Environment secret | `AZURE_CLIENT_ID` | The `appId` of the app registration above. |
+| Environment secret | `AZURE_CLIENT_ID` | The `appId` of the app registration used for the OIDC login. |
 | Environment secret | `AZURE_TENANT_ID` | The Entra tenant id. |
 | Environment secret | `AZURE_SUBSCRIPTION_ID` | The subscription that holds `rg-ticketbooking`. |
 
@@ -156,8 +134,8 @@ all. Every additional origin — a custom domain or a staging slot — needs its
 
 ## Deploying the SPA
 
-`.github/workflows/deploy-spa.yml` builds the Angular application from source and uploads it to Static
-Web Apps; the SPA image from GHCR is not used in Azure. On a `v*.*.*` tag it is called from `ci.yml`
+The **SPA deploy workflow** (`.github/workflows/deploy-spa.yml`) builds the Angular application from
+source and uploads it to Static Web Apps; the SPA image from GHCR is not used in Azure. On a `v*.*.*` tag it is called from `ci.yml`
 once the API deploy has succeeded; it can also be run on demand via *Run workflow*.
 
 The workflow writes `config.json` into the build output from the `API_BASE_PATH` variable (a trailing

@@ -10,11 +10,11 @@ and the one-time setup the deploy workflows rely on.
 
 ```mermaid
 flowchart LR
-    USER[Browser] -->|HTTPS| SWA[<b>Static Web App</b><br/>SPA]
-    USER -->|HTTPS, JWT, CORS| API[<b>Container App</b><br/>API]
+    USER[Browser] -->|static files| SWA[<b>Static Web App</b><br/>SPA]
+    USER -->|API calls<br/>HTTPS, JWT, CORS| API
 
-    subgraph ENV[Container Apps environment]
-        API
+    subgraph ENV[Container Apps environment, Consumption plan]
+        API[<b>Container App</b><br/>API]
         JOB[<b>Container Apps Job</b><br/>migrator]
     end
 
@@ -22,19 +22,26 @@ flowchart LR
     JOB -->|Managed Identity| SQL
     API -->|Managed Identity| KV[<b>Key Vault</b>]
     JOB -->|Managed Identity| KV
+    ENV -->|console and system logs| LA[<b>Log Analytics</b>]
 
-    GH[GitHub Actions] -->|OIDC| ENV
-    GH -->|deployment token| SWA
+    GH[<b>GitHub Actions</b>] -->|push images| GHCR[<b>GHCR</b><br/>public images]
+    GHCR -->|pull| ENV
+    GH -->|OIDC: update and start the job,<br/>update the app| ENV
+    GH -->|deployment token:<br/>upload the SPA| SWA
 ```
+
+The Static Web App only serves the SPA's static files: once loaded, the SPA runs in the browser and
+calls the API directly, see [SPA and CORS](#spa-and-cors).
 
 ## Resources
 
 | Resource | Role |
 |---|---|
-| Container App (`containerapp-ticketbooking-api`) | Runs the published API image, HTTP ingress on **port 8080**. |
-| Container Apps Job (`job-ticketbooking-migrator`) | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time (replica timeout 600 s, 1 retry). |
+| Container App | Runs the published API image, HTTP ingress on **port 8080** (`ASPNETCORE_HTTP_PORTS` of the image). |
+| Container Apps Job | Manually triggered, one-shot EF Core migration + seeding. `parallelism = 1`, so two migrations can never run at the same time. |
+| Container Apps environment | Consumption plan, shared by the app and the job. |
 | Azure SQL Database | Application database, reached with Entra authentication. |
-| Key Vault | Connection string, JWT signing key and seed admin password. |
+| Key Vault | Connection string, JWT signing key and seed admin password. Uses **Azure RBAC** authorization, which the *Key Vault Secrets User* role assignments below require. |
 | Static Web App | Hosts the SPA (Free tier) and calls the API directly, with CORS. |
 | Log Analytics workspace | Console and system logs of the environment. |
 
@@ -60,7 +67,10 @@ ALTER ROLE db_datawriter ADD MEMBER [<job-name>];
 ```
 
 Run these statements in the application database, signed in as the **Microsoft Entra admin** of the
-SQL server: `FROM EXTERNAL PROVIDER` users can only be created by an Entra identity.
+SQL server (*SQL server → Microsoft Entra ID → Set admin*): `FROM EXTERNAL PROVIDER` users can only
+be created by an Entra identity. Once everything works, the server can be switched to
+**Microsoft Entra-only authentication**, which removes the SQL admin login as well — do it only
+afterwards, because from then on there is no SQL login to fall back to.
 
 ## Configuration
 
@@ -69,6 +79,14 @@ The passwordless connection string stored in the vault (`ConnectionStrings--Defa
 ```
 Server=tcp:<server>.database.windows.net,1433;Initial Catalog=TicketBookingPlatform;Authentication=Active Directory Managed Identity;Encrypt=True;TrustServerCertificate=False;
 ```
+
+With a system-assigned identity no `User Id` is needed; each container connects as its own identity,
+which is how the API and the migrator get different database permissions from the same connection
+string. No code change is involved: the managed identity authentication is a connection string option
+of `Microsoft.Data.SqlClient`.
+
+The app reloads the vault every 30 minutes. After changing a secret, restart the revision (or create a
+new one) to apply it immediately.
 
 The secrets come from the vault, so the environment variables only hold non-secret settings:
 
@@ -152,9 +170,13 @@ and Docker Compose (where nginx proxies `/api/` on the same origin) need no CORS
 all. Every additional origin — a custom domain or a staging slot — needs its own indexed entry
 (`Cors__AllowedOrigins__1`, ...); the policy uses `AllowCredentials`, so wildcards are not allowed.
 
-> The alternative would be the Static Web Apps *linked backend* feature, which proxies the API under
-> the SPA origin and removes the need for CORS entirely. It requires the Standard plan, so the
-> direct-call approach above was chosen instead.
+> Two alternatives would avoid CORS entirely, both rejected for now:
+>
+> - The Static Web Apps *linked backend* feature, which proxies the API under the SPA origin. It
+>   requires the Standard plan.
+> - Running the existing SPA image (nginx with the `/api/` proxy) as a second Container App. The API
+>   ingress could then even be internal, but the SPA would lose the global CDN of Static Web Apps and
+>   gain a cold start, which is not worth it for static content.
 
 ## Deploying the SPA
 

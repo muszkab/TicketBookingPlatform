@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ public sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransforme
         CancellationToken cancellationToken)
     {
         document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
         document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
         {
             Type = SecuritySchemeType.Http,
@@ -22,19 +24,11 @@ public sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransforme
             Description = "Enter the JWT access token (without the 'Bearer ' prefix).",
         };
 
-        var requirement = new OpenApiSecurityRequirement
+        document.Security ??= [];
+        document.Security.Add(new OpenApiSecurityRequirement
         {
-            [new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer",
-                },
-            }] = System.Array.Empty<string>(),
-        };
-
-        document.SecurityRequirements.Add(requirement);
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = [],
+        });
 
         return Task.CompletedTask;
     }

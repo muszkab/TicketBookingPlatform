@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,7 +31,7 @@ public class ApiInfoDocumentTransformerTests
     [Fact]
     public async Task TransformAsync_Should_Create_Info_When_Missing()
     {
-        var document = new OpenApiDocument { Info = null };
+        var document = new OpenApiDocument { Info = null! };
 
         await TransformAsync(document: document);
 

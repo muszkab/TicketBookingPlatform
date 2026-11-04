@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +25,10 @@ public sealed class StringEnumSchemaTransformer : IOpenApiSchemaTransformer
             return Task.CompletedTask;
         }
 
-        schema.Type = "string";
+        schema.Type = JsonSchemaType.String;
         schema.Format = null;
         schema.Enum = Enum.GetNames(type)
-            .Select(name => (IOpenApiAny)new OpenApiString(name))
+            .Select(name => (JsonNode)JsonValue.Create(name))
             .ToList();
 
         return Task.CompletedTask;

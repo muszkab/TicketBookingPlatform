@@ -4,6 +4,7 @@ using Asp.Versioning;
 using Infrastructure;
 using Infrastructure.Configuration;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,6 +48,10 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+// .NET 10 suppresses diagnostics for exceptions handled by IExceptionHandler; keep them for server errors.
+builder.Services.Configure<ExceptionHandlerOptions>(options =>
+    options.SuppressDiagnosticsCallback = context =>
+        context.HttpContext.Response.StatusCode < StatusCodes.Status500InternalServerError);
 
 builder.Services.AddApiHealthChecks();
 
@@ -61,7 +66,7 @@ if (forwardedHeadersEnabled)
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-        options.KnownNetworks.Clear();
+        options.KnownIPNetworks.Clear();
         options.KnownProxies.Clear();
     });
 }

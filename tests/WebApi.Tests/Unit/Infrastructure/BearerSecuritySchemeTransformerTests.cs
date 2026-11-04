@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ public class BearerSecuritySchemeTransformerTests
     {
         OpenApiDocument document = await TransformAsync();
 
-        document.Components.SecuritySchemes.Should().ContainKey("Bearer");
+        document.Components!.SecuritySchemes.Should().ContainKey("Bearer");
     }
 
     [Fact]
@@ -52,7 +53,7 @@ public class BearerSecuritySchemeTransformerTests
     {
         OpenApiDocument document = await TransformAsync();
 
-        OpenApiSecurityScheme scheme = document.Components.SecuritySchemes["Bearer"];
+        IOpenApiSecurityScheme scheme = document.Components!.SecuritySchemes!["Bearer"];
         scheme.Type.Should().Be(SecuritySchemeType.Http);
         scheme.Scheme.Should().Be("bearer");
         scheme.BearerFormat.Should().Be("JWT");
@@ -65,7 +66,7 @@ public class BearerSecuritySchemeTransformerTests
     {
         OpenApiDocument document = await TransformAsync();
 
-        document.SecurityRequirements.Should().ContainSingle();
+        document.Security.Should().ContainSingle();
     }
 
     [Fact]
@@ -73,11 +74,10 @@ public class BearerSecuritySchemeTransformerTests
     {
         OpenApiDocument document = await TransformAsync();
 
-        OpenApiSecurityRequirement requirement = document.SecurityRequirements.Single();
-        OpenApiSecurityScheme key = requirement.Keys.Single();
+        OpenApiSecurityRequirement requirement = document.Security!.Single();
+        OpenApiSecuritySchemeReference key = requirement.Keys.Single();
 
-        key.Reference.Should().NotBeNull();
-        key.Reference!.Type.Should().Be(ReferenceType.SecurityScheme);
+        key.Reference.Type.Should().Be(ReferenceType.SecurityScheme);
         key.Reference.Id.Should().Be("Bearer");
         requirement[key].Should().BeEmpty("the bearer requirement carries no scopes");
     }
@@ -89,7 +89,10 @@ public class BearerSecuritySchemeTransformerTests
         {
             Components = new OpenApiComponents
             {
-                Schemas = { ["EventDto"] = new OpenApiSchema { Type = "object" } },
+                Schemas = new Dictionary<string, IOpenApiSchema>
+                {
+                    ["EventDto"] = new OpenApiSchema { Type = JsonSchemaType.Object },
+                },
             },
         };
 
@@ -106,7 +109,10 @@ public class BearerSecuritySchemeTransformerTests
         {
             Components = new OpenApiComponents
             {
-                SecuritySchemes = { ["Bearer"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.ApiKey } },
+                SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>
+                {
+                    ["Bearer"] = new OpenApiSecurityScheme { Type = SecuritySchemeType.ApiKey },
+                },
             },
         };
 

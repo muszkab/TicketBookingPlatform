@@ -3,11 +3,12 @@ using Domain.Orders;
 using Domain.Users;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,20 +38,20 @@ public class StringEnumSchemaTransformerTests
     }
 
     private static string[] EnumValues(OpenApiSchema schema)
-        => schema.Enum.Cast<OpenApiString>().Select(v => v.Value).ToArray();
+        => schema.Enum!.Select(v => v.GetValue<string>()).ToArray();
 
     [Fact]
     public async Task TransformAsync_Should_Set_StringType_For_Enums()
     {
         OpenApiSchema schema = await TransformAsync(typeof(EventStatus));
 
-        schema.Type.Should().Be("string");
+        schema.Type.Should().Be(JsonSchemaType.String);
     }
 
     [Fact]
     public async Task TransformAsync_Should_Clear_Format_For_Enums()
     {
-        var schema = new OpenApiSchema { Type = "integer", Format = "int32" };
+        var schema = new OpenApiSchema { Type = JsonSchemaType.Integer, Format = "int32" };
 
         await TransformAsync(typeof(EventStatus), schema);
 
@@ -74,7 +75,7 @@ public class StringEnumSchemaTransformerTests
     {
         OpenApiSchema schema = await TransformAsync(enumType);
 
-        schema.Type.Should().Be("string");
+        schema.Type.Should().Be(JsonSchemaType.String);
         EnumValues(schema).Should().BeEquivalentTo(Enum.GetNames(enumType));
     }
 
@@ -94,13 +95,13 @@ public class StringEnumSchemaTransformerTests
     [InlineData(typeof(Guid))]
     public async Task TransformAsync_Should_Ignore_NonEnumTypes(Type type)
     {
-        var schema = new OpenApiSchema { Type = "integer", Format = "int32" };
+        var schema = new OpenApiSchema { Type = JsonSchemaType.Integer, Format = "int32" };
 
         await TransformAsync(type, schema);
 
-        schema.Type.Should().Be("integer", "non-enum schemas must be left untouched");
+        schema.Type.Should().Be(JsonSchemaType.Integer, "non-enum schemas must be left untouched");
         schema.Format.Should().Be("int32");
-        schema.Enum.Should().BeEmpty();
+        schema.Enum.Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -108,7 +109,7 @@ public class StringEnumSchemaTransformerTests
     {
         var schema = new OpenApiSchema
         {
-            Enum = { new OpenApiString("0"), new OpenApiString("1") },
+            Enum = new List<JsonNode> { JsonValue.Create("0"), JsonValue.Create("1") },
         };
 
         await TransformAsync(typeof(EventStatus), schema);

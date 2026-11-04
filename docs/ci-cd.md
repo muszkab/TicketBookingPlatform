@@ -23,7 +23,7 @@ flowchart LR
 | Frontend build & test | every run | `npm ci`, `npm test` (Vitest) and `npm run build`. On tags it first sets the `package.json` version from the tag, which also rejects a tag that is not valid semver. |
 | Docker Compose smoke test | every run, after both builds | Builds the images and starts the full stack, then checks the migrator exit code, API readiness, the SPA, an anonymous endpoint, the login of the seeded administrator, and that an authenticated endpoint answers `200` with a token and `401` without one. |
 | OpenAPI drift check | every run | Starts the API and compares its live OpenAPI document with the committed `frontend/ticket-booking-web/openapi/v1.json` (keys sorted, the environment-specific `servers` entry ignored). Fails if the spec is out of date; fix it with `npm run refresh:api` and commit the spec together with the regenerated client. |
-| Publish images | tags only, after the smoke test | Builds and pushes the `api`, `migrator` and `spa` images to GHCR, see [Versioning and image tags](#versioning-and-image-tags). |
+| Publish images | tags only, after the smoke test and the OpenAPI drift check | Builds and pushes the `api`, `migrator` and `spa` images to GHCR, see [Versioning and image tags](#versioning-and-image-tags). |
 | Smoke-test published images | tags only | Pulls the just-published images with `docker-compose.publishedimage.yml` and waits for API readiness and the SPA. |
 | Deploy API, Deploy SPA | tags only | Call `deploy-api.yml` and `deploy-spa.yml`, see [Releasing a new version](#releasing-a-new-version). |
 

@@ -13,7 +13,7 @@ export const EventCategory = {
     Concert: 'Concert',
     Theater: 'Theater',
     Conference: 'Conference',
-    Other: 'Other'
+    Other: 'Other',
 } as const;
 export type EventCategory = typeof EventCategory[keyof typeof EventCategory];
 

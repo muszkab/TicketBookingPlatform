@@ -12,7 +12,7 @@
 export const OrderStatus = {
     Pending: 'Pending',
     Paid: 'Paid',
-    Cancelled: 'Cancelled'
+    Cancelled: 'Cancelled',
 } as const;
 export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
 

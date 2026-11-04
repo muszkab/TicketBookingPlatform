@@ -92,7 +92,9 @@ FÁZIS 6 - Dokumentáció (bármikor, párhuzamos a 3-5-tel)  [KÉSZ 2026-11-04:
 23. .github/dependabot.yml változatlan (a major ignore mostantól a .NET 11-et blokkolja).
 24. Repo memória frissítése (docker-and-ci: aspnet:9.0 megjegyzés).
 
-FÁZIS 7 - StringEnumSchemaTransformer kiváltása (opcionális; függ: 3)
+FÁZIS 7 - StringEnumSchemaTransformer kiváltása (opcionális; függ: 3)  [KÉSZ 2026-11-04: transformer + 12 teszt törölve;
+   generált kliens AZONOS a 3. fáziséval; spec: enum komponensekből eltűnt a "type": "string" (csak "enum"
+   lista marad), sortBy/sortDir default javítva (0/1 -> "CreatedAt"/"Desc"); 411 backend + 51 frontend teszt zöld]
 -------------------------------------------------------------------
 Háttér: az OpenAPI generátor a Microsoft.AspNetCore.Http.Json.JsonOptions beállításait használja, nem az MVC-s
 JsonOptions-t. A JsonStringEnumConverter jelenleg csak az MVC-nél van regisztrálva, ezért kell a transformer.
@@ -105,6 +107,9 @@ JsonOptions-t. A JsonStringEnumConverter jelenleg csak az MVC-nél van regisztr�
 28. dotnet test + npm test + npm run build zöld.
 Előny: ~1 osztály + ~10 teszt kevesebb, nullable enumokat a keretrendszer kezeli.
 Hátrány: a converter két helyen regisztrált (MVC + Http), szinkronban kell tartani.
+-> Megoldva: src/WebApi/Infrastructure/JsonSerializationExtensions.cs AddApiJsonSerialization() - egyetlen hely,
+   ApplySharedSettings mindkét options-re kerül; + tests/WebApi.Tests/Integration/OpenApiContractTests.cs őrzi
+   a generált spec-et (enum nevek, szám nem lehet string). 413 backend teszt zöld.
 
 Ellenőrzés
 ----------

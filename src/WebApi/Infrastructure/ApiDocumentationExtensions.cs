@@ -24,7 +24,6 @@ public static class ApiDocumentationExtensions
             {
                 options.AddDocumentTransformer<ApiInfoDocumentTransformer>();
                 options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-                options.AddSchemaTransformer<StringEnumSchemaTransformer>();
             });
         }
 

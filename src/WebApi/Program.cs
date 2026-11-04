@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json.Serialization;
 using WebApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,14 +16,8 @@ builder.Configuration.AddAzureKeyVault(builder.Configuration);
 
 // Add services to the container.
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-// OpenAPI schemas come from these (not the MVC) options; Strict keeps numbers as plain "integer"/"number".
-builder.Services.ConfigureHttpJsonOptions(options =>
-    options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict);
+builder.Services.AddControllers();
+builder.Services.AddApiJsonSerialization();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 

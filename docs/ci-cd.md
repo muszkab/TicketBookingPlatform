@@ -7,7 +7,9 @@ Everything runs on GitHub Actions. `.github/workflows/ci.yml` builds and tests e
 flowchart LR
     B[Backend build & test] --> C[Docker Compose smoke test]
     F[Frontend build & test] --> C
+    O[OpenAPI drift check]
     C -->|tags only| P[Publish images]
+    O -->|tags only| P
     P --> S[Smoke-test published images]
     S --> DA[Deploy API]
     DA --> DS[Deploy SPA]

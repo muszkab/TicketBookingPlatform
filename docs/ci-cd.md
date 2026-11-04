@@ -38,7 +38,7 @@ Major upgrades are ignored on purpose and done by hand:
 
 | Ignored | Why |
 |---|---|
-| .NET packages (`Microsoft.AspNetCore.*`, `Microsoft.EntityFrameworkCore*`, `Microsoft.Extensions.*`) and the `dotnet/*` images | Tied to the `net9.0` target framework; the upgrade to .NET 10 is a separate task. |
+| .NET packages (`Microsoft.AspNetCore.*`, `Microsoft.EntityFrameworkCore*`, `Microsoft.Extensions.*`) and the `dotnet/*` images | Tied to the `net10.0` target framework (set once in `Directory.Build.props`); moving to the next major .NET version is a separate task. |
 | Angular, `angularx-qrcode` | Done with `ng update`, which also migrates the code. |
 | TypeScript (minor versions too) | Must match the range supported by the Angular version. |
 | `node` image | Changed together with the Node version of the workflows. |

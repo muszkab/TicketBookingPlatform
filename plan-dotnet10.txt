@@ -83,7 +83,9 @@ FÁZIS 5 - Docker + CI (függ: 2)  [KÉSZ 2026-11-04: image-ek sdk/aspnet 10.0; 
 20. .github/workflows/ci.yml: dotnet-version 10.0.x (22. és 78. sor); npx --yes js-yaml .github/workflows/ci.yml.
 21. docker compose build + up -d --wait: /health/ready ok, /api/v1/meta runtimeMajor 10, SPA lábléc ".NET 10".
 
-FÁZIS 6 - Dokumentáció (bármikor, párhuzamos a 3-5-tel)
+FÁZIS 6 - Dokumentáció (bármikor, párhuzamos a 3-5-tel)  [KÉSZ 2026-11-04: README, architecture, getting-started,
+                                                         ci-cd frissítve; dependabot.yml változatlan;
+                                                         repo memória frissítve]
 -------------------------------------------------------
 22. .NET 9 említések: README.md (15), docs/architecture.md (59), docs/getting-started.md (14, SDK 10.0+),
     docs/ci-cd.md (41, "Tied to net9.0" sor).

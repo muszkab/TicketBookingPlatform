@@ -11,7 +11,7 @@ There are two ways to run the platform:
 
 | Tool | Needed for | Notes |
 |---|---|---|
-| .NET SDK 9.0+ | API, tests | |
+| .NET SDK 10.0+ | API, tests | |
 | SQL Server LocalDB | API (locally) | Windows only. Any other SQL Server works too, see [Using another SQL Server](#using-another-sql-server). |
 | Node.js 24 | SPA | The Angular CLI comes with the project, no global install needed. |
 | Docker | Docker Compose | Optional. |

@@ -23,7 +23,7 @@ const CONTACT_EMAIL = 'm1musbal@gmail.com';
 const GITHUB_REPO_URL = 'https://github.com/muszkab/TicketBookingPlatform';
 
 const API_FRAMEWORK_LABEL = '.NET';
-const API_FRAMEWORK_FALLBACK = `${API_FRAMEWORK_LABEL} 9`;
+const API_FRAMEWORK_FALLBACK = `${API_FRAMEWORK_LABEL} 10`;
 
 /** `2026-10-04T09:33:11.817Z` -> `2026-10-04 09:33 UTC` (locale-independent on purpose). */
 function formatBuildTime(isoDate: string): string {

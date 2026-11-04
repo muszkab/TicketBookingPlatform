@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.1.1",
   "info": {
     "title": "Ticket Booking Platform API - v1",
     "description": "Public REST API for the Ticket Booking Platform.",
@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "https://localhost:5001"
+      "url": "https://localhost:5001/"
     }
   ],
   "paths": {
@@ -173,14 +173,14 @@
             "name": "category",
             "in": "query",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/EventCategory"
             }
           },
           {
             "name": "status",
             "in": "query",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/EventStatus"
             }
           },
           {
@@ -2086,6 +2086,7 @@
             "name": "sortBy",
             "in": "query",
             "schema": {
+              "default": 0,
               "$ref": "#/components/schemas/OrderSortField"
             }
           },
@@ -2093,6 +2094,7 @@
             "name": "sortDir",
             "in": "query",
             "schema": {
+              "default": 1,
               "$ref": "#/components/schemas/SortDirection"
             }
           }
@@ -2253,7 +2255,7 @@
             "name": "status",
             "in": "query",
             "schema": {
-              "type": "string"
+              "$ref": "#/components/schemas/TicketStatus"
             }
           },
           {
@@ -2261,8 +2263,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "uuid",
-              "default": null
+              "format": "uuid"
             }
           },
           {
@@ -2713,14 +2714,18 @@
             "format": "date-time"
           },
           "paidAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "cancelledAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "items": {
             "type": "array",
@@ -2778,8 +2783,7 @@
           "EventTitle",
           "TicketQuantity"
         ],
-        "type": "string",
-        "default": 0
+        "type": "string"
       },
       "OrderStatus": {
         "enum": [
@@ -2974,25 +2978,35 @@
         "type": "object",
         "properties": {
           "type": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "title": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "status": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
           },
           "detail": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "instance": {
-            "type": "string",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -3020,8 +3034,7 @@
           "Asc",
           "Desc"
         ],
-        "type": "string",
-        "default": 1
+        "type": "string"
       },
       "TicketCategoryDto": {
         "required": [
@@ -3115,9 +3128,11 @@
             "format": "date-time"
           },
           "usedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -3215,9 +3230,11 @@
             "format": "int32"
           },
           "buildDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "environment": {
             "type": "string"

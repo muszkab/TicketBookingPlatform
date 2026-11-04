@@ -22,6 +22,8 @@ import { PagedResultOfTicketDto } from '../model/paged-result-of-ticket-dto';
 import { ProblemDetails } from '../model/problem-details';
 // @ts-ignore
 import { TicketDto } from '../model/ticket-dto';
+// @ts-ignore
+import { TicketStatus } from '../model/ticket-status';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -52,10 +54,10 @@ export class TicketsService extends BaseService implements TicketsServiceInterfa
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfTicketDto>;
-    public getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfTicketDto>>;
-    public getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfTicketDto>>;
-    public getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getMyTickets(status?: TicketStatus, orderId?: string, page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfTicketDto>;
+    public getMyTickets(status?: TicketStatus, orderId?: string, page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfTicketDto>>;
+    public getMyTickets(status?: TicketStatus, orderId?: string, page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfTicketDto>>;
+    public getMyTickets(status?: TicketStatus, orderId?: string, page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 

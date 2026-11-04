@@ -10,7 +10,8 @@ Döntések
 - Exception diagnosztika: SuppressDiagnosticsCallback = ctx => ctx.HttpContext.Response.StatusCode < 500
   (csak az 500-asok mennek a keretrendszer logjába / telemetriájába, a 4xx domain hibák nem duplikálódnak).
 - Nem része: Asp.Versioning / OpenTelemetry / Scalar frissítés (csak ha a build megköveteli),
-  StringEnumSchemaTransformer kivezetése, OpenAPI drift check bekapcsolása, global.json.
+  OpenAPI drift check bekapcsolása, global.json.
+- StringEnumSchemaTransformer kiváltása: külön fázis (FÁZIS 7), döntés a 3. fázis után.
 
 FÁZIS 0 - Alapállapot  [KÉSZ 2026-11-04: branch Upgrade_dotnet10; 419 backend + 51 frontend teszt zöld;
                         dotnet-ef 10.0.14]
@@ -48,8 +49,15 @@ FÁZIS 2 - Kódjavítások (függ: 1)  [KÉSZ 2026-11-04: Microsoft.OpenApi 2.12
 11. NU1510 figyelmeztetés esetén a felesleges PackageReference törlése.
 12. dotnet build (új warning nélkül) + dotnet test zöld.
 
-FÁZIS 3 - OpenAPI 3.1 + frontend (függ: 2)
+FÁZIS 3 - OpenAPI 3.1 + frontend (függ: 2)  [KÉSZ 2026-11-04: openapi 3.1.1; 51 frontend teszt zöld, build ok]
 ------------------------------------------
+Plusz lépés: a .NET 10 a Http JsonOptions alapértelmezett NumberHandling = AllowReadingFromString miatt a
+számokat ["integer","string"] + pattern formában írta le -> a generátor union típusokat gyártott
+(AddTicketCategoryRequestQuantity stb.). Javítás: Program.cs ConfigureHttpJsonOptions(NumberHandling = Strict)
+(csak az OpenAPI sémát érinti, az MVC controllerek beállítását nem).
+Eredmény: modellek változatlanok; nullable mezők ["null","string"] típustömb; getEvents/getMyTickets
+status/category paraméter string helyett típusos enum (EventCategory/EventStatus/TicketStatus).
+Ismert (már korábban is megvolt): sortBy/sortDir query paraméter "default": 0/1 szám a string enum mellett.
 13. API indítása, npm run refresh:api (generator 7.27.0); v1.json diff átnézése
     ("openapi": "3.1.x", nullable típustömbök, enumok stringként).
 14. Generált kliens diff, TypeScript hibák javítása az alkalmazás kódjában.
@@ -76,6 +84,20 @@ FÁZIS 6 - Dokumentáció (bármikor, párhuzamos a 3-5-tel)
 23. .github/dependabot.yml változatlan (a major ignore mostantól a .NET 11-et blokkolja).
 24. Repo memória frissítése (docker-and-ci: aspnet:9.0 megjegyzés).
 
+FÁZIS 7 - StringEnumSchemaTransformer kiváltása (opcionális; függ: 3)
+-------------------------------------------------------------------
+Háttér: az OpenAPI generátor a Microsoft.AspNetCore.Http.Json.JsonOptions beállításait használja, nem az MVC-s
+JsonOptions-t. A JsonStringEnumConverter jelenleg csak az MVC-nél van regisztrálva, ezért kell a transformer.
+25. src/WebApi/Program.cs: a már meglévő ConfigureHttpJsonOptions hívásba (3. fázis, NumberHandling = Strict)
+    bele: o.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+26. A transformer regisztrációjának törlése (src/WebApi/Infrastructure/ApiDocumentationExtensions.cs),
+    az osztály (StringEnumSchemaTransformer.cs) és a tesztjei (StringEnumSchemaTransformerTests.cs) törlése.
+27. npm run refresh:api -> v1.json diff a 3. fázis eredményéhez képest: az enum sémák változatlanok
+    (type string + enum nevek); nullable enum tulajdonságok helyes 3.1-es leírása.
+28. dotnet test + npm test + npm run build zöld.
+Előny: ~1 osztály + ~10 teszt kevesebb, nullable enumokat a keretrendszer kezeli.
+Hátrány: a converter két helyen regisztrált (MVC + Http), szinkronban kell tartani.
+
 Ellenőrzés
 ----------
 1. dotnet build hiba és új warning nélkül; dotnet test zöld.
@@ -86,5 +108,5 @@ Ellenőrzés
 
 Ismert kockázat
 ---------------
-- Nullable enumok 3.1-ben: ha az ASP.NET Core 10 oneOf/$ref formában írja le őket (nem típustömbbel),
-  a transformer Null flag megőrzése nem elég - a 13. lépés diffjéből derül ki.
+- (Lezárva a 3. fázisban) Nullable enumok 3.1-ben: a nullable mezők típustömbbel jelennek meg, a generált
+  modellek nem változtak.

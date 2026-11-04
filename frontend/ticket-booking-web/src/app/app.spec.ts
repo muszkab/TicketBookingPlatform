@@ -264,6 +264,6 @@ describe('App', () => {
       (fixture.nativeElement as HTMLElement)
         .querySelector('.app-footer__powered-by')
         ?.textContent?.trim()
-    ).toBe(`Powered by · .NET 9 · Angular ${VERSION.major} · Azure`);
+    ).toBe(`Powered by · .NET 10 · Angular ${VERSION.major} · Azure`);
   });
 });

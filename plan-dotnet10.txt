@@ -1,0 +1,85 @@
+.NET 9 -> .NET 10 FRISSÍTÉS - TERV
+==================================
+Készült: 2026-11-04
+
+Döntések
+--------
+- Egy menetben (egy branch / egy PR), fázisokra bontva, minden fázis után build + teszt.
+- TargetFramework központosan a Directory.Build.props-ban.
+- OpenAPI 3.1-re állunk át most.
+- Exception diagnosztika: SuppressDiagnosticsCallback = ctx => ctx.HttpContext.Response.StatusCode < 500
+  (csak az 500-asok mennek a keretrendszer logjába / telemetriájába, a 4xx domain hibák nem duplikálódnak).
+- Nem része: Asp.Versioning / OpenTelemetry / Scalar frissítés (csak ha a build megköveteli),
+  StringEnumSchemaTransformer kivezetése, OpenAPI drift check bekapcsolása, global.json.
+
+FÁZIS 0 - Alapállapot  [KÉSZ 2026-11-04: branch Upgrade_dotnet10; 419 backend + 51 frontend teszt zöld;
+                        dotnet-ef 10.0.14]
+---------------------
+1. Új branch (feature/dotnet10).
+2. Baseline: dotnet test (utolsó ismert: 419 zöld) és npm test (frontend).
+3. dotnet tool update -g dotnet-ef -> 10.x (dotnet ef --version).
+
+FÁZIS 1 - Build infrastruktúra (függ: 0)
+----------------------------------------
+4. Directory.Build.props: <TargetFramework>net10.0</TargetFramework>;
+   a 9 csproj-ból (5 src + 4 teszt) a TargetFramework sor törlése.
+5. Directory.Packages.props: Microsoft.AspNetCore.*, Microsoft.EntityFrameworkCore*, Microsoft.Extensions.*,
+   Mvc.Testing, EFCore.InMemory, EFCore.Sqlite 9.0.22 -> legfrissebb 10.0.x (egységes patch;
+   DependencyInjection.Abstractions is ehhez igazodik).
+6. Build - itt várhatók az OpenAPI hibák.
+
+FÁZIS 2 - Kódjavítások (függ: 1)
+--------------------------------
+7.  Microsoft.OpenApi 2.x átírás:
+    - src/WebApi/Infrastructure/StringEnumSchemaTransformer.cs: JsonSchemaType.String, Null flag megtartása,
+      JsonNode enum értékek.
+    - src/WebApi/Infrastructure/ApiInfoDocumentTransformer.cs: névtér (Microsoft.OpenApi).
+    - src/WebApi/Infrastructure/BearerSecuritySchemeTransformer.cs: OpenApiSecuritySchemeReference,
+      document.Security, null-biztos Components.SecuritySchemes.
+8.  A 3 unit teszt átírása (tests/WebApi.Tests/Unit/Infrastructure/) - párhuzamosan a 7-tel.
+9.  src/WebApi/Program.cs: KnownNetworks -> KnownIPNetworks.
+10. UseExceptionHandler: ExceptionHandlerOptions + SuppressDiagnosticsCallback
+    = ctx => ctx.HttpContext.Response.StatusCode < 500.
+11. NU1510 figyelmeztetés esetén a felesleges PackageReference törlése.
+12. dotnet build (új warning nélkül) + dotnet test zöld.
+
+FÁZIS 3 - OpenAPI 3.1 + frontend (függ: 2)
+------------------------------------------
+13. API indítása, npm run refresh:api (generator 7.27.0); v1.json diff átnézése
+    ("openapi": "3.1.x", nullable típustömbök, enumok stringként).
+14. Generált kliens diff, TypeScript hibák javítása az alkalmazás kódjában.
+15. frontend/ticket-booking-web/src/app/app.ts: API_FRAMEWORK_FALLBACK 9 -> 10;
+    app.spec.ts (267. sor) elvárt szöveg ".NET 10".
+16. npm test + npm run build.
+
+FÁZIS 4 - EF Core ellenőrzés (párhuzamos a 3-mal)
+-------------------------------------------------
+17. dotnet ef migrations has-pending-model-changes -> nincs változás várható; üres migrációt nem adunk hozzá.
+18. Migrator futtatása compose SQL Server ellen (migráció + seed hibátlan).
+
+FÁZIS 5 - Docker + CI (függ: 2)
+-------------------------------
+19. src/WebApi/Dockerfile és src/Migrator/Dockerfile: sdk:10.0 / aspnet:10.0
+    (Ubuntu alap; apt-get curl és $APP_UID működik).
+20. .github/workflows/ci.yml: dotnet-version 10.0.x (22. és 78. sor); npx --yes js-yaml .github/workflows/ci.yml.
+21. docker compose build + up -d --wait: /health/ready ok, /api/v1/meta runtimeMajor 10, SPA lábléc ".NET 10".
+
+FÁZIS 6 - Dokumentáció (bármikor, párhuzamos a 3-5-tel)
+-------------------------------------------------------
+22. .NET 9 említések: README.md (15), docs/architecture.md (59), docs/getting-started.md (14, SDK 10.0+),
+    docs/ci-cd.md (41, "Tied to net9.0" sor).
+23. .github/dependabot.yml változatlan (a major ignore mostantól a .NET 11-et blokkolja).
+24. Repo memória frissítése (docker-and-ci: aspnet:9.0 megjegyzés).
+
+Ellenőrzés
+----------
+1. dotnet build hiba és új warning nélkül; dotnet test zöld.
+2. npm test + npm run build zöld.
+3. dotnet ef migrations has-pending-model-changes -> nincs függő változás.
+4. Compose stack egészséges; /api/v1/meta runtimeVersion 10.0.x; Scalar UI (/scalar) betölt, Bearer auth működik.
+5. Kézi próba: hibás kérés -> problem details, a kivétel megjelenik a logban és a tracingben.
+
+Ismert kockázat
+---------------
+- Nullable enumok 3.1-ben: ha az ASP.NET Core 10 oneOf/$ref formában írja le őket (nem típustömbbel),
+  a transformer Null flag megőrzése nem elég - a 13. lépés diffjéből derül ki.

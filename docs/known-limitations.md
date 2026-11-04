@@ -23,9 +23,6 @@ Deliberate shortcuts and open items of the current version. Planned larger steps
   SQL Server can block `/health/ready`. See [Health endpoints](observability.md#health-endpoints).
 - **`OpenTelemetry.Instrumentation.EntityFrameworkCore` is a beta package**; it should be updated
   once a stable version is released.
-- **The OpenAPI drift check is disabled** in CI until it is stabilised, so a change of the API
-  contract without regenerating the TypeScript client is not caught automatically. See
-  [CI jobs](ci-cd.md#ci-jobs).
 
 ## Features
 

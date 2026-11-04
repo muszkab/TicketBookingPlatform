@@ -52,8 +52,6 @@ jobs:
 
   openapi-drift-check:
     name: OpenAPI drift check
-    # Temporarily disabled: needs further stabilization in CI (see Roadmap_CiCd.md, 3.2).
-    if: false
     runs-on: ubuntu-latest
     env:
       ASPNETCORE_ENVIRONMENT: Testing
@@ -108,8 +106,8 @@ jobs:
 
       - name: Compare against committed spec
         run: |
-          jq -S . frontend/ticket-booking-web/openapi/v1.json > /tmp/v1.expected.sorted.json
-          jq -S . /tmp/v1.actual.json > /tmp/v1.actual.sorted.json
+          jq -S 'del(.servers)' frontend/ticket-booking-web/openapi/v1.json > /tmp/v1.expected.sorted.json
+          jq -S 'del(.servers)' /tmp/v1.actual.json > /tmp/v1.actual.sorted.json
 
           if ! diff -u /tmp/v1.expected.sorted.json /tmp/v1.actual.sorted.json; then
             echo "::error::The committed OpenAPI spec (frontend/ticket-booking-web/openapi/v1.json) is out of date. Run 'npm run refresh:api' in frontend/ticket-booking-web and commit the result."

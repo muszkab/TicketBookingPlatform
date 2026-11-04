@@ -2,6 +2,11 @@ using Domain.Events;
 using Domain.Locations;
 using Domain.Users;
 using Infrastructure.Persistence;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -22,6 +27,27 @@ public class ErrorHandlingTests(CustomWebApplicationFactory factory) : Integrati
         HttpResponseMessage response = await client.GetAsync($"/api/v1/Events/{Guid.NewGuid()}");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData(StatusCodes.Status400BadRequest, true)]
+    [InlineData(StatusCodes.Status404NotFound, true)]
+    [InlineData(StatusCodes.Status409Conflict, true)]
+    [InlineData(StatusCodes.Status500InternalServerError, false)]
+    public void HandledException_Diagnostics_Should_Be_Suppressed_Only_Below_500(int statusCode, bool expectedSuppressed)
+    {
+        ExceptionHandlerOptions options = Factory.Services.GetRequiredService<IOptions<ExceptionHandlerOptions>>().Value;
+        var httpContext = new DefaultHttpContext();
+        httpContext.Response.StatusCode = statusCode;
+
+        bool suppressed = options.SuppressDiagnosticsCallback!(new ExceptionHandlerSuppressDiagnosticsContext
+        {
+            HttpContext = httpContext,
+            Exception = new InvalidOperationException(),
+            ExceptionHandledBy = ExceptionHandledType.ExceptionHandlerService,
+        });
+
+        suppressed.Should().Be(expectedSuppressed);
     }
 
     [Fact]

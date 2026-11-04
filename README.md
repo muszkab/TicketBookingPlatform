@@ -12,7 +12,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 | Area | Technology |
 |---|---|
-| Framework | .NET 9 |
+| Framework | .NET 10 |
 | Web | ASP.NET Core Web API|
 | Persistence | Entity Framework Core|
 | Database | SQL Server |
@@ -45,12 +45,12 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 
 ## Roadmap
 
-- [ ] Upgrade to .NET 10 (LTS)
+- [x] Upgrade to .NET 10 (LTS)
 - [x] Docker Compose (SQL Server + API + SPA)
 - [ ] FluentValidation for command/query input validation
 - [ ] Testcontainers (real SQL Server) for the integration tests
 - [x] CI/CD pipeline (build & test, Docker Compose smoke test, GHCR image publish, automated Azure deploy)
-- [ ] Re-enable the OpenAPI drift check
+- [x] Re-enable the OpenAPI drift check
 - [x] Cloud-native readiness (health checks, OpenTelemetry, externalised configuration)
 - [x] Deployment to Azure (Container Apps + Azure SQL + Static Web Apps, secrets in Key Vault)
 

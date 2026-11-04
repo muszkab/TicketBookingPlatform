@@ -56,7 +56,7 @@ frontend/
 
 | Area | Technology |
 |---|---|
-| Framework | .NET 9 |
+| Framework | .NET 10 |
 | Web | ASP.NET Core Web API, REST endpoints |
 | Persistence | Entity Framework Core 9, code-first migrations |
 | Database | SQL Server |

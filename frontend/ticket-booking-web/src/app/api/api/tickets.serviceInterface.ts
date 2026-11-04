@@ -14,6 +14,7 @@ import { Observable }                                        from 'rxjs';
 import { PagedResultOfTicketDto } from '../model/models';
 import { ProblemDetails } from '../model/models';
 import { TicketDto } from '../model/models';
+import { TicketStatus } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -33,7 +34,7 @@ export interface TicketsServiceInterface {
      * @param page 
      * @param pageSize 
      */
-    getMyTickets(status?: string, orderId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfTicketDto>;
+    getMyTickets(status?: TicketStatus, orderId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfTicketDto>;
 
     /**
      * 

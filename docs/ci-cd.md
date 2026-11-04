@@ -7,7 +7,9 @@ Everything runs on GitHub Actions. `.github/workflows/ci.yml` builds and tests e
 flowchart LR
     B[Backend build & test] --> C[Docker Compose smoke test]
     F[Frontend build & test] --> C
+    O[OpenAPI drift check]
     C -->|tags only| P[Publish images]
+    O -->|tags only| P
     P --> S[Smoke-test published images]
     S --> DA[Deploy API]
     DA --> DS[Deploy SPA]
@@ -22,8 +24,8 @@ flowchart LR
 | Backend build & test | every run | Restore, build and `dotnet test` on the solution, with a published test report. On tags the assemblies are built with the release version. |
 | Frontend build & test | every run | `npm ci`, `npm test` (Vitest) and `npm run build`. On tags it first sets the `package.json` version from the tag, which also rejects a tag that is not valid semver. |
 | Docker Compose smoke test | every run, after both builds | Builds the images and starts the full stack, then checks the migrator exit code, API readiness, the SPA, an anonymous endpoint, the login of the seeded administrator, and that an authenticated endpoint answers `200` with a token and `401` without one. |
-| OpenAPI drift check | disabled | Compares the live OpenAPI document with the committed `openapi/v1.json`; switched off (`if: false`) until it is stabilised. |
-| Publish images | tags only, after the smoke test | Builds and pushes the `api`, `migrator` and `spa` images to GHCR, see [Versioning and image tags](#versioning-and-image-tags). |
+| OpenAPI drift check | every run | Starts the API and compares its live OpenAPI document with the committed `frontend/ticket-booking-web/openapi/v1.json` (keys sorted, the environment-specific `servers` entry ignored). Fails if the spec is out of date; fix it with `npm run refresh:api` and commit the spec together with the regenerated client. |
+| Publish images | tags only, after the smoke test and the OpenAPI drift check | Builds and pushes the `api`, `migrator` and `spa` images to GHCR, see [Versioning and image tags](#versioning-and-image-tags). |
 | Smoke-test published images | tags only | Pulls the just-published images with `docker-compose.publishedimage.yml` and waits for API readiness and the SPA. |
 | Deploy API, Deploy SPA | tags only | Call `deploy-api.yml` and `deploy-spa.yml`, see [Releasing a new version](#releasing-a-new-version). |
 
@@ -38,7 +40,7 @@ Major upgrades are ignored on purpose and done by hand:
 
 | Ignored | Why |
 |---|---|
-| .NET packages (`Microsoft.AspNetCore.*`, `Microsoft.EntityFrameworkCore*`, `Microsoft.Extensions.*`) and the `dotnet/*` images | Tied to the `net9.0` target framework; the upgrade to .NET 10 is a separate task. |
+| .NET packages (`Microsoft.AspNetCore.*`, `Microsoft.EntityFrameworkCore*`, `Microsoft.Extensions.*`) and the `dotnet/*` images | Tied to the `net10.0` target framework (set once in `Directory.Build.props`); moving to the next major .NET version is a separate task. |
 | Angular, `angularx-qrcode` | Done with `ng update`, which also migrates the code. |
 | TypeScript (minor versions too) | Must match the range supported by the Angular version. |
 | `node` image | Changed together with the Node version of the workflows. |

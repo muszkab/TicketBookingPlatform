@@ -21,7 +21,11 @@ import { AddTicketCategoryRequest } from '../model/add-ticket-category-request';
 // @ts-ignore
 import { CreateEventRequest } from '../model/create-event-request';
 // @ts-ignore
+import { EventCategory } from '../model/event-category';
+// @ts-ignore
 import { EventDto } from '../model/event-dto';
+// @ts-ignore
+import { EventStatus } from '../model/event-status';
 // @ts-ignore
 import { PagedResultOfEventDto } from '../model/paged-result-of-event-dto';
 // @ts-ignore
@@ -329,10 +333,10 @@ export class EventsService extends BaseService implements EventsServiceInterface
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfEventDto>;
-    public getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfEventDto>>;
-    public getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfEventDto>>;
-    public getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public getEvents(category?: EventCategory, status?: EventStatus, locationId?: string, page?: number, pageSize?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<PagedResultOfEventDto>;
+    public getEvents(category?: EventCategory, status?: EventStatus, locationId?: string, page?: number, pageSize?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<PagedResultOfEventDto>>;
+    public getEvents(category?: EventCategory, status?: EventStatus, locationId?: string, page?: number, pageSize?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<PagedResultOfEventDto>>;
+    public getEvents(category?: EventCategory, status?: EventStatus, locationId?: string, page?: number, pageSize?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/plain' | 'application/json' | 'text/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
 

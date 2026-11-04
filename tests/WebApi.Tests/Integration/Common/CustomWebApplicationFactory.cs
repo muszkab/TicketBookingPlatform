@@ -40,6 +40,7 @@ public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("JwtSettings:Audience", Audience);
         builder.UseSetting("JwtSettings:SigningKey", SigningKey);
         builder.UseSetting("JwtSettings:AccessTokenExpirationMinutes", "60");
+        builder.UseSetting("OpenApi:Enabled", "true");
 
         builder.ConfigureTestServices(services =>
         {

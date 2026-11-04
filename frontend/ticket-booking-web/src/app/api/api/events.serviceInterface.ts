@@ -13,7 +13,9 @@ import { Observable }                                        from 'rxjs';
 
 import { AddTicketCategoryRequest } from '../model/models';
 import { CreateEventRequest } from '../model/models';
+import { EventCategory } from '../model/models';
 import { EventDto } from '../model/models';
+import { EventStatus } from '../model/models';
 import { PagedResultOfEventDto } from '../model/models';
 import { ProblemDetails } from '../model/models';
 import { TicketCategoryDto } from '../model/models';
@@ -71,7 +73,7 @@ export interface EventsServiceInterface {
      * @param page 
      * @param pageSize 
      */
-    getEvents(category?: string, status?: string, locationId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
+    getEvents(category?: EventCategory, status?: EventStatus, locationId?: string, page?: number, pageSize?: number, extraHttpRequestParams?: any): Observable<PagedResultOfEventDto>;
 
     /**
      * 

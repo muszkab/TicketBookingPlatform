@@ -14,7 +14,7 @@ export const EventStatus = {
     OnSale: 'OnSale',
     SoldOut: 'SoldOut',
     Cancelled: 'Cancelled',
-    Completed: 'Completed'
+    Completed: 'Completed',
 } as const;
 export type EventStatus = typeof EventStatus[keyof typeof EventStatus];
 

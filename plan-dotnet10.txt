@@ -65,12 +65,18 @@ Ismert (már korábban is megvolt): sortBy/sortDir query paraméter "default": 0
     app.spec.ts (267. sor) elvárt szöveg ".NET 10".
 16. npm test + npm run build.
 
-FÁZIS 4 - EF Core ellenőrzés (párhuzamos a 3-mal)
+FÁZIS 4 - EF Core ellenőrzés (párhuzamos a 3-mal)  [KÉSZ 2026-11-04: nincs függő modellváltozás; a Migrator
+                                                 net10-en friss LocalDB adatbázison mind a 10 migrációt +
+                                                 seedet lefuttatta (exit 0, ProductVersion 10.0.14);
+                                                 a compose-os migrator a 5. fázisban (Docker image) jön]
 -------------------------------------------------
 17. dotnet ef migrations has-pending-model-changes -> nincs változás várható; üres migrációt nem adunk hozzá.
 18. Migrator futtatása compose SQL Server ellen (migráció + seed hibátlan).
 
-FÁZIS 5 - Docker + CI (függ: 2)
+FÁZIS 5 - Docker + CI (függ: 2)  [KÉSZ 2026-11-04: image-ek sdk/aspnet 10.0; ci.yml 10.0.x (YAML valid);
+                                compose: migrator exit 0, api/spa/sqlserver healthy; /api/v1/meta
+                                runtimeVersion 10.0.14; SPA proxy ok; admin login + /Orders/mine 200/401;
+                                stack leállítva (docker compose down, volume-ok megmaradtak)]
 -------------------------------
 19. src/WebApi/Dockerfile és src/Migrator/Dockerfile: sdk:10.0 / aspnet:10.0
     (Ubuntu alap; apt-get curl és $APP_UID működik).

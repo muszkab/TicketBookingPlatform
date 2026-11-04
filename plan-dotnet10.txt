@@ -19,7 +19,9 @@ FÁZIS 0 - Alapállapot  [KÉSZ 2026-11-04: branch Upgrade_dotnet10; 419 backend
 2. Baseline: dotnet test (utolsó ismert: 419 zöld) és npm test (frontend).
 3. dotnet tool update -g dotnet-ef -> 10.x (dotnet ef --version).
 
-FÁZIS 1 - Build infrastruktúra (függ: 0)
+FÁZIS 1 - Build infrastruktúra (függ: 0)  [KÉSZ 2026-11-04: Microsoft.* 10.0.14; + System.Security.Cryptography.Pkcs
+                                          10.0.14 pin (SqlClient 6.1.7 -> sérülékeny 9.0.11, NU1902/NU1903);
+                                          Domain/Application/Infrastructure tesztek zöldek net10-en]
 ----------------------------------------
 4. Directory.Build.props: <TargetFramework>net10.0</TargetFramework>;
    a 9 csproj-ból (5 src + 4 teszt) a TargetFramework sor törlése.

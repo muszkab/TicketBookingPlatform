@@ -48,6 +48,7 @@ engineering with Clean Architecture**, exposing a versioned **REST API** consume
 - [x] Upgrade to .NET 10 (LTS)
 - [x] Docker Compose (SQL Server + API + SPA)
 - [ ] FluentValidation for command/query input validation
+- [ ] Rate limiting (global limiter, strict policy on login/register, order policy on create/pay)
 - [ ] Testcontainers (real SQL Server) for the integration tests
 - [x] CI/CD pipeline (build & test, Docker Compose smoke test, GHCR image publish, automated Azure deploy)
 - [x] Re-enable the OpenAPI drift check

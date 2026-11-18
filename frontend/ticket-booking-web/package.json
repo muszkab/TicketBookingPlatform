@@ -41,7 +41,7 @@
     "@expo-google-fonts/roboto": "^0.4.3",
     "@openapitools/openapi-generator-cli": "^2.42.2",
     "jsdom": "^31.0.1",
-    "prettier": "^3.8.1",
+    "prettier": "^3.10.1",
     "typescript": "~6.0.2",
     "vitest": "^5.0.5"
   }

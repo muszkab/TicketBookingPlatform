@@ -39,10 +39,10 @@
     "@angular/cli": "^22.2.6",
     "@angular/compiler-cli": "^22.2.5",
     "@expo-google-fonts/roboto": "^0.4.3",
-    "@openapitools/openapi-generator-cli": "^2.42.2",
+    "@openapitools/openapi-generator-cli": "^2.43.0",
     "jsdom": "^31.0.1",
     "prettier": "^3.10.1",
     "typescript": "~6.0.2",
-    "vitest": "^5.0.5"
+    "vitest": "^5.1.1"
   }
 }
